@@ -7,6 +7,7 @@ import numpy as np
 import cv2
 import csv
 import dlib
+import skvideo
 import skvideo.io
 from tqdm import tqdm
 
@@ -16,6 +17,11 @@ from preparation.align_mouth import landmarks_interpolate, crop_patch, write_vid
 # Backward compatibility of np.float and np.int
 np.float = np.float64
 np.int = np.int_
+
+# Configure ffmpeg path for skvideo
+FFMPEG_BIN_PATH = "/apps/easybuild-2022/easybuild/software/Compiler/GCCcore/11.3.0/FFmpeg/4.4.2/bin"
+FFMPEG_PATH = os.path.join(FFMPEG_BIN_PATH, "ffmpeg")
+skvideo.setFFmpegPath(FFMPEG_BIN_PATH)
 
 # Constants for both datasets
 FACE_PREDICTOR_PATH = "content/data/misc/shape_predictor_68_face_landmarks.dat"
@@ -35,23 +41,39 @@ def detect_landmark(image, detector, predictor):
     return coords
 
 def preprocess_video(input_video_dir, video_filename, output_video_dir, face_predictor_path, mean_face_path):
-    # skip if file already exists
-    if not os.path.exists(os.path.join(output_video_dir, video_filename[:-4] + '_roi.mp4')):
-        os.makedirs(output_video_dir, exist_ok=True)
-    else:
+    # Create output directory
+    os.makedirs(output_video_dir, exist_ok=True)
+    
+    # Skip if file already exists
+    if os.path.exists(os.path.join(output_video_dir, video_filename[:-4] + '_roi.mp4')):
         return True
 
     input_path = os.path.join(input_video_dir, video_filename)
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(face_predictor_path)
     mean_face_landmarks = np.load(mean_face_path)
+    
+    # Read video frames with OpenCV instead of skvideo
     try:
-        videogen = skvideo.io.vread(input_path)
-    except:
-        print(f"Failed to read video: {input_path}")
+        cap = cv2.VideoCapture(input_path)
+        frames = []
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            # Convert BGR to RGB (OpenCV uses BGR, but preprocessing expects RGB)
+            frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        cap.release()
+        
+        if len(frames) == 0:
+            print(f"No frames read from video: {input_path}")
+            return False
+            
+        frames = np.array(frames)
+    except Exception as e:
+        print(f"Failed to read video {input_path}: {e}")
         return False
     
-    frames = np.array([frame for frame in videogen])
     landmarks = [detect_landmark(frame, detector, predictor) for frame in frames]
     preprocessed_landmarks = landmarks_interpolate(landmarks)
     
@@ -64,10 +86,10 @@ def preprocess_video(input_video_dir, video_filename, output_video_dir, face_pre
 
     roi_path = os.path.join(output_video_dir, video_filename[:-4] + '_roi.mp4')
     audio_fn = os.path.join(output_video_dir, video_filename[:-4] + '.wav')
-    write_video_ffmpeg(rois, roi_path, "/usr/bin/ffmpeg")
+    write_video_ffmpeg(rois, roi_path, FFMPEG_PATH)
     
     subprocess.run([
-        "/usr/bin/ffmpeg",
+        FFMPEG_PATH,
         "-i", input_path,
         "-f", "wav",
         "-vn",

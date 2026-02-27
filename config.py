@@ -37,7 +37,7 @@ def get_args():
                         help='Path to save model checkpoints')
     
     # Data paths
-    parser.add_argument('--data_root_path', type=str, default="av1m_features/",
+    parser.add_argument('--data_root_path', type=str, default="data/avh_features/",
                         help='Root directory for feature data')
     parser.add_argument('--metadata_root_path',  type=str, default="av1m_metadata/",
                         help='Metadata path directory for feature data')

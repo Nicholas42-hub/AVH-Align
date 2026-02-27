@@ -1,0 +1,40 @@
+# ── Dataset features, processed outputs & raw data ──────────────────────────
+data/
+*.npz
+extracted_videos_metadata.csv
+batch_metadata_job2_temp.csv
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# ── Logs and SLURM job outputs ───────────────────────────────────────────────
+logs/
+*.out
+*.err
+*.log
+
+# ── Results / evaluation outputs ─────────────────────────────────────────────
+avh_sup/results/
+
+# ── Checkpoints and model weights ────────────────────────────────────────────
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# ── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Environment ──────────────────────────────────────────────────────────────
+.env
+avh_env/
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+*.csv.bak
+*.tmp

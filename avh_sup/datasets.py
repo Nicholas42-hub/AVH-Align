@@ -174,6 +174,130 @@ class FakeAVCeleb_Dataset(Dataset):
 
 ###### ######
 
+###### FakeAVCeleb NPZ (per-clip, cross-dataset eval) ######
+
+class FakeAVCeleb_NPZ_Dataset(Dataset):
+    """
+    Per-clip NPZ dataset for FakeAVCeleb cross-dataset evaluation.
+
+    Reads directly from deepfake_feature_extraction.py output:
+      root_path/{RealVideo-RealAudio,RealVideo-FakeAudio,...}/.../clip.npz
+
+    Label: 0 = Real (RealVideo-RealAudio), 1 = Fake (all other categories).
+
+    Optionally filtered to a split CSV with columns source, category, full_path
+    (from avh_sup/csv_metadata/favc/{train,val,test}_split.csv).
+    """
+
+    REAL_CATEGORY = "RealVideo-RealAudio"
+
+    def __init__(self, config, split=None):
+        self.config = config
+        self.root_path = config["root_path"]        # e.g. data/favc_features/
+        self.apply_l2 = config.get("apply_l2", False)
+
+        # Optional: restrict to clips listed in a split CSV
+        allowed = None
+        if split is not None and "csv_root_path" in config:
+            csv_path = os.path.join(config["csv_root_path"], f"{split}_split.csv")
+            if os.path.exists(csv_path):
+                df = pd.read_csv(csv_path)
+                # Extract video IDs and store with directory for prefix matching
+                # Format: (directory_path, base_filename)
+                allowed = set()
+                for _, row in df.iterrows():
+                    # Convert FakeAVCeleb/Category/.../id/00099.mp4 to Category/.../id/00099
+                    base_path = row["full_path"].replace("FakeAVCeleb/", "").replace(".mp4", "")
+                    # Split into directory and filename
+                    parts = base_path.rsplit('/', 1)
+                    if len(parts) == 2:
+                        dir_path, filename = parts
+                        allowed.add((dir_path, filename))
+                    else:
+                        # Fallback for edge cases
+                        allowed.add(("", base_path))
+
+        # Walk the feature directory
+        self.items = []  # (abs_path, rel_path, label, category)
+        if not os.path.isdir(self.root_path):
+            raise FileNotFoundError(
+                f"FakeAVCeleb features directory not found: {self.root_path}\n"
+                "Run favc_extract_features.slurm first."
+            )
+        for cat in sorted(os.listdir(self.root_path)):
+            cat_dir = os.path.join(self.root_path, cat)
+            if not os.path.isdir(cat_dir):
+                continue
+            label = 0 if cat == self.REAL_CATEGORY else 1
+            for dirpath, _, filenames in os.walk(cat_dir):
+                for fname in sorted(filenames):
+                    if not fname.endswith(".npz"):
+                        continue
+                    abs_path = os.path.join(dirpath, fname)
+                    rel_path = os.path.relpath(abs_path, self.root_path)
+                    
+                    # Match against split CSV using flexible prefix matching
+                    if allowed is not None:
+                        # Get base path: Category/.../id/filename (strip .npz)
+                        base_path = rel_path.replace(".npz", "")
+                        
+                        # Split into directory and filename
+                        parts = base_path.rsplit('/', 1)
+                        if len(parts) == 2:
+                            dir_path, full_filename = parts
+                            # Extract base filename (before first underscore if it exists multiple parts)
+                            # e.g., "00130_id00173_UHoMXLSjlDo" -> "00130"
+                            # or "00130_fake" -> "00130_fake" (keep simple suffixes)
+                            base_filename = full_filename.split('_')[0]
+                            
+                            # Check if this matches any allowed entry
+                            matched = False
+                            for allowed_dir, allowed_name in allowed:
+                                if dir_path == allowed_dir:
+                                    # Check if filenames match (prefix or exact)
+                                    if allowed_name == full_filename or \
+                                       allowed_name == base_filename or \
+                                       full_filename.startswith(allowed_name + '_'):
+                                        matched = True
+                                        break
+                            
+                            if not matched:
+                                continue
+                        else:
+                            # Fallback: skip if can't parse
+                            continue
+                    
+                    self.items.append((abs_path, rel_path, label, cat))
+
+        n_real = sum(1 for _, _, l, _ in self.items if l == 0)
+        n_fake = sum(1 for _, _, l, _ in self.items if l == 1)
+        print(
+            f"FakeAVCeleb_NPZ_Dataset [{split}]: {len(self.items)} clips  "
+            f"(real={n_real}, fake={n_fake})",
+            flush=True,
+        )
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        abs_path, rel_path, label, _ = self.items[idx]
+        feats = np.load(abs_path, allow_pickle=True)
+        video = feats["visual"].astype(np.float32)
+        audio = feats["audio"].astype(np.float32)
+
+        if self.apply_l2:
+            video = video / (np.linalg.norm(video, ord=2, axis=-1, keepdims=True) + 1e-8)
+            audio = audio / (np.linalg.norm(audio, ord=2, axis=-1, keepdims=True) + 1e-8)
+
+        return torch.tensor(video), torch.tensor(audio), label, rel_path
+
+    def categories(self):
+        """Return list of (rel_path, label, category) for per-category metrics."""
+        return [(rel, lbl, cat) for _, rel, lbl, cat in self.items]
+
+###### ######
+
 def load_data(config, test=False):
     if test:
         if config["name"] == "AV1M":
@@ -182,8 +306,10 @@ def load_data(config, test=False):
             test_ds = AVLips_Dataset(config)
         elif config["name"] == "FAVC":
             test_ds = FakeAVCeleb_Dataset(config, split="test")
+        elif config["name"] == "FAVC_NPZ":
+            test_ds = FakeAVCeleb_NPZ_Dataset(config, split=config.get("split", "test"))
         else:
-            raise ValueError("Dataset name error. Expected: AV1M, AVLips, FAVC; Got: " + config["name"])
+            raise ValueError("Dataset name error. Expected: AV1M, AVLips, FAVC, FAVC_NPZ; Got: " + config["name"])
 
         test_dl = DataLoader(test_ds, shuffle=False, batch_size=1)
 
