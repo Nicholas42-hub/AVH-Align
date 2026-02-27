@@ -41,7 +41,7 @@ import os
 from huggingface_hub import hf_hub_download
 
 repo_id = "ControlNet/AV-Deepfake1M"
-token = "HF_TOKEN_REMOVED"
+token = os.environ.get('HF_TOKEN', '')  # Set HF_TOKEN env var before running
 output_dir = os.environ.get("DOWNLOAD_DIR")
 part = "part-00001-99baffd6-3cb2-480c-817b-c02e8e75b4f1-c000"
 

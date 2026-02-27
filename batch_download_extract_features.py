@@ -14,7 +14,7 @@ from pathlib import Path
 import json
 
 # Configuration
-TOKEN = "HF_TOKEN_REMOVED"
+TOKEN = os.environ.get("HF_TOKEN", "")  # Set HF_TOKEN env var before running
 REPO_ID = "ControlNet/AV-Deepfake1M"
 BASE_DIR = "/data/projects/punim2637/nnliang"
 OUTPUT_DIR = f"{BASE_DIR}/Datasets/AVDeepfake1M"

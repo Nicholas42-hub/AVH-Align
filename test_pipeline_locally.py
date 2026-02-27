@@ -61,7 +61,7 @@ try:
         'python', f'{CAUSAL_DIR}/download_avd1m_huggingface.py',
         '--output_dir', DOWNLOAD_DIR,
         '--repo_id', 'ControlNet/AV-Deepfake1M',
-        '--token', 'HF_TOKEN_REMOVED',
+        '--token', os.environ.get('HF_TOKEN', ''),  # Set HF_TOKEN env var before running
         '--parts', TEST_PART
     ]
     

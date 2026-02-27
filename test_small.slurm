@@ -16,7 +16,7 @@ python -c "
 import os, subprocess, csv
 from huggingface_hub import hf_hub_download
 
-TOKEN = 'HF_TOKEN_REMOVED'
+TOKEN = os.environ.get('HF_TOKEN', '')  # Set HF_TOKEN env var before running
 ROOT = '/data/projects/punim2637/nnliang/Datasets/AVDeepfake1M'
 os.makedirs(f'{ROOT}/test_arch', exist_ok=True)
 os.makedirs(f'{ROOT}/test_ext', exist_ok=True)

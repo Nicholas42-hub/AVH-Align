@@ -20,7 +20,7 @@ def download_dataset():
         from huggingface_hub import login, hf_hub_download, list_repo_files
     
     # Configuration
-    token = "HF_TOKEN_REMOVED"
+    token = os.environ.get("HF_TOKEN", "")  # Set HF_TOKEN env var before running
     output_dir = "/data/projects/punim2637/nnliang/Datasets/AVDeepfake1M"
     cache_dir = "/data/projects/punim2637/nnliang/.cache/huggingface"
     repo_id = "ControlNet/AV-Deepfake1M"

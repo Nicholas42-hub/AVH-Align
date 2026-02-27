@@ -18,7 +18,7 @@ EXTRACTED_DIR = Path("/data/projects/punim2637/nnliang/Datasets/AVDeepfake1M/tra
 PREPROCESSED_DIR = Path("/data/projects/punim2637/nnliang/AVH-Align/data/avd1m_preprocessed_batch/train")
 REPO_ID = "ControlNet/AV-Deepfake1M"
 SUBSET = "train"
-HF_TOKEN = "HF_TOKEN_REMOVED"
+HF_TOKEN = os.environ.get("HF_TOKEN", "")  # Set HF_TOKEN env var before running
 
 # Batch configuration
 START_FILE = 1  # Always start from 1 for multi-part zip extraction
