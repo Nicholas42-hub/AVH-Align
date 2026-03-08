@@ -132,7 +132,7 @@ def print_and_write(text, fh):
 def main():
     parser = argparse.ArgumentParser(description="Cross-dataset eval on FakeAVCeleb")
     parser.add_argument("--ckpt",           required=True, help="Path to .ckpt checkpoint")
-    parser.add_argument("--model",          choices=["baseline", "causal"], default="baseline")
+    parser.add_argument("--model",          choices=["baseline", "causal", "ablation"], default="baseline")
     parser.add_argument("--features_path",  required=True, help="Root of favc_features/ dir")
     parser.add_argument("--csv_root_path",  default="csv_metadata/favc",
                         help="Dir with {split}_split.csv files")
@@ -153,9 +153,12 @@ def main():
     if args.model == "baseline":
         from mlp import AVH_Sup
         model = AVH_Sup.load_from_checkpoint(args.ckpt)
-    else:
+    elif args.model == "causal":
         from mlp_causal import AVH_Causal
         model = AVH_Causal.load_from_checkpoint(args.ckpt)
+    else:  # ablation
+        from mlp_causal_ablation import AVH_Causal_Ablation
+        model = AVH_Causal_Ablation.load_from_checkpoint(args.ckpt)
 
     model.to(device)
     model.eval()
@@ -199,7 +202,7 @@ def main():
                 n   = m["n"]
                 print_and_write(f"  {key:<30}  AUC={auc}  AP={ap}  N={n}", fh)
 
-        else:  # causal
+        else:  # causal or ablation (same predict_scores interface)
             paths, full, causal, spurious, labels = run_causal(model, loader, device)
 
             pd.DataFrame({

@@ -1,0 +1,56 @@
+# ============================================================
+#  Ablation A1 — Adversarial Loss Only
+# ============================================================
+#
+#  Component 1: GRL adversarial loss on Z_s
+#    adv_head tries to predict labels from Z_s.
+#    GRL reverses gradients → Z_s becomes non-informative for labels.
+#
+#  NOT included:
+#    Component 2 (stop-gradient): classification uses Z_c + Z_s
+#      → Z_s still contributes to main cls loss
+#    Component 3 (domain): no domain adversarial head
+#
+#  Hypothesis test (A1):
+#    Without stop-gradient, Z_s leaks into the classifier via full_head.
+#    Expected: causal AUC < full AUC (Z_c alone insufficient),
+#              spurious AUC > 0.5 (Z_s still carries label info via full_head).
+#
+# ============================================================
+
+ablation_id: "A1"
+ablation:
+  use_adv:    true    # Component 1: adversarial loss ✓
+  use_sg:     false   # Component 2: stop-gradient    ✗
+  use_domain: false   # Component 3: domain-aware     ✗
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024        # AV-HuBERT output dimension
+  proj_dim:  512         # per-modality projection → causal/spurious repr = 1024-d
+
+  lambda_orth:    0.5    # orthogonality: forces Z_c and Z_s to encode different info
+  lambda_adv:    10.0    # adversarial pressure (strong)
+  lambda_domain:  0.0    # unused in A1
+  grl_alpha:      5.0    # gradient reversal scale
+  grl_domain_alpha: 1.0  # unused in A1
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A1/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A1/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A1/results"

@@ -1,0 +1,60 @@
+# ============================================================
+#  Ablation A0 — Orthogonal Loss Only
+# ============================================================
+#
+#  Causal-spurious decomposition with orthogonality constraint only.
+#  No adversarial pressure on Z_s.
+#
+#  Components:
+#    Z_c / Z_s split + orth loss                              ✓
+#    GRL adversarial loss on Z_s                              ✗
+#    Stop-gradient (Z_c-only classification)                  ✗
+#    Domain-aware constraint                                   ✗
+#
+#  Classification: full_head(Z_c + Z_s) — gradient flows to both
+#
+#  Hypothesis test (A0):
+#    Without adversarial pressure, Z_s can still leak label info
+#    even with orthogonality constraint alone.
+#    Expected: causal AUC < full AUC (Z_c alone insufficient),
+#              spurious AUC > 0.5 (Z_s retains label info).
+#    This is the control condition to show adversarial loss is necessary.
+#
+# ============================================================
+
+ablation_id: "A0"
+ablation:
+  use_adv:    false   # Component 1: adversarial loss ✗
+  use_sg:     false   # Component 2: stop-gradient    ✗
+  use_domain: false   # Component 3: domain-aware     ✗
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024        # AV-HuBERT output dimension
+  proj_dim:  512         # per-modality projection → causal/spurious repr = 1024-d
+
+  lambda_orth:    0.5    # orthogonality: forces Z_c and Z_s to encode different info
+  lambda_adv:     0.0    # unused in A0
+  lambda_domain:  0.0    # unused in A0
+  grl_alpha:      1.0    # unused in A0
+  grl_domain_alpha: 1.0  # unused in A0
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A0/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A0/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A0/results"

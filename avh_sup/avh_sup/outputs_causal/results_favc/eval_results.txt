@@ -1,0 +1,26 @@
+FakeAVCeleb Cross-Dataset Evaluation
+Model   : causal
+Ckpt    : ../avh_sup/outputs_causal/ckpts/model-epoch=33-v1.ckpt
+Features: ../data/favc_features
+Split   : test
+============================================================
+
+  ── FULL HEAD ──
+  overall                         AUC=0.7450  AP=0.9925  N=4089
+  RealVideo-FakeAudio             AUC=0.9998  AP=0.9998  N=200
+  FakeVideo-RealAudio             AUC=0.4560  AP=0.9492  N=1954
+  FakeVideo-FakeAudio             AUC=0.9957  AP=0.9998  N=2135
+
+  ── CAUSAL HEAD ──
+  overall                         AUC=0.7397  AP=0.9923  N=4089
+  RealVideo-FakeAudio             AUC=0.9997  AP=0.9997  N=200
+  FakeVideo-RealAudio             AUC=0.4418  AP=0.9473  N=1954
+  FakeVideo-FakeAudio             AUC=0.9984  AP=0.9999  N=2135
+
+  ── SPURIOUS HEAD ──
+  overall                         AUC=0.2597  AP=0.9556  N=4089
+  RealVideo-FakeAudio             AUC=0.4988  AP=0.4971  N=200
+  FakeVideo-RealAudio             AUC=0.3603  AP=0.9286  N=1954
+  FakeVideo-FakeAudio             AUC=0.1563  AP=0.8874  N=2135
+============================================================
+Results saved to: avh_sup/outputs_causal/results_favc

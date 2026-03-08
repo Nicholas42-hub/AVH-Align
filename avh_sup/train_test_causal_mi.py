@@ -1,12 +1,14 @@
 """
-Training and evaluation entry-point for the causal AVH-Align model.
+Training and evaluation entry-point for the MINE-based causal AVH-Align model.
 
 Evaluation outputs three sets of AUC scores:
   v_full     — full_head   using causal_repr + spurious_repr
   v_causal   — causal_head using causal_repr   ONLY
   v_spurious — spurious_head using spurious_repr ONLY
 
-Hypothesis (proven if): v_causal ≈ v_full  and  v_spurious ≈ 0.5
+Hypothesis (proven if):
+  v_causal   ≈ v_full   (causal repr alone is self-sufficient)
+  v_spurious ≈ 0.5      on AV1M  AND  FakeAVCeleb  ← key cross-domain test
 """
 
 import argparse
@@ -24,10 +26,8 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 import lightning as L
 
 from datasets import load_data
-from mlp_causal import AVH_Causal
+from mlp_causal_mi import AVH_Causal_MI
 
-
-# ── Utilities ──────────────────────────────────────────────────────────────────
 
 def set_seed(seed: int):
     print(f"Using seed: {seed}", flush=True)
@@ -70,11 +70,9 @@ def init_callbacks(config: dict):
     return logger, callbacks
 
 
-# ── Train ──────────────────────────────────────────────────────────────────────
-
 def train(config: dict):
     train_dl, val_dl = load_data(config=config["data_info"])
-    model = AVH_Causal(config=config)
+    model = AVH_Causal_MI(config=config)
     logger, callbacks = init_callbacks(config=config["callbacks"])
 
     trainer = L.Trainer(
@@ -85,11 +83,9 @@ def train(config: dict):
     trainer.fit(model=model, train_dataloaders=train_dl, val_dataloaders=val_dl)
 
 
-# ── Test ───────────────────────────────────────────────────────────────────────
-
 def test(config: dict):
     test_dl = load_data(config=config["data_info"], test=True)
-    model = AVH_Causal.load_from_checkpoint(config["ckpt_path"])
+    model = AVH_Causal_MI.load_from_checkpoint(config["ckpt_path"])
     model.to("cuda")
     model.eval()
 
@@ -113,19 +109,17 @@ def test(config: dict):
     labels_arr = np.array(all_labels)
     os.makedirs(config["output_path"], exist_ok=True)
 
-    # ── Save per-clip scores CSV ────────────────────────────────────────────
     pd.DataFrame({
-        "path":            all_paths,
-        "label":           labels_arr,
-        "score_full":      scores_by_mode["full"],
-        "score_causal":    scores_by_mode["causal"],
-        "score_spurious":  scores_by_mode["spurious"],
-    }).to_csv(os.path.join(config["output_path"], "results_causal.csv"), index=False)
+        "path":           all_paths,
+        "label":          labels_arr,
+        "score_full":     scores_by_mode["full"],
+        "score_causal":   scores_by_mode["causal"],
+        "score_spurious": scores_by_mode["spurious"],
+    }).to_csv(os.path.join(config["output_path"], "results_causal_mi.csv"), index=False)
 
-    # ── Compute and print metrics ───────────────────────────────────────────
     results_txt = []
     print("\n" + "=" * 60)
-    print("  AVH-Align Causal Evaluation")
+    print("  AVH-Align Causal+MINE Evaluation")
     print("=" * 60)
     for mode in ("full", "causal", "spurious"):
         scores = np.array(scores_by_mode[mode])
@@ -136,16 +130,20 @@ def test(config: dict):
         results_txt.append(line)
     print("=" * 60)
 
-    print("\nHypothesis check:")
     auc_full     = roc_auc_score(labels_arr, np.array(scores_by_mode["full"]))
     auc_causal   = roc_auc_score(labels_arr, np.array(scores_by_mode["causal"]))
     auc_spurious = roc_auc_score(labels_arr, np.array(scores_by_mode["spurious"]))
     delta = abs(auc_full - auc_causal)
-    print(f"  |v_full - v_causal|  = {delta:.4f}  ({'SUPPORTS' if delta < 0.02 else 'DOES NOT support'} causal hypothesis)")
-    print(f"  v_spurious near 0.5? = {auc_spurious:.4f}  ({'YES' if abs(auc_spurious - 0.5) < 0.05 else 'NO'})")
 
-    with open(os.path.join(config["output_path"], "eval_results_causal.txt"), "w") as f:
-        f.write("AVH-Align Causal Evaluation\n")
+    print("\nHypothesis check:")
+    print(f"  |v_full - v_causal|  = {delta:.4f}  "
+          f"({'SUPPORTS' if delta < 0.02 else 'DOES NOT support'} causal hypothesis)")
+    print(f"  v_spurious near 0.5? = {auc_spurious:.4f}  "
+          f"({'YES' if abs(auc_spurious - 0.5) < 0.05 else 'NO'}) "
+          f"← cross-domain test: compare with baseline (0.26 on FAVC)")
+
+    with open(os.path.join(config["output_path"], "eval_results_causal_mi.txt"), "w") as f:
+        f.write("AVH-Align Causal+MINE Evaluation\n")
         f.write("=" * 60 + "\n")
         for line in results_txt:
             f.write(line + "\n")
@@ -154,10 +152,8 @@ def test(config: dict):
         f.write(f"  v_spurious           = {auc_spurious:.4f}\n")
 
 
-# ── Entry-point ────────────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Causal AVH-Align train/test")
+    parser = argparse.ArgumentParser(description="Causal+MINE AVH-Align train/test")
     parser.add_argument("--config_path", required=True)
     parser.add_argument("--test", action="store_true")
     args = parser.parse_args()

@@ -1,0 +1,57 @@
+# ============================================================
+#  Ablation A2 — Adversarial Loss + Stop Gradient
+# ============================================================
+#
+#  Component 1: GRL adversarial loss on Z_s                   ✓
+#  Component 2: Classification restricted to Z_c only          ✓
+#    causal_head(Z_c) is the sole classification head.
+#    Z_s receives gradient ONLY from GRL adversarial.
+#    Enforces that final decision is causally grounded in Z_c.
+#
+#  NOT included:
+#    Component 3 (domain): no domain adversarial head          ✗
+#
+#  Hypothesis test (A2):
+#    With stop-gradient, Z_s cannot "help" the main classifier.
+#    Expected: causal AUC ≈ full AUC (Z_c self-sufficient),
+#              spurious AUC ≈ 0.5 in-domain (Z_s non-informative for labels).
+#    BUT: spurious AUC on FAVC may still drift if Z_s encodes domain features.
+#
+# ============================================================
+
+ablation_id: "A2"
+ablation:
+  use_adv:    true    # Component 1: adversarial loss ✓
+  use_sg:     true    # Component 2: stop-gradient    ✓
+  use_domain: false   # Component 3: domain-aware     ✗
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+  proj_dim:  512
+
+  lambda_orth:    0.5
+  lambda_adv:    10.0
+  lambda_domain:  0.0    # unused in A2
+  grl_alpha:      5.0
+  grl_domain_alpha: 1.0  # unused in A2
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2/results"

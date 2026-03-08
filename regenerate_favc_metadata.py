@@ -6,7 +6,7 @@ import os
 import csv
 from pathlib import Path
 
-# 正确的目录映射
+
 CORRECT_DIRS = {
     "Caucasian_American": "Caucasian (American)",
     "Caucasian_European": "Caucasian (European)",

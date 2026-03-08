@@ -22,11 +22,21 @@ visual_feats [T×1024], audio_feats [T×1024]
 
 Training losses
 ---------------
-  L = CE(full) + λ_causal * CE(causal) + λ_spurious * CE(spurious)
-      + λ_orth * orth_loss(causal_repr, spurious_repr)
+  L = CE(full) + λ_causal * CE(causal) + λ_orth * orth_loss
+      + λ_adv * CE(adv_head(GRL(spurious_repr)))
 
-  orth_loss: mean squared cosine similarity per frame — forces the two streams
-             to encode genuinely different information.
+  orth_loss   : mean squared cosine similarity per frame — forces the two streams
+                to encode genuinely different information.
+
+  adv_head    : MLP adversary that tries to predict labels from spurious_repr.
+                Gradient Reversal Layer (GRL) between spurious_repr and adv_head:
+                  • adv_head weights receive normal gradients → learn to predict labels
+                  • spurious projections receive REVERSED gradients → forced to produce
+                    representations that are non-informative for label prediction
+  grl_alpha   : scale of gradient reversal (default 1.0)
+
+  spurious_head is trained on detach(spurious_repr) — it only updates its own
+  weights (not the encoder) and serves as an upper-bound probe at evaluation.
 
 Evaluation
 ----------
@@ -41,6 +51,30 @@ import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score
 import numpy as np
+
+
+# ── Gradient Reversal Layer ────────────────────────────────────────────────────
+
+class _GRLFunction(torch.autograd.Function):
+    """Straight-through forward, negated & scaled gradient in backward."""
+    @staticmethod
+    def forward(ctx, x: torch.Tensor, alpha: float) -> torch.Tensor:
+        ctx.alpha = alpha
+        return x.clone()
+
+    @staticmethod
+    def backward(ctx, grad_output: torch.Tensor):
+        return -ctx.alpha * grad_output, None
+
+
+class GradientReversal(nn.Module):
+    """Multiplies gradients by -alpha during backpropagation."""
+    def __init__(self, alpha: float = 1.0):
+        super().__init__()
+        self.alpha = alpha
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return _GRLFunction.apply(x, self.alpha)
 
 
 def _make_mlp(input_dim: int = 1024) -> nn.Sequential:
@@ -82,6 +116,8 @@ class AVH_Causal(L.LightningModule):
         self.lambda_causal   = hp.get("lambda_causal",   1.0)
         self.lambda_spurious = hp.get("lambda_spurious",  0.5)
         self.lambda_orth     = hp.get("lambda_orth",      0.1)
+        self.lambda_adv      = hp.get("lambda_adv",       1.0)
+        grl_alpha            = hp.get("grl_alpha",         1.0)
         self.lr              = hp.get("lr",              1e-3)
 
         fused_dim = proj_dim * 2  # concat of visual + audio projections = 1024
@@ -96,7 +132,13 @@ class AVH_Causal(L.LightningModule):
         # full_head: additive fusion keeps same dimension as either stream alone
         self.full_head     = _make_mlp(fused_dim)
         self.causal_head   = _make_mlp(fused_dim)
-        self.spurious_head = _make_mlp(fused_dim)
+        self.spurious_head = _make_mlp(fused_dim)  # probe head (detached encoder)
+
+        # ── Adversarial head + GRL ─────────────────────────────────────────────
+        # adv_head tries to predict labels from Z_s; GRL reverses gradients
+        # flowing into the spurious projections → Z_s becomes non-informative
+        self.adv_head = _make_mlp(fused_dim)
+        self.grl      = GradientReversal(alpha=grl_alpha)
 
         # ── Validation accumulators ────────────────────────────────────────────
         self._val_scores = {"full": [], "causal": [], "spurious": []}
@@ -181,27 +223,40 @@ class AVH_Causal(L.LightningModule):
 
         causal_repr, spurious_repr = self._encode(video_feats, audio_feats)
 
-        score_full     = self._cls_score(self.full_head,     causal_repr + spurious_repr)
-        score_causal   = self._cls_score(self.causal_head,   causal_repr)
-        score_spurious = self._cls_score(self.spurious_head, spurious_repr)
+        # full_head: Z_s is detached so the spurious encoder receives NO gradient
+        # from the main classification task — only the GRL adversarial gradient.
+        score_full   = self._cls_score(self.full_head,   causal_repr + spurious_repr.detach())
+        score_causal = self._cls_score(self.causal_head, causal_repr)
+
+        # spurious_head probe: also detached — only measures Z_s informativeness.
+        score_spurious = self._cls_score(self.spurious_head, spurious_repr.detach())
+
+        # Adversarial: adv_head receives normal gradients (learns to predict labels);
+        # spurious projections receive REVERSED gradients (forced non-informative).
+        adv_score = self._cls_score(self.adv_head, self.grl(spurious_repr))
 
         loss_cls      = self._ce_loss(score_full,     labels)
         loss_causal   = self._ce_loss(score_causal,   labels)
-        loss_spurious = self._ce_loss(score_spurious, labels)
+        loss_spurious = self._ce_loss(score_spurious, labels)  # probe only (detached — does NOT update encoder)
+        loss_adv      = self._ce_loss(adv_score,      labels)  # reversed via GRL
         loss_orth     = self._orth_loss(causal_repr, spurious_repr)
 
+        # NOTE: loss_spurious is excluded from total loss — it trains the probe
+        # head on detach(Z_s) and has no effect on the encoder. Including it in
+        # total loss is misleading and does not help disentanglement.
         loss = (
             loss_cls
             + self.lambda_causal   * loss_causal
-            + self.lambda_spurious * loss_spurious
+            + self.lambda_adv      * loss_adv
             + self.lambda_orth     * loss_orth
         )
 
-        self.log("train_loss",         loss,         on_step=False, on_epoch=True)
-        self.log("train_loss_cls",      loss_cls,     on_step=False, on_epoch=True)
-        self.log("train_loss_causal",   loss_causal,  on_step=False, on_epoch=True)
-        self.log("train_loss_spurious", loss_spurious,on_step=False, on_epoch=True)
-        self.log("train_loss_orth",     loss_orth,    on_step=False, on_epoch=True)
+        self.log("train_loss",         loss,          on_step=False, on_epoch=True)
+        self.log("train_loss_cls",      loss_cls,      on_step=False, on_epoch=True)
+        self.log("train_loss_causal",   loss_causal,   on_step=False, on_epoch=True)
+        self.log("train_loss_spurious", loss_spurious, on_step=False, on_epoch=True)  # probe monitor only
+        self.log("train_loss_adv",      loss_adv,      on_step=False, on_epoch=True)
+        self.log("train_loss_orth",     loss_orth,     on_step=False, on_epoch=True)
         return loss
 
     # ── Validation ─────────────────────────────────────────────────────────────
