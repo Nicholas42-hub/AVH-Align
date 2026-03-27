@@ -1,0 +1,104 @@
+# ============================================================
+#  A9 — SAD + Multi-Kernel MMD Domain Alignment
+#
+#  Diagnosis from A1–A8:
+#    GRL-based adversarial domain training fails when the upstream
+#    feature domain AUC is 0.999.  The adversarial game quickly
+#    reaches a saddle point (domain head wins, near-zero GRL gradient).
+#    Across all ablations, Z_sync/Z_c domain AUC remained 0.985–0.999 —
+#    effectively no domain suppression.
+#
+#  Fix:
+#    Replace L_dadv [GRL + domain head on Z_sync] with L_mmd:
+#      L_mmd = MMD²(Z_sync_pool | domain=AV1M,  Z_sync_pool | domain=FAVC)
+#
+#    Multi-kernel RBF MMD with median-heuristic bandwidths directly
+#    minimises the statistical distance between the two domain
+#    distributions of Z_sync — no adversarial game, no saddle-point.
+#
+#  Architecture:
+#    Identical to A8 (SAD): Z_sync (causal) / Z_app (spurious).
+#    Only Z_sync domain objective changes.
+#
+#  Losses:
+#    L_task   — CE on causal_head(Z_sync)                    [AV1M only]
+#    L_mmd    — MMD²(Z_sync_pool|d=0, Z_sync_pool|d=1)       [all, ≥2/domain]
+#    L_ddis   — BCE(domain_head_s(Z_app_pool), domain)        [all clips]
+#    L_ladv   — BCE(label_head_s(GRL(Z_app_pool)), label)     [AV1M only]
+#    L_orth   — mean cos²(Z_sync_frame, Z_app_frame)          [AV1M only]
+#
+#  Lambda choices:
+#    lambda_mmd = 10.0  (strong — raw domain AUC is 0.999; needs a
+#                        large weight to overcome the domain signal)
+#    lambda_ddis / lambda_ladv / lambda_orth unchanged from A8
+#
+#  Data loading:
+#    FAVC val-real clips are *oversampled* (favc_oversample × repeat)
+#    so that each mini-batch contains ≥2 clips from each domain —
+#    required for a meaningful per-batch MMD estimate.
+# ============================================================
+
+ablation_id: "A9"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+# FAVC oversample factor: repeats FAVC val-real clips this many times
+# in the ConcatDataset so that balanced mini-batches contain enough
+# samples from both domains for reliable MMD estimation.
+# With ~500 FAVC val-real clips × 14 = ~7000, vs ~57000 AV1M → ~11% FAVC.
+# With batch_size=16: expected ~1.8 FAVC per batch on average.
+# Increase this if MMD steps with n1<2 are too frequent (see train logs).
+favc_oversample: 14
+
+model_hparams:
+  feat_dim: 1024
+
+  # ── SAD dimensions (identical to A8) ────────────────────────────────────
+  sync_dim: 512    # Z_sync (causal cross-modal branch)
+  app_dim:  256    # per-modality appearance branch  →  spurious_dim = 512
+
+  # ── A9-specific: MMD weight (replaces lambda_dadv / grl_alpha)  ─────────
+  lambda_mmd:  10.0   # weight on MMD² loss for Z_sync domain alignment
+                      # Start at 10.0; raw domain AUC = 0.999 requires
+                      # a strong signal to overcome task-loss competition.
+  mmd_min_samples: 2  # minimum samples per domain in a batch to compute MMD
+
+  # ── Retained from A8 ────────────────────────────────────────────────────
+  lambda_ddis:  1.0   # Z_app discriminative domain loss
+  lambda_ladv:  1.0   # Z_app label adversarial loss (GRL)
+  lambda_orth:  0.1   # Z_sync ⊥ Z_app orthogonality
+  grl_alpha:    1.0   # GRL strength for Z_app label head only
+
+  lr: 1.0e-3
+
+# ── Training setup (same as A8) ──────────────────────────────────────────────
+batch_size: 16   # larger than A8 (was 1) — needed so batches contain enough
+                 # samples from both domains for per-batch MMD estimation.
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20

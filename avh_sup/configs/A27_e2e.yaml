@@ -1,0 +1,62 @@
+# A27: CDAN on z_sync_pool + fine-tune from A9_e2e (task AUC=1.0)
+#
+# Combines A24 (CDAN mechanism) with A26 (finetune from task-optimal checkpoint).
+# Because task_prob is meaningful from epoch 0, CDAN's conditioning is effective
+# immediately — unlike A24 where task_prob ≈ 0.5 in early epochs.
+#
+# No enc_dann: encoder already task-optimal; DANN there would destabilise it.
+# lambda_cdan=5.0: moderate (task protected by checkpoint, not by low λ).
+# lambda_ddis=1.0: routes domain info through z_app (re-enabled).
+# lr_encoder=5e-7: very conservative encoder lr to protect task AUC.
+
+ablation_id: A27_e2e
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A27_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A27_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 30
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  finetune_ckpt: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts/model-epoch=08-val_auc_causal=1.0000.ckpt
+  grl_alpha: 1.0
+  grl_alpha_zsync: 1.0
+  lambda_cdan: 5.0
+  lambda_ddis: 1.0
+  lambda_ladv: 1.0
+  lambda_orth: 0.1
+  lr: 0.0001
+  lr_encoder: 5.0e-07
+  max_frames: 150
+  n_unfreeze_layers: -1
+  sync_dim: 512
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A27_e2e/results
+precision: 16-mixed
+seed: 43

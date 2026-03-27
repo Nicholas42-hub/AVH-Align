@@ -1,0 +1,69 @@
+# ============================================================
+#  Ablation A2_mine — Adversarial Loss + Stop Gradient + MINE
+# ============================================================
+#
+#  Same as A2 but replaces the per-sample orthogonality loss
+#  with MINE (Mutual Information Neural Estimation).
+#
+#  Why: per-sample dot-product orth only enforces linear
+#  per-sample orthogonality.  MINE directly minimises the
+#  statistical mutual information MI(Z_c; Z_s) across the
+#  whole batch, providing a much stronger independence guarantee.
+#
+#  Component 1: GRL adversarial loss on Z_s                   ✓
+#  Component 2: Classification restricted to Z_c only          ✓
+#  Component 4: MINE independence loss (replaces orth)         ✓ (NEW)
+#
+#  Training protocol (alternating per step):
+#    Step 1 — update mine_net to MAXIMISE MI(Z_c; Z_s) estimate
+#    Step 2 — update encoder  to MINIMISE MI(Z_c; Z_s) estimate
+#              (mine_net params frozen during encoder update)
+#
+# ============================================================
+
+ablation_id: "A2_mine"
+ablation:
+  use_adv:    true    # Component 1: adversarial loss ✓
+  use_sg:     true    # Component 2: stop-gradient    ✓
+  use_domain: false   # Component 3: domain-aware     ✗
+  use_mine:   true    # Component 4: MINE independence ✓
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+  proj_dim:  512
+
+  lambda_orth:    0.0    # unused: replaced by MINE
+  lambda_adv:    10.0
+  lambda_domain:  0.0    # unused in A2_mine
+  lambda_mine:      0.1    # weight on MINE MI minimisation loss (reduced: let GRL dominate)
+  mine_hidden:    512      # hidden dim of statistics network T
+  mine_lr:      1.0e-4    # separate lr for MINE network (smaller than encoder)
+  mine_inner_steps: 5     # MINE network inner updates per encoder step (WGAN-style)
+  grl_alpha:      5.0
+  grl_domain_alpha: 1.0  # unused in A2_mine
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_mine/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_mine/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_mine/results"

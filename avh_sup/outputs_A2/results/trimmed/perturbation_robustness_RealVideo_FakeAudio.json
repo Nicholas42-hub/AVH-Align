@@ -1,0 +1,84 @@
+{
+  "ckpt_path": "outputs_A2/ckpts/model-epoch=09.ckpt",
+  "split": "test",
+  "seed": 42,
+  "fake_category": "RealVideo-FakeAudio",
+  "perturb_types": {
+    "audio_noise": {
+      "0.0": {
+        "causal_auc": 0.9556213017751479,
+        "spurious_auc": 0.5325443786982249,
+        "full_auc": 0.9556213017751479,
+        "n_clips": 52
+      },
+      "0.05": {
+        "causal_auc": 0.9334319526627219,
+        "spurious_auc": 0.5236686390532544,
+        "full_auc": 0.9334319526627219,
+        "n_clips": 52
+      },
+      "0.1": {
+        "causal_auc": 0.7233727810650888,
+        "spurious_auc": 0.5192307692307692,
+        "full_auc": 0.7233727810650888,
+        "n_clips": 52
+      },
+      "0.2": {
+        "causal_auc": 0.6005917159763314,
+        "spurious_auc": 0.5088757396449703,
+        "full_auc": 0.6005917159763314,
+        "n_clips": 52
+      },
+      "0.5": {
+        "causal_auc": 0.6286982248520712,
+        "spurious_auc": 0.492603550295858,
+        "full_auc": 0.6286982248520712,
+        "n_clips": 52
+      },
+      "1.0": {
+        "causal_auc": 0.6775147928994084,
+        "spurious_auc": 0.4955621301775148,
+        "full_auc": 0.6775147928994084,
+        "n_clips": 52
+      }
+    },
+    "visual_noise": {
+      "0.0": {
+        "causal_auc": 0.9556213017751479,
+        "spurious_auc": 0.5325443786982249,
+        "full_auc": 0.9556213017751479,
+        "n_clips": 52
+      },
+      "0.05": {
+        "causal_auc": 0.9659763313609467,
+        "spurious_auc": 0.5502958579881656,
+        "full_auc": 0.9659763313609467,
+        "n_clips": 52
+      },
+      "0.1": {
+        "causal_auc": 0.9659763313609466,
+        "spurious_auc": 0.5636094674556213,
+        "full_auc": 0.9659763313609466,
+        "n_clips": 52
+      },
+      "0.2": {
+        "causal_auc": 0.9822485207100592,
+        "spurious_auc": 0.5665680473372781,
+        "full_auc": 0.9822485207100592,
+        "n_clips": 52
+      },
+      "0.5": {
+        "causal_auc": 0.977810650887574,
+        "spurious_auc": 0.569526627218935,
+        "full_auc": 0.977810650887574,
+        "n_clips": 52
+      },
+      "1.0": {
+        "causal_auc": 0.9526627218934911,
+        "spurious_auc": 0.5591715976331361,
+        "full_auc": 0.9526627218934911,
+        "n_clips": 52
+      }
+    }
+  }
+}

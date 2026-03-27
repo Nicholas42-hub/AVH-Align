@@ -132,7 +132,7 @@ def print_and_write(text, fh):
 def main():
     parser = argparse.ArgumentParser(description="Cross-dataset eval on FakeAVCeleb")
     parser.add_argument("--ckpt",           required=True, help="Path to .ckpt checkpoint")
-    parser.add_argument("--model",          choices=["baseline", "causal", "ablation"], default="baseline")
+    parser.add_argument("--model",          choices=["baseline", "causal", "ablation", "modal", "fcd", "fcd_a6", "fcd_a7", "sad_a8"], default="baseline")
     parser.add_argument("--features_path",  required=True, help="Root of favc_features/ dir")
     parser.add_argument("--csv_root_path",  default="csv_metadata/favc",
                         help="Dir with {split}_split.csv files")
@@ -156,6 +156,21 @@ def main():
     elif args.model == "causal":
         from mlp_causal import AVH_Causal
         model = AVH_Causal.load_from_checkpoint(args.ckpt)
+    elif args.model == "modal":
+        from mlp_causal_modal import AVH_Causal_Modal
+        model = AVH_Causal_Modal.load_from_checkpoint(args.ckpt)
+    elif args.model == "fcd":
+        from mlp_fcd import AVH_FCD
+        model = AVH_FCD.load_from_checkpoint(args.ckpt)
+    elif args.model == "fcd_a6":
+        from mlp_fcd_a6 import AVH_FCD_A6
+        model = AVH_FCD_A6.load_from_checkpoint(args.ckpt)
+    elif args.model == "fcd_a7":
+        from mlp_fcd_a7 import AVH_FCD_A7
+        model = AVH_FCD_A7.load_from_checkpoint(args.ckpt)
+    elif args.model == "sad_a8":
+        from mlp_sad_a8 import AVH_SAD_A8
+        model = AVH_SAD_A8.load_from_checkpoint(args.ckpt)
     else:  # ablation
         from mlp_causal_ablation import AVH_Causal_Ablation
         model = AVH_Causal_Ablation.load_from_checkpoint(args.ckpt)

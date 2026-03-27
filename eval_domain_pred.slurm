@@ -11,21 +11,21 @@
 #SBATCH --error=logs/avh_domain_pred_%j.err
 
 # ============================================================
-#  Experiment 1 — Domain Predictability Linear Probe
+#  Experiment 2 — Domain Predictability Probe
 #
-#  Goal: Measure how well Z_c vs Z_s can predict source domain
-#        (AV1M=0 vs FakeAVCeleb=1) using a logistic regression
-#        linear probe (5-fold stratified CV).
+#  Goal: Measure how well Z_c vs Z_s can predict dataset identity
+#        AV1M (0) vs FakeAVCeleb (1).
+#        Binary logistic regression probe, 5-fold stratified CV.
 #
-#  Expected result (if adversarial disentanglement works):
-#    Z_c AUC_domain ≈ 0.5   (causal branch is domain-invariant)
-#    Z_s AUC_domain >> 0.5  (spurious branch encodes domain info)
+#  Expected result (if GRL disentanglement works):
+#    Z_c AUC ≈ 0.5   (causal branch is domain-invariant)
+#    Z_s AUC >> 0.5  (spurious branch absorbed domain artefacts)
 #
-#  Model: A1 checkpoint (adversarial loss only)
+#  Runs all three models: A0, A1, A2
 # ============================================================
 
 echo "============================================================"
-echo "  Domain Predictability Eval — A1 (adversarial only)"
+echo "  Domain Predictability Probe — A0 / A1 / A2"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"
@@ -46,20 +46,34 @@ unset PYTHONPATH
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=0
 
-mkdir -p avh_sup/outputs_ablation_a1/results logs
+mkdir -p avh_sup/outputs_A0/results avh_sup/outputs_A1/results avh_sup/outputs_A2/results logs
 
 cd avh_sup
-python eval_domain_predictability.py \
-    --ckpt_path  outputs_A1/ckpts/model-epoch=03.ckpt \
-    --a1_config  configs/A1.yaml \
-    --favc_root  ../data/favc_features \
-    --favc_csv   csv_metadata/favc \
-    --favc_split test \
-    --av1m_split val \
-    --n_folds    5 \
-    --seed       42 \
-    --output_dir outputs_A1/results \
-    --device     cuda
+
+AV1M_ROOT="../data/avh_features/val"
+FAVC_ROOT="../data/favc_features"
+
+for MODEL in A0 A1 A2; do
+    # Find best checkpoint (latest by epoch, adjust if needed)
+    CKPT=$(ls outputs_${MODEL}/ckpts/*.ckpt 2>/dev/null | sort | tail -1)
+    if [[ -z "$CKPT" ]]; then
+        echo "  WARNING: no checkpoint found for $MODEL, skipping."
+        continue
+    fi
+    echo ""
+    echo "--- Running domain predictability probe for $MODEL ---"
+    echo "  Checkpoint: $CKPT"
+    python eval_domain_predictability.py \
+        --ckpt_path       "$CKPT" \
+        --config          configs/${MODEL}.yaml \
+        --av1m_root       "$AV1M_ROOT" \
+        --favc_root       "$FAVC_ROOT" \
+        --max_per_dataset 2000 \
+        --n_folds         5 \
+        --seed            42 \
+        --output_dir      outputs_${MODEL}/results \
+        --device          cuda
+done
 
 echo ""
 echo "============================================================"

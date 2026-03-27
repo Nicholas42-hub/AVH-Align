@@ -14,7 +14,7 @@
 #  Cross-domain evaluation: Ablation A1 → FakeAVCeleb
 #
 #  A1: Adversarial loss only (full_head on Z_c + Z_s)
-#  Checkpoint: outputs_ablation_a1/ckpts/model-epoch=03.ckpt
+#  Checkpoint: outputs_A1/ckpts/model-epoch=27.ckpt
 # ============================================================
 
 echo "============================================================"
@@ -39,26 +39,28 @@ unset PYTHONPATH
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=0
 
-CKPT="avh_sup/outputs_A1/ckpts/model-epoch=03.ckpt"
 FEATURES="data/favc_features"
 CSV_ROOT="avh_sup/csv_metadata/favc"
 OUTPUT="avh_sup/outputs_A1/results_favc"
 
 mkdir -p "$OUTPUT" logs
 
+cd avh_sup
+CKPT=$(ls outputs_A1/ckpts/*.ckpt 2>/dev/null | sort | tail -1)
+if [[ -z "$CKPT" ]]; then echo "ERROR: no checkpoint found"; exit 1; fi
+
 echo "Checkpoint : $CKPT"
-echo "Features   : $FEATURES"
+echo "Features   : ../data/favc_features"
 echo "Output     : $OUTPUT"
 echo ""
 
-cd avh_sup
 python eval_favc.py \
-    --ckpt          "../$CKPT" \
+    --ckpt          "$CKPT" \
     --model         ablation \
     --features_path "../$FEATURES" \
     --csv_root_path "$CSV_ROOT" \
     --split         test \
-    --output_dir    "$OUTPUT"
+    --output_dir    "../$OUTPUT"
 
 echo ""
 echo "============================================================"

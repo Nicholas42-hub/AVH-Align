@@ -1,0 +1,38 @@
+{
+  "probe_design": "FakeVideo-RealAudio (0) vs FakeVideo-FakeAudio (1)",
+  "ckpt_path": "outputs_A1/ckpts/model-epoch=03.ckpt",
+  "n_clips_per_class": 1000,
+  "n_clips_total": 2000,
+  "n_folds": 5,
+  "seed": 42,
+  "random_chance": 0.5,
+  "raw_auc_mean": 1.0,
+  "raw_auc_std": 0.0,
+  "raw_auc_folds": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "causal_auc_mean": 0.9998850000000001,
+  "causal_auc_std": 0.0001933907960581549,
+  "causal_auc_folds": [
+    1.0,
+    0.99995,
+    1.0,
+    0.999975,
+    0.9994999999999999
+  ],
+  "causal_delta_raw": -0.000115,
+  "spurious_auc_mean": 1.0,
+  "spurious_auc_std": 0.0,
+  "spurious_auc_folds": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "spurious_delta_raw": 0.0
+}

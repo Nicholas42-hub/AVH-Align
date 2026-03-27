@@ -1,0 +1,86 @@
+# ============================================================
+#  A16_e2e — SAD + LayerNorm on Encoder Output + CORAL, Fully E2E
+#
+#  Key difference vs A10_e2e:
+#
+#    A10: CORAL loss applied to Z_sync (SAD head output, 512-dim)
+#         Gradient path: loss → SAD head → AV-HuBERT
+#
+#    A11: CORAL loss applied DIRECTLY to AV-HuBERT encoder output
+#         enc_feats = cat(video_feats.mean(T), audio_feats.mean(T)) [2048-dim]
+#         Gradient path: loss → AV-HuBERT directly (shortest possible path)
+#
+#  Hypothesis: putting the alignment loss upstream of the task head gives a
+#  cleaner gradient to the encoder — no competing task-head gradients on
+#  the feature that CORAL is directly pushing on.
+#
+#  Everything else (BalancedDomainSampler, all FAVC, augmentation) is
+#  identical to A10.
+# ============================================================
+
+ablation_id: "A16_e2e"
+
+data_paths:
+  e2e_train_csv: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv"
+  e2e_val_csv:   "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv"
+  favc_raw_root: "/scratch/punim2637/nnliang/favc_preprocessed"
+
+model_hparams:
+  avhubert_ckpt:       "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:       "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers:   -1
+
+  max_frames:  150
+  feat_dim:   1024
+  sync_dim:    512
+  app_dim:     256
+
+  # Encoder-level CORAL: aligns mean+covariance of AV-HuBERT output features
+  # [B, 2048] directly — upstream of the SAD head.  Shorter gradient path to
+  # AV-HuBERT compared to A10's Z_sync CORAL.
+  lambda_enc_coral: 25.0
+  lambda_ddis:       1.0
+  lambda_ladv:       1.0
+  lambda_orth:       0.1
+  grl_alpha:         1.0
+  mmd_min_samples:   2
+
+  lr_encoder:    1.0e-6
+  lr:            1.0e-4
+  weight_decay:  1.0e-4
+
+# ── Augmentation config ───────────────────────────────────────────────────────
+augmentation:
+  enabled:      true
+  p:            0.9
+  video_noise:  0.3
+  brightness:   0.5
+  flip_p:       0.5
+  audio_noise:  0.05
+
+# Training setup
+batch_size:              8
+accumulate_grad_batches: 4
+num_workers:             6
+favc_oversample:         3
+gradient_clip_val:       1.0
+precision:               "16-mixed"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A16_e2e/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A16_e2e/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 30
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 10
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A16_e2e/results"

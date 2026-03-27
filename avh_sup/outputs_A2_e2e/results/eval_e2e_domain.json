@@ -1,0 +1,23 @@
+{
+  "checkpoint": "../avh_sup/outputs_A2_e2e/ckpts/model-epoch=14-val_auc_causal=0.9949.ckpt",
+  "n_av1m_clips": 500,
+  "n_favc_clips": 500,
+  "domain_probe": {
+    "Z_c_auc_mean": 0.98058,
+    "Z_c_auc_std": 0.004218720185079852,
+    "Z_s_auc_mean": 0.9808,
+    "Z_s_auc_std": 0.0029400680264239135
+  },
+  "label_probe_indomain": {
+    "Z_c_auc_mean": 0.8733261637294818,
+    "Z_c_auc_std": 0.038800655666177,
+    "Z_s_auc_mean": 0.8317445045419873,
+    "Z_s_auc_std": 0.04244705253618788
+  },
+  "label_probe_ood_favc": {
+    "Z_c_auc_mean": 0.9754050073637703,
+    "Z_c_auc_std": 0.020897284976725862,
+    "Z_s_auc_mean": 0.9522266638614209,
+    "Z_s_auc_std": 0.04443093575829079
+  }
+}

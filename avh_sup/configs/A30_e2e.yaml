@@ -1,0 +1,72 @@
+# A30: A29 with WHITENED mean alignment (Mahalanobis / Cohen's d²)
+#
+# ROOT CAUSE (A29 stall analysis):
+#   ep0→ep1: ||mu|| 0.891→0.022 (40× drop) — gradient large, converges fast
+#   ep1→ep2: ||mu|| 0.022→0.018 (1.2× drop) — STALLED
+#
+#   Why: MSE(mu0, mu1) gradient ∝ ||mu0-mu1||, so as gap shrinks, gradient shrinks.
+#   Within-class std collapsed to 0.0019 (very tight clusters). Effect size = 9.5σ.
+#   At 1.2×/epoch convergence rate, need ~13 more epochs to reach effect size <0.5σ.
+#
+# FIX: Normalize the mean difference by within-batch std (detached):
+#   loss = mean( ((mu0 - mu1) / std_within.detach())^2 )  = Cohen's d²
+#
+#   This makes the gradient proportional to effect size (not absolute gap).
+#   When d is large (9.5), gradient is large. Convergence rate is scale-invariant.
+#   One epoch should bring d from 9.5 to ~0.5 (if other terms don't interfere).
+#
+# lambda_mean_align = 1.0 (the loss starts at d²=90, so lambda=1 gives 90 contribution)
+#   vs A29's lambda=500 × MSE=6e-7 = 3e-4. Much stronger gradient from the start.
+
+ablation_id: A30_e2e
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A30_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A30_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 30
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  finetune_ckpt: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts/model-epoch=08-val_auc_causal=1.0000.ckpt
+  grl_alpha: 1.0
+  grl_alpha_zsync: 1.0
+  lambda_ddis: 1.0
+  lambda_ladv: 1.0
+  lambda_mean_align: 1.0   # KEY: Cohen's d² loss — starts at 90, self-regulates to 0
+  lambda_orth: 0.1
+  lambda_zsync_dann: 0.0   # Still 0 (no noise source)
+  lr: 0.0001
+  lr_encoder: 5.0e-06
+  max_frames: 150
+  n_unfreeze_layers: -1
+  sync_dim: 512
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A30_e2e/results
+precision: 16-mixed
+seed: 43

@@ -1,0 +1,70 @@
+# ============================================================
+#  A5 — FCD-Inspired Feature Causality Decomposition
+#
+#  Each modality feature (1024-dim) is split into THREE components:
+#
+#    synergistic  s^m  [syn_dim=256]:  cross-modal shared, task-useful
+#                                       aligned via Sinkhorn divergence (L_SDA)
+#    unique       u^m  [spec_dim=256]: modality-specific, task-useful
+#                                       constrained via CE proxy (L_MI)
+#    redundant    r^m  [spec_dim=256]: spurious shortcuts / noise
+#                                       r = h − u  (URD residual)
+#                                       kept modality-discriminative (L_Dis)
+#
+#  Classification: causal_head([s_v, u_v, s_a, u_a]) = 256*4 = 1024  ← same as A2
+#  Redundant probe: redundant_head([r_v, r_a]) — target AUC ≈ 0.5
+#
+#  Terminology mapping to A1-A4:
+#    Z_c  ≈  cat(s_v, u_v, s_a, u_a)   (all task-related)
+#    Z_s  ≈  cat(r_v, r_a)              (all spurious/noise)
+#
+#  Reference:
+#    "Plug-and-play Feature Causality Decomposition for Multimodal
+#     Representation Learning", NeurIPS 2025.
+# ============================================================
+
+ablation_id: "A5"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024          # AV-HuBERT feature dimension
+
+  # ── Component dimensions ─────────────────────────────────────────────────
+  syn_dim:   256           # synergistic dim per modality
+  spec_dim:  256           # modality-specific dim per modality (u and r share this)
+  sda_dim:   128           # SDA shared projection output dim
+  mi_dim:    128           # unique head hidden dim (for L_MI proxy)
+
+  # ── Loss weights ─────────────────────────────────────────────────────────
+  lambda_mi:    1.0        # weight for L_MI  (task-MI proxy on unique features)
+  lambda_sda:   0.5        # weight for L_SDA (Sinkhorn synergistic alignment)
+  lambda_dis:   1.0        # weight for L_Dis (modality discrimination on redundant)
+  lambda_orth:  0.1        # weight for L_orth (u ⊥ r orthogonality penalty)
+
+  # ── Sinkhorn hyperparameters ──────────────────────────────────────────────
+  sda_eps:     0.05        # Sinkhorn regularisation ε
+  sda_n_iter:  5          # Sinkhorn iterations (5 sufficient: loss converges to ~0 quickly)
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20

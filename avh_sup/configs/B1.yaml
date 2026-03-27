@@ -1,0 +1,67 @@
+# ============================================================
+#  Modal Balance B1 — Per-Modality Classification (方向1)
+# ============================================================
+#
+#  Base: A2 (adversarial + stop-gradient on Z_s)
+#
+#  New constraint — 方向1 (use_modal_cls):
+#    modal_head_visual(v_c) → CE(labels)   forces visual branch to detect fakes
+#    modal_head_audio(a_c)  → CE(labels)   forces audio  branch to detect fakes
+#    Both single-modality heads train their respective projectors independently.
+#    Addresses audio-dominance by applying direct positive gradient to v_c.
+#
+#  Hypothesis:
+#    Training v_c with its own classification loss will make the causal score
+#    more balanced across RealVideo-FakeAudio and FakeVideo-RealAudio categories.
+#
+# ============================================================
+
+modal_balance_id: "B1"
+modal_balance:
+  use_modal_cls:   true   # 方向1: per-modality classification ✓
+  use_cross_modal: false  # 方向2: cross-modal alignment       ✗
+  use_modal_disc:  false  # 方向3: modal discriminator         ✗
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+  proj_dim:  512
+
+  # A2 base losses
+  lambda_orth:     0.5
+  lambda_adv:     10.0
+  grl_alpha:       5.0
+
+  # 方向1
+  lambda_modal_cls: 1.0
+
+  # unused (set to 0 to be safe)
+  lambda_cross_modal: 0.0
+  lambda_modal_disc:  0.0
+  grl_modal_alpha:    1.0
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_B1/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_B1/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_B1/results"

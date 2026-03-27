@@ -1,0 +1,94 @@
+# ============================================================
+#  A8 — SAD: Synchrony-Appearance Decomposition
+#
+#  Root cause of A5–A7 failure:
+#    The FCD information-theoretic decomposition (redundant/unique) is
+#    structurally misaligned with the causal/spurious axis for deepfake
+#    detection. FCD's "redundant" component captures AV cross-modal
+#    coherence — exactly the manipulation-sensitive signal — but FCD
+#    treats it as the SPURIOUS branch. No adversarial loss can correct
+#    this without destroying the model's ability to detect fakes.
+#
+#  A8 replaces FCD with a task-aware SAD decomposition:
+#
+#    Z_sync (causal):
+#      interaction(V, A) = cat(V, A, V⊙A, V−A)  →  proj  →  Z_sync
+#      • V⊙A captures AV coherence — large when modalities agree (real)
+#      • V−A captures AV discrepancy — large when sources differ (fake)
+#      • structural inductive bias: manipulation breaks V⊙A / amplifies V−A
+#
+#    Z_app (spurious):
+#      V-only → Z_app_v,  A-only → Z_app_a,  Z_app = cat(v, a)
+#      • each encoder sees one modality — cannot reason about AV sync
+#      • captures identity, recording conditions, speaker style
+#
+#  Push-pull:
+#    Z_sync:  ✓ L_task (detect fake/real)
+#             ✗ L_dadv (must NOT encode domain — GRL)
+#    Z_app:   ✓ L_ddis (must encode domain)
+#             ✗ L_ladv (must NOT predict label — GRL)
+#    Both:    ○ L_orth (Z_sync ⊥ Z_app per frame)
+#
+#  Losses:
+#    L_task  CE(causal_head(Z_sync), label)             [AV1M only]
+#    L_orth  mean cos²(Z_sync_frame, Z_app_frame)       [AV1M only]
+#    L_dadv  BCE(domain_head_c(GRL(Z_sync_pool)), dom)  [all clips]
+#    L_ddis  BCE(domain_head_s(Z_app_pool), dom)        [all clips]
+#    L_ladv  BCE(label_head_s(GRL(Z_app_pool)), lbl)    [AV1M only]
+#
+#  Auto-detection key: "sync_dim" in model_hparams  (unique to A8;
+#    A5–A7 use "syn_dim" for FCD synergistic dimension)
+# ============================================================
+
+ablation_id: "A8"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+# FAVC val-real clips for domain adversarial training (domain=1)
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+model_hparams:
+  feat_dim: 1024
+
+  # ── SAD dimensions ────────────────────────────────────────────────────────
+  # sync_dim = 512: causal cross-modal branch dimension
+  # app_dim  = 256: per-modality appearance branch dimension
+  #   spurious_dim = 2 * app_dim = 512  (cat of V and A appearance)
+  # Both branches are 512-dim → frame-level orth loss is well-defined.
+  sync_dim: 512
+  app_dim:  256
+
+  # ── Loss weights ─────────────────────────────────────────────────────────
+  lambda_orth:  0.1   # Z_sync ⊥ Z_app frame orthogonality
+  lambda_dadv:  1.0   # domain adversarial on Z_sync (GRL)
+  lambda_ddis:  1.0   # domain discriminative on Z_app
+  lambda_ladv:  1.0   # label adversarial on Z_app (GRL)
+  grl_alpha:    1.0   # gradient reversal strength
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A8/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A8/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20

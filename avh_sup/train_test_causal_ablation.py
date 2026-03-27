@@ -246,10 +246,25 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_path", type=str, required=True)
     parser.add_argument("--mode", type=str, default="train", choices=["train", "test"])
+    parser.add_argument("--seed", type=int, default=None, help="Override seed in config")
+    parser.add_argument("--output_dir", type=str, default=None,
+                        help="Override all output dirs (ckpts, logs, results) with this base path")
     args = parser.parse_args()
 
     with open(args.config_path, "r") as f:
         config = yaml.safe_load(f)
+
+    # CLI overrides
+    if args.seed is not None:
+        config["seed"] = args.seed
+    if args.output_dir is not None:
+        base = args.output_dir
+        config["callbacks"]["logger"]["log_path"] = os.path.join(base, "logs")
+        config["callbacks"]["ckpt_args"]["ckpt_dir"] = os.path.join(base, "ckpts")
+        config["output_path"]                     = os.path.join(base, "results")
+        os.makedirs(os.path.join(base, "logs"),    exist_ok=True)
+        os.makedirs(os.path.join(base, "ckpts"),   exist_ok=True)
+        os.makedirs(os.path.join(base, "results"), exist_ok=True)
 
     set_seed(config.get("seed", 42))
 

@@ -1,0 +1,23 @@
+{
+  "checkpoint": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A1_e2e_dadv/ckpts/model-epoch=09-val_auc_causal=1.0000.ckpt",
+  "n_av1m_clips": 500,
+  "n_favc_clips": 500,
+  "domain_probe": {
+    "Z_c_auc_mean": 0.9881399999999999,
+    "Z_c_auc_std": 0.0014192955999368243,
+    "Z_s_auc_mean": 0.9887600000000001,
+    "Z_s_auc_std": 0.0028323841547360645
+  },
+  "label_probe_indomain": {
+    "Z_c_auc_mean": 0.7821512404712404,
+    "Z_c_auc_std": 0.038625853131194175,
+    "Z_s_auc_mean": 0.7641957588357587,
+    "Z_s_auc_std": 0.02155639032314983
+  },
+  "label_probe_ood_favc": {
+    "Z_c_auc_mean": 0.9699698436075461,
+    "Z_c_auc_std": 0.01542416281414214,
+    "Z_s_auc_mean": 0.9631601094045866,
+    "Z_s_auc_std": 0.0213294380994889
+  }
+}

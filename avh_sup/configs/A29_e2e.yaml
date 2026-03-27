@@ -1,0 +1,77 @@
+# A29: A28 with noisy centered-DANN removed + lambda_mean_align boosted 50x
+#
+# ROOT CAUSE DIAGNOSIS (from A28 metrics.csv):
+#   - loss_mean_align dropped 50x in epoch 0→1 (means converging fast!)
+#     ep0: 2.76e-3  ep1: 6.07e-5  ep2-6: oscillating ~2-9e-5  (STUCK)
+#   - loss_zsync_dann = 0.693 EVERY epoch = ln(2) = random binary CE
+#     The DANN discriminator on CENTERED z_sync_pool is at chance because
+#     CENTERED AUC = 0.5000 always (no residual signal beyond the mean).
+#     Yet lambda_zsync_dann=2 → contributes 2*0.693≈1.39 to total loss,
+#     sending PURE NOISE gradients through GRL to the encoder.
+#     These noisy gradients are DISRUPTING the mean_align convergence.
+#
+# FIX:
+#   1. lambda_zsync_dann = 0   → kill the noise source entirely
+#   2. lambda_mean_align = 500 → boost mean_align so it dominates:
+#        ep0: 500 * 2.76e-3 = 1.38  (strong, meaningful signal)
+#        ep1: 500 * 4e-5   = 0.02  (comparable to task CE ~0.016)
+#      Without noise interference, this should drive mean_align → 0.
+#
+# Expected behavior:
+#   - ep0→ep1: mean drops 50x as before (now unimpeded)
+#   - ep1→ep2: mean continues to drop (no noise oscillation)
+#   - z_sync RAW AUC should start falling once mean < within-class σ
+#   - task AUC stays ≥0.99 (task gradient small but non-zero)
+
+ablation_id: A29_e2e
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A29_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A29_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 30
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  finetune_ckpt: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts/model-epoch=08-val_auc_causal=1.0000.ckpt
+  grl_alpha: 1.0
+  grl_alpha_zsync: 1.0
+  lambda_ddis: 1.0
+  lambda_ladv: 1.0
+  lambda_mean_align: 500.0   # KEY: 50x A28 (was 10.0) — drives mean_align to dominate
+  lambda_orth: 0.1
+  lambda_zsync_dann: 0.0     # KEY: was 2.0, now 0 — kills noisy GRL gradient on centered z_sync
+  lr: 0.0001
+  lr_encoder: 5.0e-06
+  max_frames: 150
+  n_unfreeze_layers: -1
+  sync_dim: 512
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A29_e2e/results
+precision: 16-mixed
+seed: 43

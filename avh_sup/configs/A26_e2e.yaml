@@ -1,0 +1,63 @@
+# A26: Fine-tune from A9_e2e (task AUC=1.0) with direct mean alignment + light DANN
+#
+# Key changes vs A20-A25:
+#   - finetune_ckpt: load A9_e2e epoch-8 weights (task AUC=1.0, strict=False)
+#   - lambda_mean_align=10.0: direct MSE(mu_0, mu_1) — no adversarial arms-race
+#   - lambda_zsync_dann=2.0: light DANN for residual covariance  
+#   - NO enc_dann (lambda_enc_dann removed): protect encoder task knowledge
+#   - lambda_ddis=1.0: route domain info to z_app (re-enabled from A20-A25 ddis=0)
+#   - lr_encoder=2e-7: very low — encoder already optimal for task
+#   - Dual probe: RAW (true invariance, primary) + CENTERED (residual, secondary)
+
+ablation_id: A26_e2e
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A26_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A26_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 30
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  finetune_ckpt: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts/model-epoch=08-val_auc_causal=1.0000.ckpt
+  grl_alpha: 1.0
+  grl_alpha_zsync: 1.0
+  lambda_ddis: 1.0
+  lambda_ladv: 1.0
+  lambda_mean_align: 10.0
+  lambda_orth: 0.1
+  lambda_zsync_dann: 2.0
+  lr: 0.0001
+  lr_encoder: 2.0e-07
+  max_frames: 150
+  n_unfreeze_layers: -1
+  sync_dim: 512
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A26_e2e/results
+precision: 16-mixed
+seed: 43

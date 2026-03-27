@@ -1,0 +1,66 @@
+# ============================================================
+#  End-to-end A2+ManipDomain
+#  AV-HuBERT top 4 layers fine-tuned jointly
+#
+#  Same as A2_e2e but adds manipulation-type adversarial loss:
+#    • use_adv=true          → GRL on Z_s (label-invariant Z_s)
+#    • use_sg=true           → cls from Z_c only
+#    • use_manip_domain=true → GRL on Z_c for 4-class manip type
+#
+#  Manip types (from AV1M filenames):
+#    0: real
+#    1: real_video_fake_audio
+#    2: fake_video_real_audio
+#    3: fake_video_fake_audio
+#
+#  Data: val_manip.csv (2000 clips, 80/20 split → 1600 train / 400 holdout)
+# ============================================================
+
+ablation_id: "A2_e2e_manip"
+ablation:
+  use_adv:          true
+  use_sg:           true
+  use_domain:       false      # no FAVC dataset needed
+  use_manip_domain: true       # 4-class manip-type adversarial on Z_c
+
+data_paths:
+  av1m_raw_root:  "/data/scratch/projects/punim2637/nnliang/avd1m_preprocessed"
+  favc_raw_root:  "/data/scratch/projects/punim2637/nnliang/favc_preprocessed"
+  av1m_csv_root:  "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+
+model_hparams:
+  # AV-HuBERT encoder
+  avhubert_ckpt:       "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:       "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers:   4       # unfreeze top 4 transformer layers + layer-norm
+  max_frames:          150     # cap clip length to save memory
+
+  # Projection heads (same as A2_e2e)
+  feat_dim:  1024
+  proj_dim:  512
+
+  # Training objectives
+  lambda_orth:          0.5
+  lambda_adv:          10.0
+  lambda_domain:        0.0    # unused (use_domain=false)
+  lambda_manip_domain:  5.0    # weight for 4-class manip adversarial on Z_c
+  grl_alpha:            5.0    # GRL alpha for label adv on Z_s
+  grl_manip_alpha:      1.0    # GRL alpha for manip adv on Z_c (gentler)
+  n_manip_classes:      4      # real / rvfa / fvra / fvfa
+
+  # Learning rates (encoder much smaller than head)
+  lr_encoder:   1.0e-5
+  lr:           1.0e-3
+  weight_decay: 1.0e-4
+
+batch_size:   16
+num_workers:  4
+seed:         42
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_e2e_manip/logs"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_e2e_manip/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"

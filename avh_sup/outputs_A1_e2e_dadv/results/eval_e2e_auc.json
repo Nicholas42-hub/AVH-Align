@@ -1,0 +1,15 @@
+{
+  "checkpoint": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A1_e2e_dadv/ckpts/model-epoch=14-val_auc_causal=1.0000.ckpt",
+  "n_av1m_clips": 500,
+  "n_favc_clips": 500,
+  "n_favc_real": 11,
+  "n_favc_fake": 489,
+  "in_domain_auc": {
+    "causal": 1.0,
+    "spurious": 0.5204449979945536
+  },
+  "cross_domain_auc": {
+    "causal": 0.762967094255438,
+    "spurious": 0.532069157836029
+  }
+}

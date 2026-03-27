@@ -1,0 +1,38 @@
+{
+  "probe_design": "binary: AV1M (0) vs FakeAVCeleb (1)",
+  "ckpt_path": "outputs_A5/ckpts/model-epoch=17.ckpt",
+  "n_clips_per_domain": 2000,
+  "n_clips_total": 4000,
+  "n_folds": 5,
+  "seed": 42,
+  "random_chance": 0.5,
+  "raw_auc_mean": 0.9990062500000001,
+  "raw_auc_std": 0.0005452350410602826,
+  "raw_auc_folds": [
+    0.9992625,
+    0.998475,
+    0.99975625,
+    0.9982875,
+    0.99925
+  ],
+  "causal_auc_mean": 0.99431125,
+  "causal_auc_std": 0.0014441336070461185,
+  "causal_auc_folds": [
+    0.9962500000000001,
+    0.99218125,
+    0.9950812499999999,
+    0.99319375,
+    0.99485
+  ],
+  "causal_delta_raw": -0.004695,
+  "spurious_auc_mean": 0.992735,
+  "spurious_auc_std": 0.0014823471675016317,
+  "spurious_auc_folds": [
+    0.9923625,
+    0.9919687500000001,
+    0.9956125000000001,
+    0.9923500000000001,
+    0.99138125
+  ],
+  "spurious_delta_raw": -0.006271
+}

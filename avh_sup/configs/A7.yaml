@@ -1,0 +1,90 @@
+# ============================================================
+#  A7 — FCD + Domain Adversarial + Label Adversarial on Z_s
+#
+#  Extends A6 to fix the Z_s > Z_c label-predictability inversion
+#  observed in A6 probe results (Z_s AUC=0.832 > Z_c AUC=0.770).
+#
+#  Root cause in A6:
+#    A6 only applies domain adversarial pressure on Z_s.
+#    Nothing prevents Z_s from retaining fake/real label information.
+#    Result: spurious branch remains more label-predictive than causal.
+#
+#  A7 adds:
+#    L_ladv:  GRL(Z_s_pool) → label_head_s → BCE(fake/real)   [AV1M only]
+#             Explicitly expels fake/real information from Z_s.
+#    lambda_dadv: increased 1.0 → 3.0 for stronger domain disentanglement.
+#
+#  Push-pull structure:
+#    Z_c:  must predict fake/real (L_task, L_MI)
+#          must NOT encode domain (L_dadv via GRL)
+#    Z_s:  must encode domain     (L_ddis)
+#          must NOT predict fake/real (L_ladv via GRL)   ← NEW
+#
+#  Training data:
+#    Domain 0 = AV1M train/val  (task-labelled, full supervision)
+#    Domain 1 = FAVC val-real   (no task label, domain signal only)
+#
+#  Eval data: FAVC test split (untouched)
+# ============================================================
+
+ablation_id: "A7"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+# FAVC val-real clips for domain adversarial training (domain=1)
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+
+  # ── Component dimensions (same as A5/A6) ─────────────────────────────────
+  syn_dim:   256
+  spec_dim:  256
+  sda_dim:   128
+  mi_dim:    128
+
+  # ── A5 loss weights (unchanged) ──────────────────────────────────────────
+  lambda_mi:    1.0
+  lambda_sda:   0.5
+  lambda_dis:   1.0
+  lambda_orth:  0.1
+
+  # ── Domain adversarial (strengthened vs A6) ──────────────────────────────
+  lambda_dadv:  3.0    # increased from 1.0 → 3.0 for stronger domain disentanglement
+  lambda_ddis:  1.0    # discriminative domain loss on Z_s (unchanged)
+  grl_alpha:    1.0    # gradient reversal strength
+
+  # ── A7 new: label adversarial on Z_s ─────────────────────────────────────
+  lambda_ladv:  2.0    # adversarial label loss on Z_s (GRL → label_head_s)
+
+  # ── Sinkhorn hyperparameters ──────────────────────────────────────────────
+  sda_eps:    0.05
+  sda_n_iter: 5
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A7/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A7/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20

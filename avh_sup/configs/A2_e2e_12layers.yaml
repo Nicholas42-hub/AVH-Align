@@ -1,0 +1,60 @@
+# ============================================================
+#  End-to-end A2 — Adversarial + Stop-Gradient
+#  AV-HuBERT top 12 layers fine-tuned jointly
+#  (vs A2_e2e which only unfreezes top 4 layers)
+# ============================================================
+
+ablation_id: "A2_e2e_12layers"
+ablation:
+  use_adv:    true
+  use_sg:     true
+  use_domain: false
+
+data_paths:
+  av1m_raw_root:  "/data/scratch/projects/punim2637/nnliang/avd1m_preprocessed"
+  favc_raw_root:  "/data/scratch/projects/punim2637/nnliang/favc_preprocessed"
+  av1m_csv_root:  "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+
+model_hparams:
+  # AV-HuBERT encoder — unfreeze top 12 of 24 transformer layers
+  avhubert_ckpt:       "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:       "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers:   12      # unfreeze top 12 transformer layers + layer-norm
+  max_frames:          150     # cap clip length to save memory
+
+  # Projection heads (same as A2)
+  feat_dim:  1024
+  proj_dim:  512
+
+  # Training objectives (same as A2_e2e)
+  lambda_orth:    0.5
+  lambda_adv:    10.0
+  lambda_domain:  0.0
+  grl_alpha:      5.0
+  grl_domain_alpha: 1.0
+
+  # Learning rates — encoder lr lower than A2_e2e to avoid catastrophic forgetting
+  lr_encoder:   5.0e-6   # halved vs A2_e2e (1e-5) for more layers
+  lr:           1.0e-3
+  weight_decay: 1.0e-4
+
+batch_size:   8       # halved vs A2_e2e (16) due to larger active param footprint
+num_workers:  4
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_e2e_12layers/logs"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_e2e_12layers/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 50
+seed: 42
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 15
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_e2e_12layers/results"

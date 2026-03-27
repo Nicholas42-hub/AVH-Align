@@ -1,0 +1,90 @@
+# ============================================================
+#  A33_e2e — A2_e2e + Explicit IPW Backdoor Adjustment
+# ============================================================
+#
+#  Causal motivation:
+#    Domain S is a confounder: S → X → Z_c → Y  (and S → Y via data bias).
+#    Backdoor adjustment: P(Y|do(Z_c)) = Σ_s P(Y|Z_c, S=s) · P(S=s)
+#
+#  IPW implementation (non-adversarial, keeps Z_c representation intact):
+#    1. Train domain predictor q_φ(S|Z_c) on DETACHED z_c_pool → no gradient
+#       to encoder or projection heads from the domain predictor.
+#    2. IPW weight: w_i = 0.5 / q_φ(S=s_i | Z_c_i), clipped to [0.1, 10]
+#    3. Task loss = Σ_i w_i · CE(causal_head(Z_c_i), y_i) / Σ_i w_i
+#
+#  Key difference from GRL/DANN (A3, A26-A32):
+#    - No adversarial gradient flows through Z_c or encoder
+#    - Z_c representation is free to remain domain-informative
+#    - Only the causal CLASSIFIER HEAD is trained on the reweighted distribution
+#    - This approximates training on do(S) without destroying task signal
+#
+#  IPW warmup: first 2 epochs use uniform weights (standard CE),
+#  then switch to full IPW. This lets q_φ converge before reweighting.
+#
+#  Architecture: AVHubertWrapper (all layers) + AVH_Causal_Ablation (use_sg)
+#                + domain_predictor MLP on z_c_pool.detach()
+# ============================================================
+
+ablation_id: "A33_e2e"
+ablation:
+  use_adv:    false   # no label-adversarial GRL
+  use_sg:     true    # A2-style: causal_head(Z_c) ONLY for classification
+  use_domain: false   # no domain adversarial GRL on Z_c
+
+data_paths:
+  e2e_train_csv:  "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv"
+  e2e_val_csv:    "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv"
+  favc_raw_root:  "/scratch/punim2637/nnliang/favc_preprocessed"
+
+model_hparams:
+  # AV-HuBERT encoder (fully unfrozen)
+  avhubert_ckpt:       "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:       "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers:   -1       # -1 = unfreeze ALL layers
+
+  max_frames:  150              # cap clip length (frames @ 25fps = 6s)
+
+  # Projection / head architecture (same as A2_e2e)
+  feat_dim:  1024
+  sync_dim:  512                # proj_dim per modality → causal_dim = 1024
+  proj_dim:  512
+  app_dim:   256                # spurious stream dim
+
+  # IPW backdoor adjustment parameters
+  lambda_ipw:         1.0       # weight for domain predictor CE loss
+  ipw_clip_min:       0.1       # minimum IPW weight (prevent over-weighting)
+  ipw_clip_max:      10.0       # maximum IPW weight (prevent under-weighting)
+  ipw_warmup_epochs:  2         # epochs with uniform weights while q_φ trains
+
+  # Learning rates
+  lr_encoder:    5.0e-6         # same as A2_e2e baseline
+  lr:            1.0e-4         # head LR
+  lr_domain_pred: 1.0e-4        # domain predictor LR (same as head)
+  weight_decay:  1.0e-4
+
+# Training setup
+batch_size:              8
+accumulate_grad_batches: 4      # effective batch size = 32
+num_workers:             6
+favc_oversample:         10     # repeat FAVC 10× → ~5000 domain-1 clips
+gradient_clip_val:       1.0
+precision:               "16-mixed"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A33_e2e/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A33_e2e/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 30
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 10
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A33_e2e/results"

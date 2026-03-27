@@ -11,7 +11,8 @@
 #    Stop-gradient (Z_c-only classification)                  ✗
 #    Domain-aware constraint                                   ✗
 #
-#  Classification: full_head(Z_c + Z_s) — gradient flows to both
+#  Classification: full_head(Z_c + Z_s) + causal_head(Z_c) + spurious_head(Z_s)
+#                  — gradient flows to both independently
 #
 #  Hypothesis test (A0):
 #    Without adversarial pressure, Z_s can still leak label info
@@ -54,7 +55,12 @@ callbacks:
     metric: "val_auc_causal"
     mode: "max"
 
-epochs: 100
+epochs: 20
 seed: 43
+
+early_stopping:
+  metric:   "val_auc_full"
+  mode:     "max"
+  patience: 20
 
 output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A0/results"

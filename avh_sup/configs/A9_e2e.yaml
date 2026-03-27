@@ -1,0 +1,85 @@
+# ============================================================
+#  A9_e2e — SAD + Multi-Kernel MMD, Fully End-to-End
+#
+#  Architecture (same as frozen A9):
+#    Z_sync = SynchronyEncoder(cat(V, A, V⊙A, V−A))  →  causal/fake-real
+#    Z_app  = AppearanceEncoder(V) ║ AppearanceEncoder(A)
+#
+#  Domain alignment:
+#    MMD²(Z_sync|d=AV1M, Z_sync|d=FAVC)  ← gradients reach encoder
+#    Z_app → domain_head_s                (discriminative)
+#    GRL(Z_app) → label_head_s            (adversarial: Z_app ⊥ label)
+#    Z_sync ⊥ Z_app                       (orthogonality)
+#
+#  Key differences from frozen A9:
+#    1. AV-HuBERT fully unfrozen (n_unfreeze_layers = -1)
+#    2. lambda_mmd=25.0  (stronger push to move encoder representations)
+#    3. Smaller LRs, mixed precision, gradient accumulation
+#    4. lr_encoder=1e-6 (encoder), lr=1e-4 (SAD heads)
+#    5. batch_size=8 + accumulate_grad_batches=4 → effective=32
+#    6. epochs=30 (vs 100 for frozen — encoder converges faster)
+# ============================================================
+
+ablation_id: "A9_e2e"
+
+data_paths:
+  e2e_train_csv: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv"
+  e2e_val_csv:   "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv"
+  # FAVC real clips used as domain=1 signal (no task label)
+  favc_raw_root: "/scratch/punim2637/nnliang/favc_preprocessed"
+
+model_hparams:
+  # AV-HuBERT encoder (fully unfrozen)
+  avhubert_ckpt:       "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:       "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers:   -1       # -1 = unfreeze ALL layers
+
+  max_frames:  150              # cap clip length
+
+  # SAD dimensions (same as frozen A9)
+  feat_dim:   1024
+  sync_dim:    512
+  app_dim:     256
+
+  # Loss weights
+  # lambda_mmd higher than frozen A9 (=10.0) because encoder needs to move its
+  # own representations — downstream heads alone cannot fix what's in the encoder
+  lambda_mmd:   25.0
+  lambda_ddis:   1.0   # Z_app domain discriminative
+  lambda_ladv:   1.0   # Z_app label adversarial (GRL)
+  lambda_orth:   0.1   # Z_sync ⊥ Z_app
+  grl_alpha:     1.0   # GRL scale for label_head_s on Z_app
+
+  mmd_min_samples: 2   # min per-domain samples in batch to compute MMD
+
+  # Learning rates — encoder gets 100× smaller LR
+  lr_encoder:    1.0e-6
+  lr:            1.0e-4
+  weight_decay:  1.0e-4
+
+# Training setup
+batch_size:              8      # A100 80GB
+accumulate_grad_batches: 4      # effective batch size = 32
+num_workers:             6
+favc_oversample:         10     # repeat FAVC real 10× → ~5000 clips vs 60k AV1M
+gradient_clip_val:       1.0
+precision:               "16-mixed"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 30
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 10
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/results"

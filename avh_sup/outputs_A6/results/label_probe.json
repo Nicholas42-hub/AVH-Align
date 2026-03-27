@@ -1,0 +1,77 @@
+{
+  "ckpt_path": "outputs_A6/ckpts/model-epoch=15.ckpt",
+  "n_av1m_clips": 2000,
+  "n_favc_clips": 4089,
+  "n_folds": 5,
+  "seed": 42,
+  "in_domain": {
+    "description": "AV1M val fake/real, 5-fold stratified CV",
+    "raw": {
+      "auc_mean": 0.9653591819550555,
+      "auc_std": 0.005850133580997279,
+      "folds": [
+        0.9641724690268378,
+        0.957672817047817,
+        0.9757016632016632,
+        0.9634875259875259,
+        0.9657614345114345
+      ]
+    },
+    "zc": {
+      "auc_mean": 0.77043812793206,
+      "auc_std": 0.017944329982876997,
+      "folds": [
+        0.7815370533817135,
+        0.792652027027027,
+        0.7755327442827443,
+        0.761954261954262,
+        0.740514553014553
+      ],
+      "delta_raw": -0.194921
+    },
+    "zs": {
+      "auc_mean": 0.8316000349677534,
+      "auc_std": 0.029169526932830786,
+      "folds": [
+        0.8698309960445882,
+        0.8333225051975053,
+        0.8076923076923077,
+        0.7912551975051975,
+        0.8558991683991685
+      ],
+      "delta_raw": -0.133759
+    }
+  },
+  "ood_transfer": {
+    "description": "Probe trained on AV1M val, evaluated on FakeAVCeleb",
+    "raw": {
+      "auc": 0.7131398846828778
+    },
+    "zc": {
+      "auc": 0.722633492103284,
+      "delta_raw": 0.009494
+    },
+    "zs": {
+      "auc": 0.7987340185510152,
+      "delta_raw": 0.085594
+    }
+  },
+  "domain_probe": {
+    "description": "AV1M (label=0) vs FakeAVCeleb (label=1), balanced, 5-fold CV",
+    "n_per_domain": 2000,
+    "raw": {
+      "auc_mean": 0.9984,
+      "auc_std": 0.00034859091353621566
+    },
+    "zc": {
+      "auc_mean": 0.990768125,
+      "auc_std": 0.0023718320977674586,
+      "delta_raw": -0.007632
+    },
+    "zs": {
+      "auc_mean": 0.9926887499999999,
+      "auc_std": 0.0009796794756449262,
+      "delta_raw": -0.005711
+    }
+  }
+}

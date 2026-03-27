@@ -1,0 +1,88 @@
+# ============================================================
+#  A35_e2e — A2_e2e + Sliced Wasserstein Distance + Variance Alignment
+# ============================================================
+#
+#  Root cause of A26-A32 failures:
+#    Mean alignment converges (means approach zero gap) but domain AUC
+#    stays at ~0.98-0.99. Once means align, CENTERED AUC jumps 0.05→0.94
+#    because domain signal migrates entirely into the COVARIANCE structure.
+#    A linear probe with StandardScaler uses per-dim variance, not just mean.
+#
+#  A35 attacks the FULL distribution (mean + covariance + higher moments):
+#
+#  1. Sliced Wasserstein Distance (SWD) on z_sync_pool [512]:
+#       Project onto K=128 random 1D directions → sort → L1 distance
+#       Matches mean AND per-direction variance. No matrix inversion.
+#       Batch-stable: sort needs only n=4 samples. Differentiable.
+#
+#  2. Per-dimension variance alignment on z_sync_pool:
+#       loss_var = L1(var(z_sync[d=0]), var(z_sync[d=1]))
+#       Directly targets the covariance diagonal — diagnosed failure mode.
+#       Cheap, stable, complementary to SWD.
+#
+#  Architecture: A2_e2e (AVH_SAD_A9, use_sg=True), finetune from A9_e2e.
+#  NO DANN, NO per-domain centering (SWD already handles mean alignment).
+#  lambda_ladv=0.0: use_sg=True → Z_s disconnected from task (ladv redundant).
+#
+#  Lambda calibration:
+#    SWD at ep0 ≈ 0.5-2.0 (typical for 512-dim Gaussian with different means)
+#    lambda_swd=1.0 → contribution ~1.0 (comparable to task CE ~0.016-0.1)
+#    This is intentionally strong. If task collapses, reduce to 0.1.
+#
+#    var gap at ep0 ≈ 0.01-0.1 per dim (512 dims averaged → ~0.01-0.1)
+#    lambda_var_align=10.0 → contribution ~0.1-1.0
+#    Strong enough to close the variance gap in ~3-5 epochs.
+# ============================================================
+
+ablation_id: A35_e2e
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A35_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A35_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 30
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  finetune_ckpt: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts/model-epoch=08-val_auc_causal=1.0000.ckpt
+  grl_alpha: 1.0
+  lambda_ddis: 1.0
+  lambda_ladv: 0.0           # use_sg=True → Z_s has no task gradient; ladv redundant
+  lambda_orth: 0.1
+  lambda_swd: 1.0            # KEY: SWD on z_sync_pool — matches full distribution
+  lambda_var_align: 10.0     # KEY: per-dim variance alignment — closes covariance gap
+  n_projections: 128         # SWD: number of random 1D projections
+  lr: 0.0001
+  lr_encoder: 5.0e-06        # same as A9_e2e training (proven safe for finetune)
+  max_frames: 150
+  n_unfreeze_layers: -1
+  sync_dim: 512
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A35_e2e/results
+precision: 16-mixed
+seed: 43

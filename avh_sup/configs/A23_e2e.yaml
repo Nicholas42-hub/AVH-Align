@@ -1,0 +1,58 @@
+# A23 (v2): RFF-MMD directly on z_sync_pool [512] + Enc-level DANN (lambda=15)
+# UPDATED based on A18 observations: lambda=1 barely moved z_sync AUC (0.9928 at ep0,
+# regressed to 0.9984 at ep1). With 325M encoder vs ~260K classifier, need much stronger
+# lambda to sustain adversarial pressure. lambda_zsync_mmd=25, lambda_enc_dann=15.
+ablation_id: A23_e2e
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A23_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A23_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 30
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  grl_alpha: 1.0
+  grl_alpha_enc: 1.0
+  lambda_ddis: 0.0
+  lambda_enc_coral: 0.0
+  lambda_enc_dann: 15.0
+  lambda_ladv: 1.0
+  lambda_orth: 0.1
+  lambda_zsync_mmd: 25.0
+  n_rff_zsync: 256
+  lr: 0.0001
+  lr_encoder: 5.0e-06
+  max_frames: 150
+  mmd_min_samples: 2
+  n_unfreeze_layers: -1
+  sync_dim: 512
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A23_e2e/results
+precision: 16-mixed
+seed: 43

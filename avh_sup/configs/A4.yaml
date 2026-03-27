@@ -1,0 +1,72 @@
+# ============================================================
+#  Ablation A4 — A3 + β-VAE / Geometric Constraints
+#
+#  All A3 components kept:
+#    Component 1: GRL adversarial loss on Z_s                   ✓
+#    Component 2: Classification restricted to Z_c only          ✓
+#    Component 3: Domain adversarial on Z_s (AV1M vs FAVC)       ✓
+#
+#  New in A4:
+#    Component 4: β-VAE variational encoding + reconstruction   ✓
+#
+#  Key idea:
+#    Replace deterministic Linear projections with variational
+#    (μ, logvar) heads.  β_s >> β_c compresses Z_s more aggressively
+#    toward N(0,I), leaving no geometric room for spurious shortcuts.
+#    A decoder reconstructing [V̄; Ā] from cat(Z_c, Z_s) ensures no
+#    information collapse — both subspaces must remain jointly informative.
+#
+#  Hypotheses to verify (same as A3, now with tighter control):
+#    causal AUC ≈ full AUC    → Z_c is self-sufficient
+#    spurious AUC ≈ 0.5       → Z_s is non-informative (probe can't exploit it)
+#
+#  β-sweep recommendation: β_s ∈ {1, 5, 10, 50}  (this config: β_s=10)
+# ============================================================
+
+ablation_id: "A4"
+ablation:
+  use_adv:     true    # Component 1: adversarial loss ✓
+  use_sg:      true    # Component 2: stop-gradient    ✓
+  use_domain:  false   # Component 3: domain-aware     ✗  (A4 = A2 + β-VAE, no L_dom)
+  use_betavae: true    # Component 4: β-VAE            ✓
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+  proj_dim:  512          # Z_c dimension per modality
+  proj_dim_spurious: 32   # Z_s bottleneck — physically can't hold sync signal (signal-free constraint)
+
+  # ── A3-inherited hyperparameters ─────────────────────────────────────────
+  lambda_orth:        0.5
+  lambda_adv:         0.0   # disabled: GRL conflicts with β-VAE KL pressure; KL alone separates Z_s
+  grl_alpha:          0.0   # disabled
+
+  # ── A4 β-VAE hyperparameters ─────────────────────────────────────────────
+  beta_c:        0.5   # KL pressure on causal subspace  (light)
+  beta_s:        2.0   # KL pressure on spurious subspace (reduced: 10→2 to avoid over-compression)
+  lambda_recon:  0.0   # reconstruction decoder disabled — KL-only geometric constraint
+  beta_warmup_epochs: 10  # linearly ramp β from 0→target over this many epochs (reduced: 20→10)
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A4/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A4/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20

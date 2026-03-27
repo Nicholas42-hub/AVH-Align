@@ -1,0 +1,84 @@
+{
+  "ckpt_path": "outputs_A3/ckpts/model-epoch=10.ckpt",
+  "split": "test",
+  "seed": 42,
+  "fake_category": "RealVideo-FakeAudio",
+  "perturb_types": {
+    "audio_noise": {
+      "0.0": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.4985207100591716,
+        "full_auc": 1.0,
+        "n_clips": 52
+      },
+      "0.05": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.5073964497041421,
+        "full_auc": 1.0,
+        "n_clips": 52
+      },
+      "0.1": {
+        "causal_auc": 0.8446745562130177,
+        "spurious_auc": 0.4985207100591716,
+        "full_auc": 0.8446745562130177,
+        "n_clips": 52
+      },
+      "0.2": {
+        "causal_auc": 0.6789940828402368,
+        "spurious_auc": 0.49852071005917165,
+        "full_auc": 0.6789940828402368,
+        "n_clips": 52
+      },
+      "0.5": {
+        "causal_auc": 0.5724852071005917,
+        "spurious_auc": 0.5044378698224852,
+        "full_auc": 0.5724852071005917,
+        "n_clips": 52
+      },
+      "1.0": {
+        "causal_auc": 0.5754437869822485,
+        "spurious_auc": 0.5,
+        "full_auc": 0.5754437869822485,
+        "n_clips": 52
+      }
+    },
+    "visual_noise": {
+      "0.0": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.4985207100591716,
+        "full_auc": 1.0,
+        "n_clips": 52
+      },
+      "0.05": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.5029585798816568,
+        "full_auc": 1.0,
+        "n_clips": 52
+      },
+      "0.1": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.48668639053254437,
+        "full_auc": 1.0,
+        "n_clips": 52
+      },
+      "0.2": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.492603550295858,
+        "full_auc": 1.0,
+        "n_clips": 52
+      },
+      "0.5": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.49260355029585795,
+        "full_auc": 1.0,
+        "n_clips": 52
+      },
+      "1.0": {
+        "causal_auc": 1.0,
+        "spurious_auc": 0.492603550295858,
+        "full_auc": 1.0,
+        "n_clips": 52
+      }
+    }
+  }
+}

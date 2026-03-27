@@ -1,0 +1,69 @@
+# ============================================================
+#  Modal Balance B1b — Per-Modality Cls + Balance Penalty (方向1b)
+# ============================================================
+#
+#  Base: A2 (adversarial + stop-gradient on Z_s)
+#
+#  B1 constraint (use_modal_cls):
+#    modal_head_visual(v_c) → CE(labels)
+#    modal_head_audio(a_c)  → CE(labels)
+#    loss_modal_cls = CE_visual + CE_audio
+#
+#  B1b additional constraint (use_modal_balance):
+#    L_balance = (CE_audio - CE_visual)²
+#    Penalises the squared gap between per-modality CE losses.
+#    Forces both modalities to contribute equally; prevents audio
+#    from dominating even when B1 heads are present.
+#
+#  Hypothesis:
+#    L_balance acts as an equilibrium constraint — if audio is easier
+#    to classify its CE drops faster, widening the gap, incurring a
+#    larger penalty that redirects gradient to the visual branch.
+#
+# ============================================================
+
+modal_balance_id: "B1b"
+modal_balance:
+  use_modal_cls:     true   # 方向1:  per-modality classification ✓
+  use_modal_balance: true   # 方向1b: balance penalty (CE_audio - CE_visual)² ✓
+  use_cross_modal:   false  # 方向2:  cross-modal alignment       ✗
+  use_modal_disc:    false  # 方向3:  modal discriminator         ✗
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+  proj_dim:  512
+
+  # A2 base losses
+  lambda_orth:     0.5
+  lambda_adv:     10.0
+  grl_alpha:       5.0
+
+  # 方向1
+  lambda_modal_cls:     1.0
+  # 方向1b — balance penalty weight
+  lambda_modal_balance: 1.0
+
+  # unused
+  lambda_cross_modal: 0.0
+  lambda_modal_disc:  0.0
+  grl_modal_alpha:    1.0
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_B1b/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_B1b/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43

@@ -54,4 +54,9 @@ callbacks:
 epochs: 100
 seed: 43
 
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20
+
 output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2/results"

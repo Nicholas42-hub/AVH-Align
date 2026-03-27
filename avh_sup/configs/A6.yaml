@@ -1,0 +1,73 @@
+# ============================================================
+#  A6 — FCD + Explicit Domain Adversarial Disentanglement
+#
+#  Extends A5 with a push-pull domain disentanglement objective:
+#
+#    L_dadv:  GRL(domain_classifier(Z_c)) → expels domain from causal branch
+#    L_ddis:  domain_classifier(Z_s)      → concentrates domain in spurious branch
+#
+#  Training data:
+#    Domain 0 = AV1M train/val  (task-labelled, full supervision)
+#    Domain 1 = FAVC val-real   (no task label, domain signal only)
+#
+#  Eval data: FAVC test split (untouched — Option 1 boundary)
+# ============================================================
+
+ablation_id: "A6"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+# FAVC val-real clips used for domain adversarial training (domain=1)
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"          # use val split only; test remains untouched
+  real_only: true       # only RealVideo-RealAudio clips (category A)
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+
+  # ── Component dimensions (same as A5) ────────────────────────────────────
+  syn_dim:   256
+  spec_dim:  256
+  sda_dim:   128
+  mi_dim:    128
+
+  # ── A5 loss weights ───────────────────────────────────────────────────────
+  lambda_mi:    1.0
+  lambda_sda:   0.5
+  lambda_dis:   1.0
+  lambda_orth:  0.1
+
+  # ── A6 domain loss weights ────────────────────────────────────────────────
+  lambda_dadv:  1.0    # adversarial domain loss on Z_c (via GRL)
+  lambda_ddis:  1.0    # discriminative domain loss on Z_s
+  grl_alpha:    1.0    # gradient reversal strength (1.0 = full reversal)
+
+  # ── Sinkhorn hyperparameters ──────────────────────────────────────────────
+  sda_eps:     0.05
+  sda_n_iter:  5
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20
