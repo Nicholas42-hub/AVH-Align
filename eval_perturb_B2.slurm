@@ -11,7 +11,7 @@
 #SBATCH --error=logs/perturb_B2_%j.err
 
 echo "============================================================"
-echo "  Perturbation Robustness — B2 (方向2: cross-modal alignment)"
+echo "  Perturbation Robustness — B2 (Branch 2: cross-modal alignment)"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"

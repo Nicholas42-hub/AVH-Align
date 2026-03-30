@@ -11,7 +11,7 @@
 #SBATCH --error=logs/perturb_B3_%j.err
 
 echo "============================================================"
-echo "  Perturbation Robustness — B3 (方向3: modal discriminator GRL)"
+echo "  Perturbation Robustness — B3 (Branch 3: modal discriminator GRL)"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"

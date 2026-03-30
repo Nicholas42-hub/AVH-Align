@@ -12,27 +12,27 @@ audio-dominant.
 
 Three complementary modal balance constraints
 ---------------------------------------------
-方向1 — Per-modality classification loss (use_modal_cls)
+Branch 1 - Per-modality classification loss (use_modal_cls)
     Each modality's causal projection is individually supervised:
         modal_head_visual(v_c) → CE(labels)   ← learns to detect visual deepfake
         modal_head_audio(a_c)  → CE(labels)   ← learns to detect audio deepfake
     This applies a positive gradient directly to both projectors so neither
     modality can free-ride on the other.
 
-    方向1b — Modal balance penalty (use_modal_balance, requires use_modal_cls)
+    Branch 1b - Modal balance penalty (use_modal_balance, requires use_modal_cls)
     Additionally penalises the squared difference between per-modality CE losses:
         L_balance = (CE_audio - CE_visual)²
     Forces both modalities to contribute equally to the causal branch.
     Without this, audio can dominate even when B1 heads are present because
     gradients naturally flow where loss descends fastest.
 
-方向2 — Cross-modal alignment loss (use_cross_modal)
+Branch 2 - Cross-modal alignment loss (use_cross_modal)
     Minimises mean square cosine distance between v_c and a_c per frame:
         L_cross = 1 - mean_cosine_similarity(v_c, a_c)
     Forces the causal features from both modalities to encode the same
     semantic information (genuine audio-visual causal dependency).
 
-方向3 — Modal discriminator adversarial on causal features (use_modal_disc)
+Branch 3 - Modal discriminator adversarial on causal features (use_modal_disc)
     A small discriminator is trained to predict whether a token came from
     v_c (0) or a_c (1).  A GRL between the projectors and the discriminator
     reverses the gradient → forcing v_c and a_c to become modality-agnostic.
@@ -51,20 +51,20 @@ Combined framework
       spurious_repr = concat(v_s, a_s)  [B×T×1024]
       │
       ├── causal_head(Z_c)                      → CE(labels)   main cls
-      ├── [方向1] modal_head_visual(v_c)         → CE(labels)   visual cls
-      ├── [方向1] modal_head_audio(a_c)          → CE(labels)   audio cls
-      ├── [方向1b] (CE_audio - CE_visual)²        → L_balance   modal balance
-      ├── [方向2] cosine_align(v_c, a_c)         → L_cross      alignment
-      ├── [方向3] modal_disc(GRL_modal(v_c||a_c))→ BCE(modality)adversarial
+      ├── [Branch 1] modal_head_visual(v_c)         → CE(labels)   visual cls
+      ├── [Branch 1] modal_head_audio(a_c)          → CE(labels)   audio cls
+      ├── [Branch 1b] (CE_audio - CE_visual)^2      → L_balance   modal balance
+      ├── [Branch 2] cosine_align(v_c, a_c)         → L_cross      alignment
+      ├── [Branch 3] modal_disc(GRL_modal(v_c||a_c))→ BCE(modality)adversarial
       ├── adv_head(GRL(Z_s))                    → CE(labels)   spurious adv
       └── spurious_head(Z_s.detach())           → CE(labels)   probe only
 
 Config flags (under config['modal_balance'])
 --------------------------------------------
-  use_modal_cls    : bool  — 方向1 per-modality classification loss
-  use_modal_balance: bool  — 方向1b modal balance penalty (requires use_modal_cls)
-  use_cross_modal  : bool  — 方向2 cross-modal alignment loss
-  use_modal_disc   : bool  — 方向3 modal discriminator adversarial
+  use_modal_cls    : bool  - Branch 1 per-modality classification loss
+  use_modal_balance: bool  - Branch 1b modal balance penalty (requires use_modal_cls)
+  use_cross_modal  : bool  - Branch 2 cross-modal alignment loss
+  use_modal_disc   : bool  - Branch 3 modal discriminator adversarial
 
 Hyperparameters (under config['model_hparams'])
 -----------------------------------------------
@@ -72,10 +72,10 @@ Hyperparameters (under config['model_hparams'])
   proj_dim           : int   (default 512)
   lambda_orth        : float (default 0.5)
   lambda_adv         : float (default 10.0)  weight for spurious adversarial
-  lambda_modal_cls     : float (default 1.0)   weight for 方向1
-  lambda_modal_balance : float (default 1.0)   weight for 方向1b balance penalty
-  lambda_cross_modal   : float (default 0.5)   weight for 方向2
-  lambda_modal_disc    : float (default 1.0)   weight for 方向3
+  lambda_modal_cls     : float (default 1.0)   weight for Branch 1
+  lambda_modal_balance : float (default 1.0)   weight for Branch 1b balance penalty
+  lambda_cross_modal   : float (default 0.5)   weight for Branch 2
+  lambda_modal_disc    : float (default 1.0)   weight for Branch 3
   grl_alpha          : float (default 5.0)   GRL scale for spurious adversarial
   grl_modal_alpha    : float (default 1.0)   GRL scale for modal discriminator
   lr                 : float (default 1e-3)
@@ -178,10 +178,10 @@ class AVH_Causal_Modal(L.LightningModule):
         fused_dim = proj_dim * 2          # concat(v_c, a_c) = 1024
 
         # ── Modal balance flags ─────────────────────────────────────────────────
-        self.use_modal_cls     = bool(mb.get("use_modal_cls",     False))  # 方向1
-        self.use_modal_balance = bool(mb.get("use_modal_balance", False))  # 方向1b
-        self.use_cross_modal   = bool(mb.get("use_cross_modal",   False))  # 方向2
-        self.use_modal_disc    = bool(mb.get("use_modal_disc",    False))  # 方向3
+        self.use_modal_cls     = bool(mb.get("use_modal_cls",     False))  # Branch 1
+        self.use_modal_balance = bool(mb.get("use_modal_balance", False))  # Branch 1b
+        self.use_cross_modal   = bool(mb.get("use_cross_modal",   False))  # Branch 2
+        self.use_modal_disc    = bool(mb.get("use_modal_disc",    False))  # Branch 3
 
         # ── Loss weights ────────────────────────────────────────────────────────
         self.lambda_orth          = hp.get("lambda_orth",           0.5)
@@ -212,14 +212,14 @@ class AVH_Causal_Modal(L.LightningModule):
         self.adv_head = _make_mlp(fused_dim)
         self.grl      = GradientReversal(alpha=grl_alpha)
 
-        # ── 方向1: Per-modality classification heads ─────────────────────────────
+        # ── Branch 1: Per-modality classification heads ────────────────────────
         # Operate on individual proj_dim features before concatenation.
         # Forces each projector to independently detect deepfakes.
         if self.use_modal_cls:
             self.modal_head_visual = _make_half_mlp(proj_dim)  # v_c → score
             self.modal_head_audio  = _make_half_mlp(proj_dim)  # a_c → score
 
-        # ── 方向3: Modal discriminator + GRL ────────────────────────────────────
+        # ── Branch 3: Modal discriminator + GRL ─────────────────────────────────
         # Trained on tokens pooled from v_c and a_c with binary labels.
         # GRL reverses gradient to projectors → v_c and a_c become indistinguishable.
         if self.use_modal_disc:
@@ -262,7 +262,7 @@ class AVH_Causal_Modal(L.LightningModule):
         labels: torch.Tensor,
     ) -> torch.Tensor:
         """
-        方向2: Label-conditioned cross-modal alignment loss.
+        Branch 2: Label-conditioned cross-modal alignment loss.
 
         Only aligns v_c and a_c for REAL samples (label == 0).
           - Real clips: both modalities are genuine → causal projections should
@@ -303,7 +303,7 @@ class AVH_Causal_Modal(L.LightningModule):
         a_c: torch.Tensor,
     ) -> torch.Tensor:
         """
-        方向3: Modal discriminator adversarial loss.
+        Branch 3: Modal discriminator adversarial loss.
 
         Concatenate all v_c and a_c tokens along the batch dimension, assign
         binary modality labels (0=visual, 1=audio), then:
@@ -381,7 +381,7 @@ class AVH_Causal_Modal(L.LightningModule):
         # ── Orthogonality loss ──────────────────────────────────────────────────
         loss_orth = self._orth_loss(causal_repr, spurious_repr)
 
-        # ── 方向1: Per-modality classification loss ──────────────────────────────
+        # ── Branch 1: Per-modality classification loss ─────────────────────────
         # Each projector is independently supervised to detect deepfakes.
         # Gradients flow directly through v_c and a_c → both must contribute.
         loss_modal_cls     = torch.tensor(0.0, device=video_feats.device)
@@ -396,14 +396,14 @@ class AVH_Causal_Modal(L.LightningModule):
                 # Penalise squared gap: forces both modalities to contribute equally
                 loss_modal_balance = (ce_audio - ce_visual) ** 2
 
-        # ── 方向2: Label-conditioned cross-modal alignment loss ──────────────────
+        # ── Branch 2: Label-conditioned cross-modal alignment loss ─────────────
         # Only align real samples: fake clips may have unilateral manipulation,
         # so unconditional alignment would destroy the fake signal.
         loss_cross_modal = torch.tensor(0.0, device=video_feats.device)
         if self.use_cross_modal:
             loss_cross_modal = self._cross_modal_loss(v_c, a_c, labels)
 
-        # ── 方向3: Modal discriminator adversarial loss ──────────────────────────
+        # ── Branch 3: Modal discriminator adversarial loss ─────────────────────
         # Discriminator tries to tell v_c from a_c tokens.
         # GRL reverses gradient → projectors learn modality-invariant features.
         loss_modal_disc = torch.tensor(0.0, device=video_feats.device)

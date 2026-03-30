@@ -1,136 +1,136 @@
-# 处理状态总结 (Processing Status Summary)
+# Processing Status Summary
 
-## 当前进度 (Current Progress)
+## Current Progress
 
-### 任务状态 (Job Status)
-✅ **AVDeepfake1M 预处理** - 正在运行 (Job ID: 22009014)
-- 分区: cascade
-- 运行时间: ~40分钟
-- 状态: 正在处理57,340个视频
+### Job Status
+- AVDeepfake1M preprocessing was running under job `22009014`
+  - Partition: `cascade`
+  - Runtime at the time of this note: about 40 minutes
+  - Status at the time of this note: processing 57,340 videos
 
-✅ **FakeAVCeleb 特征提取** - 正在运行 (Job ID: 22010184)  
-- 分区: gpu-a100 (A100 GPU)
-- 运行时间: ~2分钟
-- 状态: 正在从4,089个预处理文件提取特征
+- FakeAVCeleb feature extraction was running under job `22010184`
+  - Partition: `gpu-a100`
+  - Runtime at the time of this note: about 2 minutes
+  - Status at the time of this note: extracting features from 4,089 preprocessed files
 
-⏳ **FakeAVCeleb 预处理** - 需要继续
-- 已完成: 4,089 / 21,544 (19.0%)
-- 需要: 继续处理剩余17,455个视频
+- FakeAVCeleb preprocessing still needed to continue
+  - Completed: `4,089 / 21,544 (19.0%)`
+  - Remaining: `17,455` videos
 
-## 修复的问题 (Fixed Issues)
+## Fixed Issues
 
-### 🐛 Bug修复
-修复了 `deepfake_preprocess.py` 中的数据集名称判断错误：
-- **问题**: 脚本传递 `--dataset AVDeepfake1M`，但代码只接受 `AV1M`
-- **修复**: 修改判断条件为 `elif args.dataset in ['AV1M', 'AVDeepfake1M']:`
-- **文件**: `/data/projects/punim2637/nnliang/AVH-Align/av_hubert/avhubert/deepfake_preprocess.py`
-- **结果**: AVDeepfake1M预处理现在正常工作
+### Dataset Name Bug
+Fixed a dataset name mismatch in `deepfake_preprocess.py`:
+- Issue: the script passed `--dataset AVDeepfake1M`, but the code only accepted `AV1M`
+- Fix: changed the condition to `elif args.dataset in ['AV1M', 'AVDeepfake1M']:`
+- File: `/data/projects/punim2637/nnliang/AVH-Align/av_hubert/avhubert/deepfake_preprocess.py`
+- Result: AVDeepfake1M preprocessing worked correctly after the fix
 
-## 监控命令 (Monitoring Commands)
+## Monitoring Commands
 
-### 1. 查看任务队列
+### 1. Check the Queue
 ```bash
 squeue -u nnliang
 ```
 
-### 2. 实时监控日志
+### 2. Tail the Logs
 ```bash
-# AVDeepfake1M 预处理
+# AVDeepfake1M preprocessing
 tail -f logs/avd1m_scratch_preprocess_22009014.out
 
-# FakeAVCeleb 特征提取  
+# FakeAVCeleb feature extraction
 tail -f logs/favc_scratch_features_22010184.out
 ```
 
-### 3. 使用监控脚本
+### 3. Use the Monitoring Script
 ```bash
 cd /data/projects/punim2637/nnliang/AVH-Align
 ./monitor_processing.sh
 ```
 
-### 4. 快速检查数量（可能较慢）
+### 4. Quick Count Checks
 ```bash
-# AVDeepfake1M 预处理进度
+# AVDeepfake1M preprocessing progress
 ls -R /data/scratch/projects/punim2637/nnliang/avd1m_preprocessed/val/*/*/*/ | grep "_roi.mp4" | wc -l
 
-# FakeAVCeleb 特征数量
+# FakeAVCeleb feature count
 find /data/projects/punim2637/nnliang/AVH-Align/data/favc_features -name "*.npz" | wc -l
 ```
 
-## 下一步操作 (Next Steps)
+## Next Steps
 
-### 当前任务完成后:
+### After the Current Jobs Finish
 
-1. **提交 AVDeepfake1M 特征提取**
+1. **Submit AVDeepfake1M feature extraction**
    ```bash
    cd /data/projects/punim2637/nnliang/AVH-Align
    sbatch avd1m_scratch_features.slurm
    ```
 
-2. **继续 FakeAVCeleb 预处理**（当前预处理任务完成后）
+2. **Continue FakeAVCeleb preprocessing**
    ```bash
    cd /data/projects/punim2637/nnliang/AVH-Align
    sbatch favc_scratch_preprocess.slurm
    ```
 
-3. **自动提交特征提取**（可选）
+3. **Auto-submit feature extraction** (optional)
    ```bash
-   # 当AVD1M预处理达到50000个文件时自动提交特征提取
+   # Auto-submit feature extraction when AVD1M preprocessing reaches 50,000 files
    nohup ./auto_submit_features.sh avd1m 50000 > auto_avd1m.log 2>&1 &
    
-   # 当FakeAVCeleb预处理达到20000个文件时自动提交特征提取
+   # Auto-submit feature extraction when FakeAVCeleb preprocessing reaches 20,000 files
    nohup ./auto_submit_features.sh favc 20000 > auto_favc.log 2>&1 &
    ```
 
-## 预计时间 (Estimated Time)
+## Estimated Time
 
-基于当前进度（AVD1M在40分钟处理了~2000个视频）:
-- **AVDeepfake1M 预处理**: ~18-24小时（57,340个视频）
-- **AVDeepfake1M 特征提取**: ~24-36小时（取决于GPU可用性）
-- **FakeAVCeleb 预处理**: ~4-6小时（剩余17,455个视频）
-- **FakeAVCeleb 特征提取**: 正在进行中（~2-4小时从4,089个文件）
+Based on the observed progress in this note:
+- **AVDeepfake1M preprocessing**: about 18-24 hours for 57,340 videos
+- **AVDeepfake1M feature extraction**: about 24-36 hours depending on GPU availability
+- **FakeAVCeleb preprocessing**: about 4-6 hours for the remaining 17,455 videos
+- **FakeAVCeleb feature extraction**: about 2-4 hours for 4,089 files
 
-## 存储信息 (Storage Info)
+## Storage Info
 
 - **Scratch**: 39GB / 1TB (4%)
-- **Projects**: 监控特征文件大小（.npz文件将复制到projects）
-- **临时文件**: 在scratch中（预处理的视频和音频）
-- **最终文件**: NPZ特征文件在projects中
+- **Projects**: monitor feature file size because `.npz` files are copied there
+- **Temporary files**: stored on scratch during preprocessing
+- **Final files**: NPZ feature files stored under projects
 
-## 文件位置 (File Locations)
+## File Locations
 
-### 输入数据 (Scratch)
+### Input Data (Scratch)
 - AVDeepfake1M: `/data/scratch/projects/punim2637/nnliang/Datasets/AVDeepfake1M/val`
 - FakeAVCeleb: `/data/scratch/projects/punim2637/nnliang/Datasets/FakeAVCeleb_v1.2`
 
-### 预处理输出 (Scratch)
+### Preprocessing Output (Scratch)
 - AVDeepfake1M: `/data/scratch/projects/punim2637/nnliang/avd1m_preprocessed/val`
 - FakeAVCeleb: `/data/scratch/projects/punim2637/nnliang/favc_preprocessed`
 
-### 特征文件 (Projects)
+### Feature Files (Projects)
 - AVDeepfake1M: `/data/projects/punim2637/nnliang/AVH-Align/data/avh_features`
 - FakeAVCeleb: `/data/projects/punim2637/nnliang/AVH-Align/data/favc_features`
 
-## 注意事项 (Notes)
+## Notes
 
-1. **GPU任务优先级**: FakeAVCeleb特征提取在GPU上运行，可能会被更高优先级任务抢占
-2. **错误处理**: 一些视频文件可能无法加载（损坏或格式问题），这是正常的
-3. **Scratch清理**: Scratch文件会在30-90天后自动删除，确保特征文件及时复制到projects
-4. **分区建议**: 系统建议使用sapphire分区替代cascade（更新的资源）
+1. **GPU priority**: FakeAVCeleb feature extraction runs on GPU and may be preempted by higher-priority jobs
+2. **Error handling**: some video files may fail to load because of corruption or unsupported formatting
+3. **Scratch cleanup**: scratch files may be deleted after 30-90 days, so copy important outputs in time
+4. **Partition guidance**: the cluster recommends `sapphire` instead of `cascade` when possible
 
-## 问题排查 (Troubleshooting)
+## Troubleshooting
 
-如果任务失败或停止:
+If a job fails or stops:
 ```bash
-# 查看错误日志
+# Check error logs
 tail -100 logs/avd1m_scratch_preprocess_*.err
 tail -100 logs/favc_scratch_features_*.err
 
-# 重新提交任务
+# Re-submit jobs
 sbatch avd1m_scratch_preprocess.slurm
 sbatch favc_scratch_features.slurm
 ```
 
 ---
-**最后更新**: 2026-02-26 20:30
-**状态**: ✅ 修复完成，任务运行中
+**Last updated**: 2026-02-26 20:30
+**Status**: Fix completed, jobs running

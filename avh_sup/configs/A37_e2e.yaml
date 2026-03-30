@@ -1,0 +1,104 @@
+# ============================================================
+#  A37_e2e — Label-Aware Domain Adversarial on z_sync (No Subspace Split)
+# ============================================================
+#
+#  Goal: Fix the representation-level domain separation issue.
+#  Problem: domain accuracy on z_sync is too high (~0.98-0.99),
+#           meaning the causal representation is still domain-discriminative.
+#
+#  A37 approach: simpler than A36 — no subspace split.
+#  Add a label-aware (class-conditional) GRL on full z_sync_pool (512d).
+#
+#  Conditional domain head input:
+#    concat(GRL(z_sync_pool), y_hat_prob.detach())  [512+1 dims]
+#  The y_hat_prob conditioning asks: "given the predicted class,
+#  can you still tell the domain?" → GRL removes within-class domain signal
+#  WITHOUT touching between-class signal (safe for task AUC).
+#
+#  vs A36 (subspace split + conditional GRL):
+#    A36 adds z_c_aux as a "domain attractor" to give the model a safe route
+#    for domain info. A37 tests whether conditional GRL alone (without the
+#    safe exit) is enough, or whether task collapse follows.
+#
+#  vs A35 (SWD + variance alignment):
+#    A37 replaces non-adversarial distributional alignment with adversarial
+#    but label-conditioned. Avoids the SWD "force real≈real AND fake≈fake"
+#    confusion from unconditional alignment.
+#
+#  Curriculum λ_cond_grl:
+#    ep  0-2 : λ = 0.0   (task warm-up from A9_e2e finetune start)
+#    ep  3-8 : λ = 0.0 → 0.5  (linear ramp)
+#    ep  9+  : λ = 0.5   (held at max)
+#
+#  Domain probe (logged every epoch):
+#    domain_auc_zsync_raw      ← PRIMARY: want < 0.65
+#    domain_auc_zsync_centered ← covariance residual: want < 0.65
+#
+#  Success criteria:
+#    domain_auc_zsync_raw < 0.65   (true domain invariance)
+#    val_auc_causal > 0.95         (task not killed)
+# ============================================================
+
+ablation_id: A37_e2e
+num_gpus: 4
+num_nodes: 1
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A37_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A37_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 40
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  finetune_ckpt: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts/model-epoch=08-val_auc_causal=1.0000.ckpt
+  grl_alpha: 1.0
+  sync_dim: 512
+
+  # ── Label-aware domain adversarial on z_sync ───────────────────────────────
+  # Conditional GRL: input = concat(GRL(z_sync_pool), y_hat_prob.detach())
+  # Removes within-class domain signal WITHOUT touching between-class signal.
+  lambda_cond_grl: 0.5      # max GRL weight on z_sync_pool (reached after ramp)
+  grl_warmup_start: 3       # epochs before GRL starts (task head warms up first)
+  grl_ramp_epochs: 6        # linear ramp: ep 3 → ep 9, λ = 0.0 → 0.5
+
+  # ── z_app routing (same as A35/A36) ────────────────────────────────────────
+  lambda_ddis: 1.0           # domain BCE on z_app_pool — routes domain → spurious
+
+  # ── Orthogonality ──────────────────────────────────────────────────────────
+  lambda_orth: 0.1           # z_sync ⊥ z_app (prevents bleed)
+
+  # ── Common ─────────────────────────────────────────────────────────────────
+  lr: 0.0001
+  lr_encoder: 5.0e-06        # same proven-safe finetune LR as A9_e2e
+  max_frames: 150
+  n_unfreeze_layers: -1
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A37_e2e/results
+precision: 16-mixed
+seed: 43

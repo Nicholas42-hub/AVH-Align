@@ -11,7 +11,7 @@
 #SBATCH --error=logs/train_B1b_%j.err
 
 # ============================================================
-#  Modal Balance B1b — Per-Modality Cls + Balance Penalty (方向1b)
+#  Modal Balance B1b — Per-Modality Cls + Balance Penalty (Branch 1b)
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
 #  B1:   modal_head_visual(v_c) → CE(labels)

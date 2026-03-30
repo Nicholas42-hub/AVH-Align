@@ -11,7 +11,7 @@
 #SBATCH --error=logs/eval_favc_B1_%j.err
 
 # ============================================================
-#  Cross-dataset evaluation: B1 (方向1) → FakeAVCeleb
+#  Cross-dataset evaluation: B1 (Branch 1) -> FakeAVCeleb
 #  Checkpoint: outputs_B1/ckpts/model-epoch=13.ckpt  (best val_auc_causal)
 #  Reports per-category AUC for:
 #    full / causal / spurious heads
@@ -19,7 +19,7 @@
 # ============================================================
 
 echo "============================================================"
-echo "  FakeAVCeleb Cross-Eval — B1 (方向1: per-modal cls)"
+echo "  FakeAVCeleb Cross-Eval — B1 (Branch 1: per-modal classification)"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"

@@ -11,7 +11,7 @@
 #SBATCH --error=logs/train_B3_%j.err
 
 # ============================================================
-#  Modal Balance B3 — Modal Discriminator Adversarial (方向3)
+#  Modal Balance B3 — Modal Discriminator Adversarial (Branch 3)
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
 #  New:  modal_disc(GRL_modal(v_c || a_c)) → BCE(modality label)

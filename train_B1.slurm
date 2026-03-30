@@ -11,7 +11,7 @@
 #SBATCH --error=logs/train_B1_%j.err
 
 # ============================================================
-#  Modal Balance B1 — Per-Modality Classification (方向1)
+#  Modal Balance B1 — Per-Modality Classification (Branch 1)
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
 #  New:  modal_head_visual(v_c) → CE(labels)

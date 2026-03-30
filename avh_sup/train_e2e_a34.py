@@ -30,7 +30,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import yaml
 from sklearn.metrics import roc_auc_score
-from torch.utils.data import DataLoader, ConcatDataset, Dataset
+from torch.utils.data import DataLoader, ConcatDataset, Dataset, Sampler
 import lightning as L
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
@@ -73,6 +73,47 @@ class DomainLabeledDataset(Dataset):
         if self.cls_label_override is not None:
             cls_label = self.cls_label_override
         return video, audio, cls_label, self.domain_label, path
+
+
+class BalancedDomainSampler(Sampler):
+    """
+    Yield indices so each batch contains an equal number of AV1M/FAVC clips.
+
+    This keeps the domain signal active on every step instead of relying on
+    random shuffling to surface enough target-domain samples in a batch.
+    """
+
+    def __init__(self, domain_labels, batch_size: int, drop_last: bool = True):
+        self.domain_labels = np.array(domain_labels, dtype=np.int32)
+        self.batch_size = batch_size
+        self.drop_last = drop_last
+        self.idx0 = np.where(self.domain_labels == 0)[0]
+        self.idx1 = np.where(self.domain_labels == 1)[0]
+        self._n_per_domain = batch_size // 2
+        if self._n_per_domain == 0:
+            raise ValueError("batch_size must be at least 2 for BalancedDomainSampler")
+
+    def __iter__(self):
+        rng = np.random.default_rng()
+        idx0 = rng.permutation(self.idx0)
+        idx1 = rng.permutation(self.idx1)
+
+        n = max(len(idx0), len(idx1))
+        idx0 = np.resize(idx0, n)
+        idx1 = np.resize(idx1, n)
+
+        n_batches = n // self._n_per_domain
+        for i in range(n_batches):
+            s = i * self._n_per_domain
+            e = s + self._n_per_domain
+            batch = np.concatenate([idx0[s:e], idx1[s:e]])
+            rng.shuffle(batch)
+            yield from batch.tolist()
+
+    def __len__(self):
+        n = max(len(self.idx0), len(self.idx1))
+        n_batches = n // self._n_per_domain
+        return n_batches * self.batch_size
 
 
 # ── Domain predictor MLP (for IPW — trained on detached Z_c) ─────────────────
@@ -287,6 +328,8 @@ def load_data(config: dict):
     max_frames  = int(hp.get("max_frames", 150))
     batch_size  = int(config.get("batch_size", 4))
     num_workers = int(config.get("num_workers", 4))
+    favc_real_only = bool(config.get("favc_real_only", True))
+    use_balanced_sampler = bool(config.get("balanced_domain_sampler", False))
 
     av1m_base  = AV1M_E2E_FullPathDataset(train_csv, max_frames=max_frames)
     av1m_train = DomainLabeledDataset(av1m_base, domain_label=0)
@@ -294,9 +337,14 @@ def load_data(config: dict):
 
     favc_oversample = int(config.get("favc_oversample", 1))
     if favc_root and os.path.isdir(favc_root):
-        favc_ds  = FakeAVCeleb_E2E_Dataset(favc_root, max_frames=max_frames, real_only=True)
+        favc_ds  = FakeAVCeleb_E2E_Dataset(
+            favc_root,
+            max_frames=max_frames,
+            real_only=favc_real_only,
+        )
         favc_dom = DomainLabeledDataset(favc_ds, domain_label=1, cls_label_override=-1)
-        print(f"[load_data] FAVC real domain clips: {len(favc_ds)}", flush=True)
+        favc_desc = "real-only" if favc_real_only else "all clips (real+fake)"
+        print(f"[load_data] FAVC {favc_desc}: {len(favc_ds)} clips", flush=True)
         if favc_oversample > 1:
             favc_dom = ConcatDataset([favc_dom] * favc_oversample)
             print(f"[load_data] FAVC oversampled {favc_oversample}x → {len(favc_dom)} clips", flush=True)
@@ -309,15 +357,40 @@ def load_data(config: dict):
     val_ds        = DomainLabeledDataset(av1m_val_base, domain_label=0)
     print(f"[load_data] AV1M val clips: {len(av1m_val_base)}", flush=True)
 
-    train_loader = DataLoader(
-        train_ds, batch_size=batch_size, shuffle=True,
-        num_workers=num_workers, collate_fn=e2e_collate_fn,
-        pin_memory=True, drop_last=True, persistent_workers=True,
-    )
+    if use_balanced_sampler:
+        def _collect_domain_labels(ds):
+            if isinstance(ds, ConcatDataset):
+                labels = []
+                for sub in ds.datasets:
+                    labels.extend(_collect_domain_labels(sub))
+                return labels
+            if isinstance(ds, DomainLabeledDataset):
+                return [ds.domain_label] * len(ds)
+            return [0] * len(ds)
+
+        domain_labels = _collect_domain_labels(train_ds)
+        n0 = sum(1 for label in domain_labels if label == 0)
+        n1 = sum(1 for label in domain_labels if label == 1)
+        print(
+            f"[load_data] BalancedDomainSampler: {n0} domain-0 (AV1M), {n1} domain-1 (FAVC)",
+            flush=True,
+        )
+        sampler = BalancedDomainSampler(domain_labels, batch_size=batch_size, drop_last=True)
+        train_loader = DataLoader(
+            train_ds, batch_size=batch_size, sampler=sampler,
+            num_workers=num_workers, collate_fn=e2e_collate_fn,
+            pin_memory=True, drop_last=False, persistent_workers=(num_workers > 0),
+        )
+    else:
+        train_loader = DataLoader(
+            train_ds, batch_size=batch_size, shuffle=True,
+            num_workers=num_workers, collate_fn=e2e_collate_fn,
+            pin_memory=True, drop_last=True, persistent_workers=(num_workers > 0),
+        )
     val_loader = DataLoader(
         val_ds, batch_size=batch_size, shuffle=False,
         num_workers=num_workers, collate_fn=e2e_collate_fn,
-        pin_memory=True, persistent_workers=True,
+        pin_memory=True, persistent_workers=(num_workers > 0),
     )
     return train_loader, val_loader
 

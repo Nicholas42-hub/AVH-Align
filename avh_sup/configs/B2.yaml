@@ -1,10 +1,10 @@
 # ============================================================
-#  Modal Balance B2 — Cross-Modal Alignment (方向2)
+#  Modal Balance B2 - Cross-Modal Alignment (Branch 2)
 # ============================================================
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
 #
-#  New constraint — 方向2 (use_cross_modal):
+#  New constraint - Branch 2 (use_cross_modal):
 #    L_cross = mean(1 - cosine_similarity(v_c_t, a_c_t))  per frame
 #    Forces v_c and a_c to encode the same semantic information.
 #    Hypothesis: true causal info (AV authenticity) is shared across modalities;
@@ -18,9 +18,9 @@
 
 modal_balance_id: "B2"
 modal_balance:
-  use_modal_cls:   false  # 方向1: per-modality classification ✗
-  use_cross_modal: true   # 方向2: cross-modal alignment       ✓
-  use_modal_disc:  false  # 方向3: modal discriminator         ✗
+  use_modal_cls:   false  # Branch 1: per-modality classification disabled
+  use_cross_modal: true   # Branch 2: cross-modal alignment enabled
+  use_modal_disc:  false  # Branch 3: modal discriminator disabled
 
 data_info:
   name: "AV1M"
@@ -37,7 +37,7 @@ model_hparams:
   lambda_adv:     10.0
   grl_alpha:       5.0
 
-  # 方向2 (label-conditioned: only align real samples)
+  # Branch 2 (label-conditioned: only align real samples)
   lambda_cross_modal: 0.1
 
   # unused

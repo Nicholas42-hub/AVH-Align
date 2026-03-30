@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Regenerate FakeAVCeleb metadata直接从文件系统，使用正确的目录名称
+Regenerate FakeAVCeleb metadata directly from the filesystem using the
+canonical directory names.
 """
 import os
 import csv
@@ -27,12 +28,12 @@ def main():
         if not os.path.exists(cat_path):
             continue
         
-        # 遍历所有视频文件
+        # Walk all video files in the category subtree.
         for video_file in Path(cat_path).rglob("*.mp4"):
             rel_path = video_file.relative_to(favc_root)
             path_parts = list(rel_path.parts)
             
-            # 构建路径：FakeAVCeleb/category/race/gender/id/
+            # Build path: FakeAVCeleb/category/race/gender/id/
             full_dir = f"FakeAVCeleb/{'/'.join(path_parts[:-1])}/"
             filename = path_parts[-1]
             
@@ -49,7 +50,7 @@ def main():
     for cat, count in sorted(counts.items()):
         print(f"  {cat}: {count}")
     
-    # 写入CSV
+    # Write the corrected metadata CSV.
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     with open(output_csv, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=["type", "path", "filename"])

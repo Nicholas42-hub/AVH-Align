@@ -1,17 +1,18 @@
 #!/bin/bash
-#SBATCH --job-name=eval_favc_B1b
+#SBATCH --job-name=train_A34_v2_e2e
 #SBATCH --partition=gpu-a100
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
-#SBATCH --mem=16G
-#SBATCH --time=01:00:00
-#SBATCH --output=logs/eval_favc_B1b_%j.out
-#SBATCH --error=logs/eval_favc_B1b_%j.err
+#SBATCH --mem=64G
+#SBATCH --time=24:00:00
+#SBATCH --output=logs/train_A34_v2_e2e_%j.out
+#SBATCH --error=logs/train_A34_v2_e2e_%j.err
 
 echo "============================================================"
-echo "  FakeAVCeleb Cross-Eval — B1b (Branch 1b: balance penalty)"
+echo "  A34_v2_e2e — IPW + late light GRL on Z_c"
+echo "  FAVC all clips + BalancedDomainSampler"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"
@@ -31,25 +32,22 @@ export PYTHONNOUSERSITE=1
 unset PYTHONPATH
 export PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES=0
+PYTHON=/data/projects/punim2637/nnliang/avh_env/bin/python
 
-CKPT="avh_sup/outputs_B1b/ckpts/model-epoch=58.ckpt"
-FAVC_FEATURES="data/favc_features"
-CSV_ROOT="avh_sup/csv_metadata/favc"
-OUTPUT_DIR="avh_sup/outputs_B1b/results/favc_eval"
+BASE=/data/projects/punim2637/nnliang/AVH-Align
+mkdir -p "$BASE/avh_sup/outputs_A34_v2_e2e/ckpts" \
+         "$BASE/avh_sup/outputs_A34_v2_e2e/logs"  \
+         "$BASE/avh_sup/outputs_A34_v2_e2e/results" \
+         "$BASE/logs"
 
-mkdir -p "$OUTPUT_DIR" logs
+cd "$BASE/avh_sup"
 
-cd avh_sup
-python eval_favc.py \
-    --ckpt        "../$CKPT" \
-    --model       modal \
-    --features_path "../$FAVC_FEATURES" \
-    --csv_root_path "$CSV_ROOT" \
-    --split       test \
-    --output_dir  "../$OUTPUT_DIR"
+echo ">>> Starting A34_v2 training..."
+$PYTHON train_e2e_a34.py \
+    --config_path "$BASE/avh_sup/configs/A34_v2_e2e.yaml"
 
 echo ""
 echo "============================================================"
-echo "  B1b FakeAVCeleb eval done: $(date)"
-echo "  Results: $OUTPUT_DIR"
+echo "  Training done: $(date)"
+echo "  Best ckpt in: $BASE/avh_sup/outputs_A34_v2_e2e/ckpts/"
 echo "============================================================"

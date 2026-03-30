@@ -11,7 +11,7 @@
 #SBATCH --error=logs/perturb_B1_%j.err
 
 # ============================================================
-#  Perturbation Robustness — B1 (方向1: per-modal cls)
+#  Perturbation Robustness — B1 (Branch 1: per-modal classification)
 #
 #  Experiment 3: AUC under Gaussian noise on audio/visual features
 #  σ ∈ {0, 0.05, 0.1, 0.2, 0.5, 1.0}
@@ -23,7 +23,7 @@
 # ============================================================
 
 echo "============================================================"
-echo "  Perturbation Robustness — B1 (方向1)"
+echo "  Perturbation Robustness — B1 (Branch 1)"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"

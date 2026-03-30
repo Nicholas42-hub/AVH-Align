@@ -11,7 +11,7 @@
 #SBATCH --error=logs/perturb_B1b_%j.err
 
 echo "============================================================"
-echo "  Perturbation Robustness — B1b (方向1b: balance penalty)"
+echo "  Perturbation Robustness — B1b (Branch 1b: balance penalty)"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"

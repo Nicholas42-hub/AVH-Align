@@ -1,0 +1,111 @@
+# ============================================================
+#  A36_e2e — Conditional GRL + Subspace Split + Class-Conditional Alignment
+# ============================================================
+#
+#  Strategy: structured Z_c invariance WITHOUT killing label signal.
+#
+#  vs A35 (SWD + variance — non-adversarial full distributional alignment):
+#    A36 trades distributional-level coercion for structured architecture:
+#    the model is given a "legal slot" (z_c_aux) to absorb domain info,
+#    and only the RESIDUAL domain signal *within predicted classes* is
+#    attacked by the conditional GRL.
+#
+#  NEW losses / modules (all operate on z_c_inv = proj_inv(z_sync)):
+#    L_cond_grl:    conditional GRL domain head on z_c_inv_pool  (adversarial)
+#    L_dom_aux:     positive domain BCE on z_c_aux_pool          (attractor)
+#    L_cond_align:  class-conditional center MSE on z_c_inv_pool (non-adversarial)
+#    L_orth_split:  cross-cov(z_c_inv_pool, z_c_aux_pool)        (VICReg-style)
+#    L_orth_app:    cross-cov(z_c_inv_pool, z_app_pool)          (weaker)
+#    L_ddis:        domain BCE on z_app_pool                     (same as A35)
+#
+#  Curriculum λ_cond_grl:
+#    ep  0-2 : λ = 0.0   (pure task warm-up with new proj_inv + causal_head_inv)
+#    ep  3-8 : λ = 0.0 → 0.5  (linear ramp)
+#    ep  9+  : λ = 0.5   (held at max)
+#
+#  Domain probe outputs (per epoch):
+#    domain_auc_zinv_raw      ← PRIMARY: want < 0.65
+#    domain_auc_zinv_centered ← covariance residual: want < 0.65
+#    domain_auc_zaux_raw      ← attractor check:   want > 0.80
+#    domain_auc_zsync_raw     ← reference (raw z_sync)
+# ============================================================
+
+ablation_id: A36_e2e
+num_gpus: 4
+num_nodes: 1
+accumulate_grad_batches: 4
+augmentation:
+  audio_noise: 0.05
+  brightness: 0.5
+  enabled: true
+  flip_p: 0.5
+  p: 0.9
+  video_noise: 0.3
+batch_size: 8
+callbacks:
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A36_e2e/ckpts
+    metric: val_auc_causal
+    mode: max
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A36_e2e/logs
+    name: csv
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+epochs: 40
+favc_oversample: 3
+gradient_clip_val: 1.0
+model_hparams:
+  app_dim: 256
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  feat_dim: 1024
+  finetune_ckpt: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A9_e2e/ckpts/model-epoch=08-val_auc_causal=1.0000.ckpt
+  grl_alpha: 1.0
+
+  # ── Subspace split ─────────────────────────────────────────────────────────
+  inv_dim: 384            # z_c_inv (task + conditional GRL): 384 of 512 z_sync dims
+  aux_dim: 128            # z_c_aux (domain attractor): remaining 128 dims
+  sync_dim: 512           # z_sync total (unchanged from A9)
+
+  # ── Curriculum conditional GRL ─────────────────────────────────────────────
+  lambda_cond_grl: 0.5    # max GRL weight on z_c_inv (reached after ramp)
+  grl_warmup_start: 3     # epochs before GRL starts (proj_inv warm-up first)
+  grl_ramp_epochs: 6      # linear ramp: ep 3 → ep 9, λ = 0.0 → 0.5
+
+  # ── Domain attractor on z_c_aux ────────────────────────────────────────────
+  # STOP-GRAD applied in training_step: only trains proj_aux + aux_domain_head,
+  # not sync_enc — prevents attractor from counteracting the GRL.
+  lambda_dom_aux: 1.0     # encourages z_c_aux to absorb domain info
+
+  # ── z_c_aux label adversarial (Risk 2 mitigation) ──────────────────────────
+  # GRL on z_c_aux pushes it AWAY from label info → clean domain container.
+  # If label_auc_zaux stays high despite this, reduce lambda_cond_grl instead.
+  lambda_label_adv_aux: 0.3
+
+  # ── Class-conditional center alignment ─────────────────────────────────────
+  lambda_cond_align: 0.1  # small: per-dim MSE between class-conditional centers
+
+  # ── z_app routing (same as A35) ────────────────────────────────────────────
+  lambda_ddis: 1.0        # domain BCE on z_app_pool (spurious stream)
+
+  # ── Orthogonality (cross-covariance) ───────────────────────────────────────
+  lambda_orth_split: 0.1  # z_c_inv ⊥ z_c_aux (separates subspaces)
+  lambda_orth_app: 0.05   # z_c_inv ⊥ z_app   (prevents bleed from spurious)
+
+  # ── Common ─────────────────────────────────────────────────────────────────
+  lr: 0.0001
+  lr_encoder: 5.0e-06     # same proven-safe finetune LR as A9_e2e
+  max_frames: 150
+  n_unfreeze_layers: -1
+  weight_decay: 0.0001
+num_workers: 6
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A36_e2e/results
+precision: 16-mixed
+seed: 43

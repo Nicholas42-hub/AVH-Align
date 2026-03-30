@@ -4,13 +4,13 @@ Training and evaluation entry-point for the modal-balance causal model.
 This script trains AVH_Causal_Modal — an extension of the A2 ablation base
 (adversarial + stop-gradient) with three optional modal balance constraints:
 
-  方向1 (use_modal_cls)   — per-modality classification loss
-  方向2 (use_cross_modal) — cross-modal cosine alignment loss
-  方向3 (use_modal_disc)  — modal discriminator adversarial on causal features
+  Branch 1 (use_modal_cls)   - per-modality classification loss
+  Branch 2 (use_cross_modal) - cross-modal cosine alignment loss
+  Branch 3 (use_modal_disc)  - modal discriminator adversarial on causal features
 
-Configs: configs/B1.yaml   (方向1 only)
-         configs/B2.yaml   (方向2 only)
-         configs/B3.yaml   (方向3 only)
+Configs: configs/B1.yaml   (Branch 1 only)
+         configs/B2.yaml   (Branch 2 only)
+         configs/B3.yaml   (Branch 3 only)
          configs/B_all.yaml (all three)
 
 Usage:

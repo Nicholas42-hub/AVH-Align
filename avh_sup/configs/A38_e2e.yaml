@@ -1,0 +1,99 @@
+# ============================================================
+#  A38_e2e — A34 + Label-Aware Domain Pull on Z_s
+# ============================================================
+#
+#  A34 achieved cross-domain AUC=0.803 but domain probe Z_c=0.983.
+#  Root cause: no Z_s domain routing → domain information has no "sink",
+#  so the light GRL on Z_c can't fully expel domain signal.
+#
+#  A38 adds a label-aware domain pull on Z_s:
+#    BCE(cond_domain_head_s(concat(z_s_pool, y_hat_prob.detach())), domain_labels)
+#
+#  Why label-aware (conditioned on y_hat_prob)?
+#    Unconditional domain pull: Z_s absorbs domain info BUT can exploit
+#    class-domain correlations (uses label-discriminative directions).
+#    Label-aware pull: conditions on the predicted class → Z_s learns
+#    within-class domain differences without label contamination.
+#    y_hat_prob is stop-graded so no gradient leaks through the label signal.
+#
+#  Expected dynamics:
+#    Z_c: IPW + light GRL → domain-invariant (Z_c domain AUC drops toward 0.5)
+#    Z_s: label-aware pull → absorbs within-class domain info (Z_s AUC > 0.80)
+#    → Z_c / Z_s clearly separated; domain AUC on Z_c should fall
+#
+#  Full loss:
+#    L = L_task_ipw
+#      + lambda_ipw     * L_domain_pred   (IPW propensity estimator, detached)
+#      + lambda_grl     * L_grl_zc        (light GRL on Z_c, same as A34)
+#      + lambda_ladv_ds * L_ladv_ds       (label-aware domain pull on Z_s, NEW)
+#
+#  Domain probe (logged every epoch):
+#    domain_auc_zc_raw      ← PRIMARY: want < 0.65
+#    domain_auc_zc_centered ← covariance residual: want < 0.65
+#    domain_auc_zs_raw      ← want > 0.80 (pull working)
+# ============================================================
+
+ablation_id: "A38_e2e"
+ablation:
+  use_adv:    false   # no built-in label-adversarial (handled externally)
+  use_sg:     true    # classification from Z_c only
+  use_domain: false   # domain adversarial handled externally (label-aware)
+
+data_paths:
+  e2e_train_csv: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv"
+  e2e_val_csv:   "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv"
+  favc_raw_root: "/scratch/punim2637/nnliang/favc_preprocessed"
+
+model_hparams:
+  avhubert_ckpt:     "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:     "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers: -1
+
+  max_frames: 150
+  feat_dim:   1024
+  proj_dim:   512        # Z_c: concat(v_c, a_c) = 1024d
+  proj_dim_spurious: 512 # Z_s: concat(v_s, a_s) = 1024d
+
+  # IPW parameters (same as A34)
+  lambda_ipw:         1.0
+  ipw_clip_min:       0.1
+  ipw_clip_max:      10.0
+  ipw_warmup_epochs:  2
+
+  # Light GRL on Z_c (same as A34)
+  lambda_grl:        0.2
+  grl_warmup_epochs: 2
+
+  # Label-aware domain pull on Z_s (NEW in A38)
+  lambda_ladv_ds:    1.0    # pull Z_s toward domain-discriminative (label-conditioned)
+
+  lr_encoder:      5.0e-6
+  lr:              1.0e-4
+  lr_domain_pred:  1.0e-4
+  weight_decay:    1.0e-4
+
+batch_size:              8
+accumulate_grad_batches: 4
+num_workers:             6
+favc_oversample:         10
+gradient_clip_val:       1.0
+precision:               "16-mixed"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A38_e2e/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A38_e2e/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 30
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 10
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A38_e2e/results"

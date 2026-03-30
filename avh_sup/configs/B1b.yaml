@@ -1,15 +1,15 @@
 # ============================================================
-#  Modal Balance B1b — Per-Modality Cls + Balance Penalty (方向1b)
+#  Modal Balance B1b - Per-Modality Cls + Balance Penalty (Branch 1b)
 # ============================================================
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
 #
-#  B1 constraint (use_modal_cls):
+#  Branch 1 constraint (use_modal_cls):
 #    modal_head_visual(v_c) → CE(labels)
 #    modal_head_audio(a_c)  → CE(labels)
 #    loss_modal_cls = CE_visual + CE_audio
 #
-#  B1b additional constraint (use_modal_balance):
+#  Branch 1b additional constraint (use_modal_balance):
 #    L_balance = (CE_audio - CE_visual)²
 #    Penalises the squared gap between per-modality CE losses.
 #    Forces both modalities to contribute equally; prevents audio
@@ -24,10 +24,10 @@
 
 modal_balance_id: "B1b"
 modal_balance:
-  use_modal_cls:     true   # 方向1:  per-modality classification ✓
-  use_modal_balance: true   # 方向1b: balance penalty (CE_audio - CE_visual)² ✓
-  use_cross_modal:   false  # 方向2:  cross-modal alignment       ✗
-  use_modal_disc:    false  # 方向3:  modal discriminator         ✗
+  use_modal_cls:     true   # Branch 1: per-modality classification enabled
+  use_modal_balance: true   # Branch 1b: balance penalty on CE gap enabled
+  use_cross_modal:   false  # Branch 2: cross-modal alignment disabled
+  use_modal_disc:    false  # Branch 3: modal discriminator disabled
 
 data_info:
   name: "AV1M"
@@ -44,9 +44,9 @@ model_hparams:
   lambda_adv:     10.0
   grl_alpha:       5.0
 
-  # 方向1
+  # Branch 1
   lambda_modal_cls:     1.0
-  # 方向1b — balance penalty weight
+  # Branch 1b - balance penalty weight
   lambda_modal_balance: 1.0
 
   # unused

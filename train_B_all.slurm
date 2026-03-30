@@ -14,9 +14,9 @@
 #  Modal Balance B_all — All Three Constraints Combined
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
-#  方向1: per-modality classification loss (use_modal_cls)
-#  方向2: cross-modal alignment loss (use_cross_modal)
-#  方向3: modal discriminator adversarial (use_modal_disc)
+#  Branch 1: per-modality classification loss (use_modal_cls)
+#  Branch 2: cross-modal alignment loss (use_cross_modal)
+#  Branch 3: modal discriminator adversarial (use_modal_disc)
 #
 #  Tests whether all three constraints together maximally address
 #  the causal branch audio-dominance problem.

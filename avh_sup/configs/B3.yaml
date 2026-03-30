@@ -1,10 +1,10 @@
 # ============================================================
-#  Modal Balance B3 — Modal Discriminator Adversarial (方向3)
+#  Modal Balance B3 - Modal Discriminator Adversarial (Branch 3)
 # ============================================================
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
 #
-#  New constraint — 方向3 (use_modal_disc):
+#  New constraint - Branch 3 (use_modal_disc):
 #    A modal discriminator is trained to predict whether a token came from
 #    v_c (visual causal, label=0) or a_c (audio causal, label=1).
 #    A GRL between the projectors and the discriminator reverses the gradient
@@ -22,9 +22,9 @@
 
 modal_balance_id: "B3"
 modal_balance:
-  use_modal_cls:   false  # 方向1: per-modality classification ✗
-  use_cross_modal: false  # 方向2: cross-modal alignment       ✗
-  use_modal_disc:  true   # 方向3: modal discriminator         ✓
+  use_modal_cls:   false  # Branch 1: per-modality classification disabled
+  use_cross_modal: false  # Branch 2: cross-modal alignment disabled
+  use_modal_disc:  true   # Branch 3: modal discriminator enabled
 
 data_info:
   name: "AV1M"
@@ -41,7 +41,7 @@ model_hparams:
   lambda_adv:     10.0
   grl_alpha:       5.0
 
-  # 方向3
+  # Branch 3
   lambda_modal_disc: 1.0
   grl_modal_alpha:   1.0
 

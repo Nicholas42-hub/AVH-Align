@@ -11,7 +11,7 @@
 #SBATCH --error=logs/train_B2_%j.err
 
 # ============================================================
-#  Modal Balance B2 — Cross-Modal Alignment (方向2)
+#  Modal Balance B2 — Cross-Modal Alignment (Branch 2)
 #
 #  Base: A2 (adversarial + stop-gradient on Z_s)
 #  New:  L_cross = mean(1 - cosine_similarity(v_c_t, a_c_t))

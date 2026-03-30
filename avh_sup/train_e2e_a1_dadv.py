@@ -33,8 +33,12 @@ import sys
 import numpy as np
 import torch
 import yaml
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from torch.utils.data import DataLoader, ConcatDataset, Dataset
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from torch.utils.data import DataLoader, ConcatDataset, Dataset, Subset
 import lightning as L
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
@@ -110,6 +114,7 @@ class E2EModelA1DADV(L.LightningModule):
 
         self._val_scores: list = []
         self._val_labels: list = []
+        self.domain_probe_loader = None
 
     # ── Two-group optimizer ───────────────────────────────────────────────────
 
@@ -195,6 +200,64 @@ class E2EModelA1DADV(L.LightningModule):
         self._val_scores.append(scores.detach().cpu())
         self._val_labels.append(cls_labels.cpu())
 
+    # ── Domain probe ──────────────────────────────────────────────────────────
+
+    @torch.no_grad()
+    def _run_domain_probe(self):
+        """
+        Logistic-regression domain probe on Z_c (causal_repr) and Z_s (spurious_repr).
+
+        Reports:
+          domain_auc_zc_raw      — raw Z_c logistic probe (want LOW, <0.65)
+          domain_auc_zc_centered — after per-domain mean subtraction (covariance residual)
+          domain_auc_zs_raw      — raw Z_s logistic probe (want HIGH, >0.80 — domain pull working)
+        """
+        self.eval()
+        zc_list, zs_list, dom_list = [], [], []
+        device = next(self.parameters()).device
+
+        for batch in self.domain_probe_loader:
+            if batch is None:
+                continue
+            video_raw, audio_raw, _, domain_labels, _ = batch
+            video_raw = video_raw.to(device)
+            audio_raw = audio_raw.to(device)
+            video_feats, audio_feats = self.encoder(video_raw, audio_raw)
+            causal_repr, spurious_repr, _ = self.head._encode(video_feats, audio_feats)
+            zc_list.append(causal_repr.mean(1).cpu().numpy())
+            zs_list.append(spurious_repr.mean(1).cpu().numpy())
+            dom_list.extend(domain_labels.tolist())
+
+        zc_all  = np.concatenate(zc_list)
+        zs_all  = np.concatenate(zs_list)
+        dom_all = np.array(dom_list)
+
+        def _probe(X, y, n_folds=5):
+            pipe = make_pipeline(
+                StandardScaler(),
+                LogisticRegression(max_iter=500, C=1.0, solver="lbfgs"),
+            )
+            skf   = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=0)
+            probs = cross_val_predict(pipe, X, y, cv=skf, method="predict_proba")[:, 1]
+            try:
+                return roc_auc_score(y, probs)
+            except Exception:
+                return 0.5
+
+        auc_zc_raw = _probe(zc_all, dom_all)
+        auc_zs_raw = _probe(zs_all, dom_all)
+
+        # Centered Z_c: remove per-domain mean → test covariance residual
+        zc_centered = zc_all.copy()
+        for d in [0, 1]:
+            idx_d = (dom_all == d)
+            if idx_d.sum() > 1:
+                zc_centered[idx_d] -= zc_centered[idx_d].mean(0)
+        auc_zc_centered = _probe(zc_centered, dom_all)
+
+        self.train()
+        return auc_zc_raw, auc_zc_centered, auc_zs_raw
+
     def on_validation_epoch_end(self):
         if not self._val_scores:
             return
@@ -211,7 +274,23 @@ class E2EModelA1DADV(L.LightningModule):
         except Exception:
             auc = 0.5
         self.log("val_auc_causal", auc, prog_bar=True)
-        print(f"\n[Epoch {self.current_epoch:02d}] val_auc_causal={auc:.4f}", flush=True)
+
+        if self.domain_probe_loader is not None:
+            auc_zc_raw, auc_zc_centered, auc_zs_raw = self._run_domain_probe()
+            ep = self.current_epoch
+            print(
+                f"\n[Epoch {ep:02d}] val_auc_causal={auc:.4f}"
+                f"  |  domain probe:"
+                f"  Z_c raw={auc_zc_raw:.4f} (want <0.65)"
+                f"  Z_c centered={auc_zc_centered:.4f}"
+                f"  Z_s raw={auc_zs_raw:.4f} (want >0.80)",
+                flush=True,
+            )
+            self.log("domain_auc_zc_raw",      auc_zc_raw,      on_epoch=True, prog_bar=False)
+            self.log("domain_auc_zc_centered", auc_zc_centered, on_epoch=True, prog_bar=False)
+            self.log("domain_auc_zs_raw",      auc_zs_raw,      on_epoch=True, prog_bar=False)
+        else:
+            print(f"\n[Epoch {self.current_epoch:02d}] val_auc_causal={auc:.4f}", flush=True)
 
 
 # ── Data loading ──────────────────────────────────────────────────────────────
@@ -263,7 +342,40 @@ def load_data(config: dict):
         num_workers=num_workers, collate_fn=e2e_collate_fn,
         pin_memory=True, persistent_workers=True,
     )
-    return train_loader, val_loader
+
+    # ── Domain probe loader (200 AV1M val + 200 FAVC, no augmentation) ────────
+    # Probes Z_c / Z_s for domain separability every epoch.
+    # Uses same real_only=True as the training FAVC split.
+    n_probe   = 200
+    rng_probe = np.random.default_rng(0)
+    av1m_probe_base = AV1M_E2E_FullPathDataset(val_csv, max_frames=max_frames)
+    av1m_probe = DomainLabeledDataset(
+        Subset(av1m_probe_base, list(range(min(n_probe, len(av1m_probe_base))))),
+        domain_label=0,
+    )
+    domain_probe_loader = None
+    if favc_root and os.path.isdir(favc_root):
+        favc_probe_base = FakeAVCeleb_E2E_Dataset(
+            favc_root, max_frames=max_frames, real_only=True
+        )
+        favc_probe_idx = rng_probe.choice(
+            len(favc_probe_base), size=min(n_probe, len(favc_probe_base)), replace=False
+        ).tolist()
+        favc_probe = DomainLabeledDataset(
+            Subset(favc_probe_base, favc_probe_idx),
+            domain_label=1, cls_label_override=-1,
+        )
+        probe_ds = ConcatDataset([av1m_probe, favc_probe])
+        domain_probe_loader = DataLoader(
+            probe_ds, batch_size=8, shuffle=False,
+            num_workers=2, collate_fn=e2e_collate_fn,
+        )
+        print(
+            f"[load_data] Domain probe loader: {len(av1m_probe)} AV1M + "
+            f"{len(favc_probe)} FAVC real (no augmentation)", flush=True
+        )
+
+    return train_loader, val_loader, domain_probe_loader
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
@@ -279,8 +391,9 @@ def main():
     set_seed(config.get("seed", 43))
     torch.set_float32_matmul_precision("medium")  # enable Tensor Core TF32
 
-    train_loader, val_loader = load_data(config)
+    train_loader, val_loader, domain_probe_loader = load_data(config)
     model = E2EModelA1DADV(config=config)
+    model.domain_probe_loader = domain_probe_loader
 
     # ── Callbacks ─────────────────────────────────────────────────────────────
     cb_cfg   = config.get("callbacks", {})

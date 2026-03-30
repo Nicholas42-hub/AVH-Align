@@ -6,18 +6,18 @@
 #
 #  All three modal balance constraints enabled simultaneously:
 #
-#  方向1 (use_modal_cls):
+#  Branch 1 (use_modal_cls):
 #    Per-modality classification losses directly supervise v_c and a_c.
 #
-#  方向2 (use_cross_modal):
+#  Branch 2 (use_cross_modal):
 #    Cross-modal cosine alignment pulls v_c and a_c toward the same semantic space.
 #
-#  方向3 (use_modal_disc):
+#  Branch 3 (use_modal_disc):
 #    Modal discriminator adversarial on causal tokens forces modality-agnostic
 #    representations via GRL.
 #
-#  Note on 方向2 + 方向3 interaction:
-#    方向2 encourages alignment (same direction) and 方向3 independently
+#  Note on Branch 2 + Branch 3 interaction:
+#    Branch 2 encourages alignment (same direction) and Branch 3 independently
 #    encourages indistinguishability (same distribution), which is complementary:
 #    alignment pulls their mean together; adversarial flattens the distribution.
 #
@@ -25,9 +25,9 @@
 
 modal_balance_id: "B_all"
 modal_balance:
-  use_modal_cls:   true   # 方向1 ✓
-  use_cross_modal: true   # 方向2 ✓
-  use_modal_disc:  true   # 方向3 ✓
+  use_modal_cls:   true   # Branch 1 enabled
+  use_cross_modal: true   # Branch 2 enabled
+  use_modal_disc:  true   # Branch 3 enabled
 
 data_info:
   name: "AV1M"
@@ -44,13 +44,13 @@ model_hparams:
   lambda_adv:     10.0
   grl_alpha:       5.0
 
-  # 方向1
+  # Branch 1
   lambda_modal_cls: 1.0
 
-  # 方向2
+  # Branch 2
   lambda_cross_modal: 0.5
 
-  # 方向3
+  # Branch 3
   lambda_modal_disc: 1.0
   grl_modal_alpha:   1.0
 
