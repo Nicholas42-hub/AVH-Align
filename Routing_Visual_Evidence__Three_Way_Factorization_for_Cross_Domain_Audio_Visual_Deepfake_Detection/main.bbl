@@ -1,0 +1,75 @@
+\begin{thebibliography}{10}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Cai et~al.(2024)Cai, Ghosh, Adatia, Hayat, Dhall, Gedeon, and
+  Stefanov]{cai2024avdeepfake1m}
+Zhixi Cai, Shreya Ghosh, Aman~Pankaj Adatia, Munawar Hayat, Abhinav Dhall, Tom
+  Gedeon, and Kalin Stefanov.
+\newblock Av-deepfake1m: A large-scale llm-driven audio-visual deepfake
+  dataset.
+\newblock In \emph{Proceedings of the 32nd ACM International Conference on
+  Multimedia}, pages 7414--7423, 2024.
+\newblock \doi{10.1145/3664647.3680795}.
+
+\bibitem[Chung and Zisserman(2016)]{chung2016syncnet}
+Joon~Son Chung and Andrew Zisserman.
+\newblock Out of time: Automated lip sync in the wild.
+\newblock \emph{Asian Conference on Computer Vision Workshops}, 2016.
+
+\bibitem[Como et~al.(2024)Como, Liu, She, Baird, and Schuller]{como2024lips}
+Aaron Como, Weifeng Liu, Tianyi She, Alice Baird, and Bjorn~W. Schuller.
+\newblock Lips are lying: Spotting the temporal inconsistency between audio and
+  visual in lip-syncing deepfakes.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem[Feng et~al.(2023)Feng, Li, Lin, Laaksonen, and Li]{feng2023avad}
+Shangwei Feng, Ziang Li, Zixiang Lin, Jorma Laaksonen, and Hao Li.
+\newblock Self-supervised video forensics by audio-visual anomaly detection.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, pages 6816--6826, 2023.
+
+\bibitem[Ganin et~al.(2016)Ganin, Ustinova, Ajakan, Germain, Larochelle,
+  Laviolette, Marchand, and Lempitsky]{ganin2016dann}
+Yaroslav Ganin, Evgeniya Ustinova, Hana Ajakan, Pascal Germain, Hugo
+  Larochelle, Francois Laviolette, Mario Marchand, and Victor Lempitsky.
+\newblock Domain-adversarial training of neural networks.
+\newblock In \emph{Journal of Machine Learning Research}, volume~17, pages
+  1--35, 2016.
+
+\bibitem[Khalid et~al.(2021)Khalid, Tariq, Kim, and Woo]{khalid2021fakeavceleb}
+Hasam Khalid, Shahroz Tariq, Minha Kim, and Simon~S. Woo.
+\newblock Fakeavceleb: A novel audio-video multimodal deepfake dataset.
+\newblock \emph{arXiv preprint arXiv:2108.05080}, 2021.
+
+\bibitem[Liang et~al.(2024)Liang, Yu, Li, Jiang, Li, Yu, Zhang, Meng, and
+  Huang]{liang2024speechforensics}
+Yachao Liang, Min Yu, Gang Li, Jianguo Jiang, Boquan Li, Feng Yu, Ning Zhang,
+  Xiang Meng, and Weiqing Huang.
+\newblock Speechforensics: Audio-visual speech representation learning for face
+  forgery detection.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem[Shi et~al.(2022)Shi, Hsu, Lakhotia, and Mohamed]{shi2022avhubert}
+Bowen Shi, Wei-Ning Hsu, Kushal Lakhotia, and Abdelrahman Mohamed.
+\newblock Learning audio-visual speech representation by masked multimodal
+  cluster prediction.
+\newblock In \emph{International Conference on Learning Representations}, 2022.
+
+\bibitem[Smeu et~al.(2025)Smeu, Boldisor, Oneata, and Oneata]{smeu2025avhalign}
+Stefan Smeu, Dragos-Alexandru Boldisor, Dan Oneata, and Elisabeta Oneata.
+\newblock Circumventing shortcuts in audio-visual deepfake detection datasets
+  with unsupervised learning.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, 2025.
+
+\bibitem[Zhou and Lim(2021)]{zhou2021jointav}
+Yipin Zhou and Ser-Nam Lim.
+\newblock Joint audio-visual deepfake detection.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, pages 14800--14809, 2021.
+
+\end{thebibliography}
