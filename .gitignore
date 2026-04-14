@@ -21,6 +21,13 @@ logs/
 
 # ── Results / evaluation outputs ─────────────────────────────────────────────
 avh_sup/results/
+avh_sup/results_summary/
+
+# ── Generated figures (reproducible from generate_figures.py) ────────────────
+paper/figures/*.pdf
+paper/figures/*.png
+submission_prep/figures/*.pdf
+submission_prep/figures/*.png
 
 # ── Checkpoints and model weights ────────────────────────────────────────────
 checkpoints/

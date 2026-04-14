@@ -806,3 +806,94 @@ If a paragraph does not help support one of these four claims, it probably belon
 - `submission_prep/NEURIPS_SUBMISSION_PLAN.md`
 - `avh_sup/configs/A5.yaml`
 - `avh_sup/configs/A6.yaml`
+
+## 14. Caren's Action Items (from meeting, 2026-04-14)
+
+Priority order for the next 10 days before submission.
+
+### 14.1 Re-frame the core claim as routing, not invariance
+
+**What to do:**
+
+Every place in the draft where the model is described as "learning domain-invariant features" or "removing domain information", replace it with language that says:
+
+> Three-way factorization changes *what information the model uses* and *how the final detector routes decisions*.
+
+The word `invariance` should not appear in the abstract or introduction as a positive claim.
+The word `routing` should appear at least once in the abstract and once in the first paragraph of the methods.
+
+**Where to be especially careful:**
+
+- Abstract: do not say "A6 learns domain-invariant features"
+- Introduction: do not frame the contribution as "achieving invariance"
+- Section 4.4 paragraph: do not say "domain pressure removes domain information from Z_c"
+
+The correct framing is:
+
+- The binary structure entangles signal and shortcut; three-way factorization separates them structurally.
+- This structural separation changes *routing*: the trained head ends up using the visual-unique pathway for FV-RA.
+- Domain probe numbers show A6 is not domain-invariant; it just routes better.
+
+### 14.2 Elevate the three-way vs two-way mechanism evidence to a primary figure
+
+**What to do:**
+
+The head-ablation result (Step 7 in Section 6) is currently buried in a table.
+Caren's feedback is that the size difference in routing sensitivity between A2 and A6 is large enough to be a primary mechanism figure, not just one table row.
+
+**Concrete figure to make:**
+
+A grouped bar chart with three groups (A2, A5, A6), each showing `ΔFV-RA` for their most diagnostic ablation:
+
+| Model | Ablation | `ΔFV-RA` |
+| --- | --- | ---: |
+| A2 | `mask_vc` | `-0.0336` |
+| A5 | `mask_vis` | `-0.1131` |
+| A6 | `mask_uv` | `-0.3544` |
+
+The visual claim this figure makes is:
+
+> Only A6 exhibits a large routing drop when the visual-unique channel is masked. This is the primary evidence that three-way factorization changes downstream decision routing.
+
+This should be **Figure 3** in the main text (see Section 12.2).
+
+**Optional addition:** include `A2 mask_ac → ΔAV1M = −0.4695` as a side annotation to show that A2 is just as routing-sensitive — but to audio.
+
+### 14.3 Re-package ablation results as inductive bias robustness, not absolute improvement
+
+**What to do:**
+
+When presenting results where absolute AUC is not impressively high (e.g., AVLips), do not lead with performance numbers.
+Lead instead with ordering consistency:
+
+> Across all evaluation protocols tested, the ranking A6 > A5 > A2 on FV-RA is preserved. This consistency supports the claim that three-way factorization provides a robust inductive bias for visual-fake detection, rather than an optimization artifact specific to one dataset.
+
+**Suggested phrasing template for rebuttal / discussion:**
+
+> Although absolute AUC varies across datasets and evaluation protocols, the relative improvement of the three-way factorization models over the binary baseline is consistent. This robustness of the ordering is itself evidence that the factorization structure induces a stable representational prior that favours visual-unique evidence under domain shift.
+
+### 14.4 Build the key visualizations before sending to Chris and Mike
+
+**Target: complete by end of next week (2026-04-21)**
+
+Priority figures to produce:
+
+1. **Figure 1 (model schematic):** side-by-side diagram of A2 (binary split) vs A5/A6 (three-way factorization + domain push-pull). Show data flow, factorization branches, and which branch feeds the classifier. Make `u_v` visually prominent.
+
+2. **Figure 2 (subspace OOD probe):** grouped bar chart of OOD probe AUC by subspace. At minimum: `A2 Z_c`, `A5 u_v`, `A6 u_v`. Annotate `A6 u_v = 0.9238` as the peak. This is the representation-level evidence figure.
+
+3. **Figure 3 (routing evidence / head ablation):** grouped bar chart of `ΔFV-RA` per model for the most diagnostic ablation. This is the primary mechanism figure. See 14.2 for exact values.
+
+**Send to Chris and Mike once ready.**
+Caren has offered to help with visualization if Chris and Mike agree.
+Contact Caren if additional compute is needed (she has spare server capacity).
+
+### 14.5 Summary: what changes the acceptance probability
+
+Per Caren's framing, the paper moves from ~30–40% to ~45–55% if:
+
+1. Routing language is used consistently throughout; invariance framing is removed.
+2. Figure 3 (head ablation / routing evidence) is made into a strong standalone figure.
+3. A publicly comparable benchmark is added (see Section 8, `FakeAVCeleb 70-30 split`).
+
+Item 3 is the hardest and may require compute. This is when to contact Caren.
