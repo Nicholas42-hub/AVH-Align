@@ -50,7 +50,7 @@
 \maketitle
 
 \begin{abstract}
-Audio-visual deepfake detectors trained on large-scale datasets often collapse to domain-specific shortcuts---compression artifacts, identity biases, or dataset construction patterns---rather than genuine manipulation evidence. We propose \method, a cross-domain audio-visual deepfake detector that explicitly routes visual evidence into three factors via an audio-conditioned router: a \emph{manipulation} factor encoding visual forgery cues, a \emph{content} factor aligned to speech semantics, and a \emph{domain} factor that absorbs dataset-specific nuisance. At inference time only the manipulation factor drives the prediction. \method\ combines audio-conditioned token routing with audio-visual alignment, factor orthogonality, and gradient-reversal domain suppression. Trained on AV-Deepfake1M and evaluated cross-domain on FakeAVCeleb, \method\ improves AUC on the most informative category FakeVideo-RealAudio (FV-RA, visual-fake with real audio) from $0.500{\pm}0.047$ for a strong binary baseline to $0.659{\pm}0.079$. Crucially, adding domain adversarial pressure to a binary representation without the three-way factorization decreases FV-RA AUC to $0.450$, demonstrating that the factorized structure is the essential enabling condition. Head ablations confirm that the FV-RA decision is routed primarily through the manipulation factor, providing direct mechanistic evidence for the routing interpretation.
+Audio-visual deepfake detectors trained on large source datasets often collapse to domain-specific shortcuts rather than transferable manipulation evidence. We propose \method, a three-way factorized audio-visual detector that separates shared cross-modal content, modality-unique manipulation cues, and residual domain-sensitive signal. The prediction head reads only the task-relevant shared and unique factors, while domain push-pull discourages easy domain prediction from this branch and concentrates nuisance information in the residual branch. On a matched AV-Deepfake1M$\rightarrow$FakeAVCeleb benchmark, \method\ improves AUC on the most informative category, FakeVideo-RealAudio (FV-RA), from $0.500{\pm}0.047$ for a two-way baseline to $0.659{\pm}0.079$. Crucially, adding domain adversarial pressure to a two-way representation without the three-way factorization decreases FV-RA AUC to $0.450$, demonstrating that the factorized structure is the essential enabling condition. Subspace probes identify the visual-unique channel as the strongest OOD carrier, and head ablations show that masking this channel drops FV-RA from $0.721$ to $0.366$. These results support a routing-based rather than invariance-based explanation of the cross-domain gain.
 \end{abstract}
 
 \section{Introduction}
@@ -59,14 +59,14 @@ Audio-visual deepfakes have become harder to detect because modern generators ca
 
 Recent work has shown that audio-visual synchronization and speech-aware representations can improve robustness by anchoring detection to cross-modal consistency rather than static image artifacts \citep{feng2023avad, liang2024speechforensics, smeu2025avhalign}. However, even synchronization-based approaches can still entangle three qualitatively different signals: \emph{what} is being spoken, \emph{whether} the visible motion is manipulated, and \emph{which domain} the sample comes from. In practice, these factors interact. A detector that does not explicitly separate them may use domain-specific shortcuts whenever such cues correlate with labels.
 
-We address this issue with \method, a model that factorizes visual evidence into three routed components. Given visual tokens and synchronized audio features, the model predicts token-wise routing weights over a \emph{manipulation} branch, a \emph{content} branch, and a \emph{domain} branch. The content branch is trained to stay aligned with audio semantics. The domain branch is trained to absorb dataset-specific nuisance information. The manipulation branch is optimized to support fake detection while being discouraged from carrying domain identity. At inference time, only the manipulation factor contributes to the final prediction. This design separates ``useful for cross-domain detection'' from ``useful only for identifying the dataset.''
+We address this issue with \method, a model that factorizes audio-visual evidence into three roles: shared cross-modal content, modality-unique manipulation cues, and residual domain-sensitive signal. The shared factor is trained to remain aligned with speech semantics. The residual factor is trained to absorb dataset-specific nuisance information. The prediction head reads only the task-relevant shared and unique factors, so the model is encouraged to solve detection without relying on the residual shortcut branch. This design separates ``useful for cross-domain detection'' from ``useful only for identifying the dataset.''
 
 \paragraph{Contributions.}
 We make three contributions.
 \begin{itemize}
-\item We propose \method, an audio-conditioned three-way routing architecture that decomposes visual evidence into manipulation, content, and domain factors. The audio-conditioned router lets the model focus on visual tokens whose dynamics deviate from authentic speech rather than relying on global shortcut statistics.
-\item We introduce a joint objective combining clip-level detection, audio-visual alignment, factor orthogonality, and adversarial domain suppression, together with a clip-level LogSumExp aggregation that remains effective under variable-length sequences at batch size one.
-\item We provide the first direct evidence that the improvement in cross-domain visual-fake detection requires the factorized architecture itself: domain adversarial training without three-way factorization degrades FV-RA AUC (from 0.500 to 0.450), while \method\ improves it to 0.659.  Head-ablation analysis quantifies the routing mechanism that drives this gain.
+\item We propose \method, a three-way factorized audio-visual detector that separates shared content, modality-unique manipulation evidence, and residual domain-sensitive signal, and applies domain push-pull to change which evidence the detector uses under shift.
+\item We introduce a joint objective combining clip-level detection, audio-visual alignment, orthogonality between task and residual factors, and adversarial domain suppression of the task branch.
+\item We provide direct evidence that the improvement in cross-domain visual-fake detection requires the factorized architecture itself: domain adversarial training without three-way factorization degrades FV-RA AUC (from 0.500 to 0.450), while \method\ improves it to 0.659. Subspace probes and head ablations quantify the routing mechanism that drives this gain.
 \end{itemize}
 
 \section{Related Work}
@@ -77,82 +77,83 @@ Multimodal deepfake detection leverages the fact that realistic speech, lip moti
 \paragraph{Speech-aware multimodal representations.}
 Large-scale audio-visual speech models, such as AV-HuBERT \citep{shi2022avhubert}, learn strong multimodal features that capture both local synchronization and longer-term speech structure. Such representations have proven useful beyond recognition, including forensic analysis and synchronization-based detection \citep{liang2024speechforensics, smeu2025avhalign}. Our method uses the same intuition, but adds an explicit factorization layer so that the downstream detector can discard nuisance factors instead of letting them leak into the prediction head.
 
-\paragraph{Domain generalization and disentanglement.}
-Domain-adversarial learning \citep{ganin2016dann} and factorized representations are established tools for improving transfer beyond the training distribution. In deepfake detection, the need for domain-invariant evidence is particularly strong because dataset-specific artifacts often dominate the supervision signal. Our formulation adapts this principle to multimodal forensics by assigning domain information to a dedicated branch and suppressing it elsewhere.
+\paragraph{Domain generalization and factorized representations.}
+Domain-adversarial learning \citep{ganin2016dann} and factorized representations are established tools for improving transfer beyond the training distribution. In deepfake detection, dataset-specific artifacts often dominate the supervision signal, so models benefit from architectures that separate task-relevant evidence from nuisance. Our formulation adapts this principle to multimodal forensics by assigning domain information to a dedicated residual branch and discouraging the prediction head from depending on it.
 
 \section{Problem Setting}
 
-We study cross-domain audio-visual deepfake detection. Let $\mathcal{D} = \{(x_i^v, x_i^a, y_i, d_i)\}_{i=1}^N$ denote training samples where $x_i^v$ is a sequence of visual observations, $x_i^a$ is the synchronized audio, $y_i \in \{0,1\}$ is the video-level real/fake label, and $d_i \in \{1,\dots,M\}$ indicates the source domain or dataset. During training, we observe samples from $M$ source domains; during testing, the detector is evaluated on a held-out target domain that is unseen during optimization.
+We study cross-dataset audio-visual deepfake detection. Let $\mathcal{D} = \{(x_i^v, x_i^a, y_i, d_i)\}_{i=1}^N$ denote training samples where $x_i^v$ is a sequence of visual observations, $x_i^a$ is the synchronized audio, $y_i \in \{0,1\}$ is the video-level real/fake label, and $d_i \in \{1,\dots,M\}$ indicates the source domain or dataset. Training is dominated by source-domain clips from AV-Deepfake1M. In the full domain-aware setting, we may additionally use real-only target-domain clips for auxiliary domain supervision, while target-domain fake labels and all test clips remain untouched.
 
-Our goal is to learn a scoring function $f(x^v, x^a)$ that remains predictive when the nuisance statistics associated with $d$ shift at test time. We therefore seek a representation in which manipulation evidence is discriminative for $y$ but invariant to $d$, while other predictable but non-transferable signals are isolated rather than implicitly used by the classifier.
+Our goal is to learn a scoring function $f(x^v, x^a)$ that remains predictive when the nuisance statistics associated with $d$ shift at test time. We therefore seek a representation in which manipulation evidence remains discriminative for $y$, while predictable but non-transferable signals are isolated rather than implicitly used by the classifier. We do not claim that the learned task branch becomes fully domain-invariant; the claim we test is weaker and more mechanism-focused: factorization changes representation usage and downstream routing under shift.
 
 \section{Method}
 
 \subsection{Overview}
 
-Figure~\ref{fig:overview} illustrates the proposed pipeline. A visual encoder extracts token features $V \in \R^{T \times C}$ from the face or mouth region across $T$ time steps. An audio encoder extracts synchronized audio features $A \in \R^{T \times C}$. For each time step $t$, an audio-conditioned router predicts a distribution over three branches:
+Figure~\ref{fig:overview} gives a conceptual overview of \method. Starting from frozen AV-HuBERT features $z_v, z_a \in \R^{1024}$, we first extract shared cross-modal factors and modality-specific hidden states:
 \begin{equation}
-g_t = \mathrm{softmax}\big(W_r [v_t; a_t; v_t \odot a_t]\big), \qquad g_t \in \R^3,
+\big[s_v, h_v\big] = F_v(z_v), \qquad \big[s_a, h_a\big] = F_a(z_a),
 \end{equation}
-where $v_t$ and $a_t$ are visual and audio features and $\odot$ is elementwise multiplication. The three routing coefficients correspond to manipulation ($m$), content ($c$), and domain ($d$).
+where $s_v$ and $s_a$ denote shared task-relevant factors and $h_v, h_a$ collect the remaining modality-specific signal. We then split the modality-specific states into unique task-relevant and residual components:
 
-Each branch has its own expert projection:
 \begin{equation}
-h_t^k = g_t^k E_k(v_t), \qquad k \in \{m,c,d\},
+\big[u_v, r_v\big] = G_v(h_v), \qquad \big[u_a, r_a\big] = G_a(h_a).
 \end{equation}
-where $E_k$ is a learnable expert. The resulting sequence representations are aggregated into $H^m$, $H^c$, and $H^d$.
+Here $u_v$ and $u_a$ are modality-unique task factors, while $r_v$ and $r_a$ form the residual branch that is allowed to absorb shortcut and domain signal. The task representation and residual representation are
+\begin{equation}
+Z_{\mathrm{task}} = \mathrm{cat}(s_v, u_v, s_a, u_a), \qquad
+Z_{\mathrm{res}} = \mathrm{cat}(r_v, r_a).
+\end{equation}
+For readability, we refer to the shared factor as \emph{content}, the visual-unique task factor as the key \emph{manipulation} carrier for FV-RA, and the residual branch as the \emph{domain} factor.
 
-\subsection{Audio-conditioned Three-Way Factorization}
+\subsection{Three-Way Factorization}
 
 \paragraph{Manipulation factor.}
-The manipulation branch is intended to encode temporal visual evidence that cannot be explained by authentic speech-conditioned motion. It receives the strongest supervision from the real/fake objective and is the only branch used for the final prediction.
+The manipulation factor is intended to encode modality-unique evidence that cannot be explained by authentic cross-modal correspondence. In practice, the visual-unique component $u_v$ is the most important carrier for the visual-fake category FV-RA, while $u_a$ supports audio-fake cases. These unique components feed the task head together with the shared factors.
 
 \paragraph{Content factor.}
-The content branch captures speech semantics and identity-preserving motion that should remain consistent across domains. We align this branch to audio using a local contrastive objective over a temporal neighborhood:
+The content factor captures shared speech semantics and identity-preserving motion that should remain useful across domains. We align the shared factors across modalities using an audio-visual alignment objective:
 \begin{equation}
 \mathcal{L}_{\mathrm{align}} = - \sum_{t=1}^T
 \log
-\frac{\exp(\mathrm{sim}(h_t^c, a_t)/\tau)}
-{\sum_{j \in \mathcal{N}(t)} \exp(\mathrm{sim}(h_t^c, a_j)/\tau)},
+\frac{\exp(\mathrm{sim}(s^v_t, s^a_t)/\tau)}
+{\sum_{j \in \mathcal{N}(t)} \exp(\mathrm{sim}(s^v_t, s^a_j)/\tau)},
 \end{equation}
 where $\mathrm{sim}(\cdot,\cdot)$ is cosine similarity, $\tau$ is a temperature, and $\mathcal{N}(t)$ is a local temporal window.
 
 \paragraph{Domain factor.}
-The domain branch is explicitly optimized to predict the source domain:
+The residual branch is explicitly optimized to predict the source domain:
 \begin{equation}
-\mathcal{L}_{\mathrm{dom}} = \mathrm{CE}(C_d(\mathrm{pool}(H^d)), d).
+\mathcal{L}_{\mathrm{dom}} = \mathrm{CE}(C_d(Z_{\mathrm{res}}), d).
 \end{equation}
 This branch acts as an information sink for codec, resolution, acquisition, and dataset-construction artifacts.
 
-\subsection{Detection and Disentanglement Objectives}
+\subsection{Detection and Domain Push-Pull Objectives}
 
-We predict a clip-level fake probability from the manipulation branch:
+We predict a clip-level fake probability from the task representation:
 \begin{equation}
-s_t = C_y(h_t^m, a_t), \qquad
-\hat{y} = \sigma \left(\log \sum_{t=1}^T \exp(s_t)\right),
+\hat{y} = C_y(Z_{\mathrm{task}}),
 \end{equation}
-where $\sigma$ is the sigmoid function. We optimize binary cross-entropy:
+and optimize binary cross-entropy:
 \begin{equation}
 \mathcal{L}_{\mathrm{fake}} = \mathrm{BCE}(\hat{y}, y).
 \end{equation}
 
-To keep the branches separated, we penalize cross-covariance between factors:
+To keep task-relevant and residual factors separated, we penalize cross-covariance between them:
 \begin{equation}
 \mathcal{L}_{\mathrm{ortho}} =
-\sum_{(p,q) \in \{(m,c),(m,d),(c,d)\}}
-\left\|
-\frac{(H^p)^\top H^q}{T}
-\right\|_F^2.
+\left\| s_v^\top r_v \right\|_F^2
++ \left\| s_a^\top r_a \right\|_F^2
++ \left\| u_v^\top r_v \right\|_F^2
++ \left\| u_a^\top r_a \right\|_F^2.
 \end{equation}
 
-To suppress domain information from the manipulation and content branches, we apply a gradient-reversal domain classifier:
+To suppress easy domain prediction from the task branch, we apply a gradient-reversal domain classifier:
 \begin{equation}
 \mathcal{L}_{\mathrm{adv}} =
-\mathrm{CE}(C_a(\mathrm{pool}(H^m)), d)
-+
-\mathrm{CE}(C_a(\mathrm{pool}(H^c)), d),
+\mathrm{CE}(C_a(\mathrm{GRL}(Z_{\mathrm{task}})), d),
 \end{equation}
-where gradients flowing into the encoder are reversed, encouraging $H^m$ and $H^c$ to be domain-invariant.
+while $\mathcal{L}_{\mathrm{dom}}$ simultaneously attracts domain information into $Z_{\mathrm{res}}$. This push-pull effect does not aim to make $Z_{\mathrm{task}}$ fully domain-invariant; instead it makes shortcut routing into the prediction head less attractive.
 
 The full objective is
 \begin{equation}
@@ -171,12 +172,12 @@ The full objective is
 
 \subsection{Why the Factorization Helps}
 
-The key design choice is that the detector does not consume the entire multimodal representation. Instead, it reads only the manipulation factor. This matters because many dataset shortcuts are genuinely predictive on the source domains; without an explicit nuisance branch, the model has no incentive to avoid them. By isolating content and domain factors, \method\ turns disentanglement into an optimization target rather than a hope.
+The key design choice is that the detector does not consume the entire multimodal representation. Instead, it reads only the shared and unique task factors and excludes the residual branch from the prediction head. This matters because many dataset shortcuts are genuinely predictive on the source domains; without an explicit nuisance branch, the model has no incentive to avoid them. By exposing a visual-unique task channel and a separate residual/domain channel, \method\ turns better evidence usage into an optimization target rather than a hope.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.97\linewidth]{overview.pdf}
-    \caption{\method\ architecture. Visual and audio encoders (AV-HuBERT) extract synchronized token features $V,A\in\mathbb{R}^{T\times C}$. An audio-conditioned router produces per-step weights $(g^m_t, g^c_t, g^d_t)$ over three expert branches: a \textbf{manipulation} branch $H^m$ (used only at inference), a \textbf{content} branch $H^c$ aligned to audio semantics, and a \textbf{domain} branch $H^d$ that absorbs dataset-specific nuisance. Gradient-reversal suppresses domain information from $H^m$ and $H^c$; factor orthogonality $\mathcal{L}_{\rm ortho}$ encourages branch separation.}
+    \caption{Conceptual overview of \method. Frozen AV-HuBERT features are decomposed into shared cross-modal factors $(s_v,s_a)$, modality-unique factors $(u_v,u_a)$, and residual factors $(r_v,r_a)$. The task head reads only the task-relevant shared and unique factors, while domain push-pull discourages easy domain prediction from $Z_{\mathrm{task}}$ and concentrates nuisance information in $Z_{\mathrm{res}}$. We use the term ``routing'' to refer to which of these factors the final detector actually relies on at inference time.}
     \label{fig:overview}
 \end{figure}
 
@@ -184,7 +185,7 @@ The key design choice is that the detector does not consume the entire multimoda
 
 \subsection{Datasets and Evaluation}
 
-We train on AV-Deepfake1M (AV1M) \citep{cai2024avdeepfake1m}, a large-scale dataset of over one million clips spanning diverse synthesis pipelines, and evaluate cross-domain on FakeAVCeleb (FAVC) \citep{khalid2021fakeavceleb}. We also report directional results on AVLips \citep{como2024lips}. The primary evaluation protocol is a strict leave-one-domain-out: models are trained on AV1M and evaluated on a matched FakeAVCeleb test split ($N=1{,}114$) without any target-domain fine-tuning. We report AUC separately for three informative categories: (i)~RealVideo-FakeAudio (RV-FA), (ii)~FakeVideo-RealAudio (FV-RA), and (iii)~FakeVideo-FakeAudio (FV-FA). FV-RA is the hardest and most informative category because audio shortcuts are uninformative, forcing the model to use genuine visual manipulation evidence.
+We train on AV-Deepfake1M (AV1M) \citep{cai2024avdeepfake1m}, a large-scale dataset of over one million clips spanning diverse synthesis pipelines, and evaluate on a matched FakeAVCeleb (FAVC) \citep{khalid2021fakeavceleb} test split ($N=1{,}114$). We also report directional results on AVLips \citep{como2024lips}. Our main paper benchmark is therefore a matched cross-dataset transfer protocol rather than the public FakeAVCeleb 70/30 leaderboard. In the full domain-aware setting, auxiliary domain supervision may use real-only FAVC validation clips, but no target-domain fake labels or FAVC test clips are used during optimization. We report AUC separately for three informative categories: (i)~RealVideo-FakeAudio (RV-FA), (ii)~FakeVideo-RealAudio (FV-RA), and (iii)~FakeVideo-FakeAudio (FV-FA). FV-RA is the hardest and most informative category because audio shortcuts are uninformative, forcing the model to use genuine visual manipulation evidence.
 
 \subsection{Baselines}
 
@@ -192,7 +193,7 @@ We compare \method\ against a progression of internal baselines that isolate eac
 
 \subsection{Implementation Details}
 
-\method\ is built on frozen AV-HuBERT \citep{shi2022avhubert} features ($C=1{,}024$, 25 fps, mouth-crop visual stream). The router, expert projections, and classifier are lightweight MLPs (three to four layers, LayerNorm, ReLU). The manipulation and content experts project to 256 dimensions each; the domain expert to 256 dimensions. Training uses Adam with learning rate $10^{-3}$, batch size 1 (variable-length clips), and a maximum of 100 epochs with patience-20 early stopping on validation AUC. We fix $\lambda_{\mathrm{align}} = 0.5$, $\lambda_{\mathrm{dom}} = 1.0$, $\lambda_{\mathrm{adv}} = 1.0$, $\lambda_{\mathrm{ortho}} = 0.1$, and GRL~$\alpha = 1.0$. Domain labels are assigned per source dataset ($d_{\mathrm{AV1M}} = 0$). The domain branch is additionally trained on real-only FAVC validation clips (category RealVideo-RealAudio, $d_{\mathrm{FAVC}} = 1$) for domain signal; FAVC test set remains strictly untouched. All results are averaged over three random seeds.
+\method\ is built on frozen AV-HuBERT \citep{shi2022avhubert} features ($C=1{,}024$, 25 fps, mouth-crop visual stream). The factorization modules and classifier are lightweight MLPs (three to four layers, LayerNorm, ReLU). The shared, unique, and residual components use 256 dimensions per modality. Training uses Adam with learning rate $10^{-3}$, batch size 1 (variable-length clips), and a maximum of 100 epochs with patience-20 early stopping on validation AUC. We fix $\lambda_{\mathrm{align}} = 0.5$, $\lambda_{\mathrm{dom}} = 1.0$, $\lambda_{\mathrm{adv}} = 1.0$, and $\lambda_{\mathrm{ortho}} = 0.1$, with GRL~$\alpha = 1.0$. Domain labels are assigned per dataset. For the full domain-aware model, auxiliary domain supervision may include real-only FAVC validation clips; this affects only the domain-routing objective, and FAVC test labels and clips remain untouched. Unless otherwise stated, quantitative results are averaged over three random seeds. For AVLips, we additionally report a best-of-three-seed auxiliary evaluation as external directional support.
 
 \section{Results and Analysis}
 
@@ -217,9 +218,32 @@ Table~\ref{tab:main} compares \method\ against internal ablation baselines under
     \end{tabular}
 \end{table}
 
+\subsection{Subspace Evidence: Stronger Routing, Not Full Invariance}
+
+Table~\ref{tab:probe} summarizes representative probe results for the main visual subspaces. The most important pattern is that the visual-unique factor of \method\ is the strongest OOD carrier: its AV1M$\rightarrow$FAVC probe AUC reaches $0.924$, substantially above the two-way task branch ($0.705$) and above the shared visual factors in the three-way models. At the same time, all of these subspaces remain highly domain-predictive, with domain-probe AUCs above $0.96$. This is why we do not interpret the gain as evidence of full domain invariance. The safer and better-supported interpretation is that three-way factorization exposes a usable visual-unique channel and makes it easier for the final detector to route FV-RA decisions through that channel. Figure~\ref{fig:analysis} (left) displays these numbers visually alongside the corresponding domain-probe AUCs.
+
 \begin{table}[t]
     \centering
-    \caption{Head-ablation analysis on FV-RA AUC. Each row zeros out one branch of the trained \method\ and measures the FV-RA drop ($\Delta$FV-RA). Larger drop indicates heavier routing dependence on that branch.}
+    \caption{Representative probe AUCs for key visual subspaces. The OOD probe is trained on AV1M and evaluated on matched FAVC; the domain probe measures dataset predictability. The visual-unique factor is the strongest OOD carrier, but it is not domain-invariant.}
+    \label{tab:probe}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        Subspace & Dim. & OOD probe & Domain probe \\
+        \midrule
+        Two-way task branch $Z_c$ & 1024 & $0.705$ & $0.998$ \\
+        Two-way visual causal $v_c$ & 512 & $0.891$ & $0.994$ \\
+        Three-way shared visual $s_v$ & 256 & $0.814$ & $0.992$ \\
+        Three-way unique visual $u_v$ & 256 & $0.825$ & $0.967$ \\
+        \method\ shared visual $s_v$ & 256 & $0.726$ & $0.989$ \\
+        \method\ unique visual $u_v$ & 256 & $\mathbf{0.924}$ & $0.976$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[t]
+    \centering
+    \caption{Head-ablation analysis on FV-RA AUC using representative trained checkpoints. Each row zeros out one branch of the trained model and measures the FV-RA drop ($\Delta$FV-RA). Larger drop indicates heavier routing dependence on that branch.}
     \label{tab:ablation}
     \small
     \begin{tabular}{llccc}
@@ -233,45 +257,72 @@ Table~\ref{tab:main} compares \method\ against internal ablation baselines under
     \end{tabular}
 \end{table}
 
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.97\linewidth]{analysis.pdf}
+    \caption{\textbf{Left}: OOD probe AUC and domain-probe AUC for each visual subspace. The visual-unique channel of \method\ ($u_v$, rightmost pair) achieves the highest OOD AUC ($0.924$) while remaining strongly domain-predictive ($0.976$), supporting a routing rather than invariance explanation. \textbf{Right}: Head-ablation routing sensitivity ($|\Delta\text{FV-RA}|$ when the visual branch is masked). \method's FV-RA decision is $10\times$ more dependent on the visual-unique manipulation factor than the two-way baseline, demonstrating that factorization changes which evidence the detector uses.}
+    \label{fig:analysis}
+\end{figure}
+
 \subsection{Routing Evidence: Head Ablation}
 
-Table~\ref{tab:ablation} quantifies how strongly each model's FV-RA performance depends on its visual branches. For the two-way baseline, zeroing the visual causal branch causes a negligible drop of $-0.034$, confirming that the trained detector barely uses visual evidence for FV-RA decisions. For three-way factorization without domain push-pull, masking visual branches causes a larger drop ($-0.113$), indicating partial visual usage. For \method, masking the manipulation factor alone causes a $-0.354$ drop, demonstrating that the FV-RA decision is almost entirely routed through this branch. The two-way model is just as routing-sensitive in the opposite direction: masking its audio branch drops in-domain AUC from 0.997 to 0.528, confirming audio dominance rather than visual capacity failure. This asymmetry is precisely what the three-way factorization is designed to break.
+Table~\ref{tab:ablation} quantifies how strongly each model's FV-RA performance depends on its visual branches (also visualised in Figure~\ref{fig:analysis}, right). These analyses use representative trained checkpoints rather than seed averages, because routing is easiest to interpret on a concrete detector. For the two-way baseline, zeroing the visual causal branch causes a negligible drop of $-0.034$, confirming that the trained detector barely uses visual evidence for FV-RA decisions. For three-way factorization without domain push-pull, masking visual branches causes a larger drop ($-0.113$), indicating partial visual usage. For \method, masking the visual-unique manipulation factor alone causes a $-0.354$ drop, demonstrating that the FV-RA decision is routed primarily through this branch. The two-way model is just as routing-sensitive in the opposite direction: masking its audio branch drops in-domain AUC from 0.997 to 0.528, confirming audio dominance rather than visual capacity failure. This asymmetry is precisely what the three-way factorization is designed to break.
 
-\subsection{Qualitative Analysis}
-
-Figure~\ref{fig:routing} shows per-frame routing weights for representative samples. For the fake clip, the manipulation weight $g^m_t$ peaks in the central manipulated region while $g^c_t$ and $g^d_t$ dominate the authentic frames. For the real clip, $g^m_t$ remains consistently low. This pattern is consistent with the model learning to allocate routing to branches that maximize the respective training objectives rather than applying uniform routing.
-
-Figure~\ref{fig:tsne} shows t-SNE embeddings of the two key factors. The domain factor $H^d$ forms tight, dataset-separated clusters ($\mathcal{D}_1$--$\mathcal{D}_3$), confirming it absorbs domain-specific information. The manipulation factor $H^m$ separates real from fake samples across all domains without residual domain clustering, indicating successful cross-domain transfer of the manipulation signal.
-
-\subsection{Corrected Artifact Control}
-
-A potential confound in AV1M-trained models is leading silence: fabricated clips sometimes begin with audio-free frames that are absent in authentic samples. We verified that FV-RA performance remains essentially stable after true-trimmed preprocessing that removes raw-waveform leading silence prior to AV-HuBERT feature extraction (three-way without domain push-pull: $0.613 \to 0.606$; \method: $0.757 \to 0.765$), ruling out this artifact as an explanation for the visual-fake improvement.
+Figure~\ref{fig:routing} provides direct qualitative evidence for this routing pattern. For the fake clip, the visual-unique activation $\|u_v^t\|$ peaks sharply in the manipulated lip region, while the residual activation $\|r_v^t\|$ remains elevated throughout (absorbing compression and motion baseline). For the real clip, both channels stay low and uniform. This frame-level pattern is consistent with the head-ablation finding: the FV-RA decision is largely carried by $u_v$, not the residual branch.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.97\linewidth]{routing_map.pdf}
-    \caption{Per-frame routing weights for a representative fake clip (top) and a real clip (bottom). For the fake sample, $g^m_t$ rises sharply within the manipulated region (shaded), while $g^c_t$ and $g^d_t$ dominate in unmanipulated segments. The real sample shows consistently low $g^m_t$, indicating the manipulation branch is not activated by authentic speech motion.}
+    \caption{Per-frame routing activation for a representative fake clip (top) and real clip (bottom). \textbf{Visual-unique} ($u_v$, blue) peaks in the manipulated region of the fake clip; \textbf{residual} ($r_v$, orange) absorbs the domain baseline throughout. For the real clip both channels remain low and uniform, consistent with the head-ablation finding that $u_v$ carries the FV-RA decision.}
     \label{fig:routing}
 \end{figure}
+
+\subsection{Corrected Artifact Control}
+
+A potential confound in AV1M-trained models is leading silence: fabricated clips sometimes begin with audio-free frames that are absent in authentic samples. Using representative checkpoints, we verified that FV-RA performance remains essentially stable after true-trimmed preprocessing that removes raw-waveform leading silence prior to AV-HuBERT feature extraction (three-way without domain push-pull: $0.613 \to 0.606$; \method: $0.757 \to 0.765$). This control therefore does not support the hypothesis that the visual-fake gain is driven by a leading-silence artifact.
+
+\subsection{Factor Geometry}
+
+Figure~\ref{fig:tsne} visualises t-SNE embeddings of the two key factors from \method. The residual factor $Z_{\mathrm{res}}$ forms tight, dataset-separated clusters, confirming that it absorbs domain-specific nuisance. The task factor $Z_{\mathrm{task}}$ separates real from fake samples across all source domains without residual domain clustering, indicating that domain push-pull successfully discourages the shortcut from entering the prediction head.
+
+\subsection{Supplementary External Support on AVLips}
+
+To test whether the same ordering appears on a second external benchmark, we also evaluated all three model families on AVLips and report the best-performing seed for each model in Table~\ref{tab:avlips}. Even under this optimistic best-of-three view, the same ordering is preserved: the two-way baseline reaches $0.568$, three-way factorization without domain push-pull reaches $0.595$, and \method\ reaches $0.734$. This result is directionally consistent with the matched FakeAVCeleb benchmark and suggests that the routing-based improvement is not isolated to a single target dataset. We nevertheless treat AVLips as supportive rather than central evidence, because the seed variance for \method\ is larger there than on matched FakeAVCeleb.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.97\linewidth]{tsne.pdf}
-    \caption{t-SNE of the two key factors. \textbf{Left}: the domain factor $H^d$ forms tight, dataset-specific clusters (different markers/colors per source domain), confirming it absorbs domain nuisance. \textbf{Right}: the manipulation factor $H^m$ separates real (blue) from fake (red) samples across all domains, with no residual domain clustering, indicating successful disentanglement.}
+    \caption{t-SNE embeddings of the two key factors from a representative \method\ checkpoint. \textbf{Left}: the residual factor $Z_{\mathrm{res}}$ forms tight, dataset-specific clusters (colors), confirming it absorbs domain nuisance. \textbf{Right}: the task factor $Z_{\mathrm{task}}$ separates real (blue circles) from fake (red crosses) across all source domains, with no residual domain clustering, indicating that domain push-pull successfully discourages shortcut routing into the prediction head.}
     \label{fig:tsne}
 \end{figure}
+
+\begin{table}[t]
+    \centering
+    \caption{AVLips cross-dataset AUC using the best-performing seed among three independent runs for each model. This table is reported as supplementary external-direction evidence rather than a primary benchmark.}
+    \label{tab:avlips}
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        Method & Best seed & Full AUC on AVLips \\
+        \midrule
+        Two-way baseline & 42 & $0.5677$ \\
+        Three-way, no domain push-pull & 44 & $0.5954$ \\
+        \method\ (ours) & 43 & $\mathbf{0.7340}$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \section{Limitations and Broader Impact}
 
 \paragraph{Limitations.}
-\method\ is still anchored to speech-related evidence, so it may be less effective on deepfakes with minimal speaking motion or on clips where the audio track is absent, replaced, or intentionally desynchronized for benign reasons. The factorization also introduces additional optimization complexity and depends on reliable domain identifiers during training. If the source domains are too few or too homogeneous, the domain branch may under-model the true nuisance space.
+\method\ is still anchored to speech-related evidence, so it may be less effective on deepfakes with minimal speaking motion or on clips where the audio track is absent, replaced, or intentionally desynchronized for benign reasons. The factorization also introduces additional optimization complexity and depends on reliable domain identifiers during training. In the full domain-aware setting, auxiliary real-only target-domain clips are used for domain supervision, so our strongest result should be interpreted as cross-dataset transfer with weak target-domain exposure rather than pure source-only generalization.
 
 \paragraph{Broader impact.}
 Cross-domain deepfake detection can support content authentication, media forensics, and platform integrity. At the same time, any detector can be misused for surveillance or overconfident moderation, especially if its uncertainty is not surfaced. We therefore recommend reporting calibration, failure modes, and domain-shift sensitivity, and releasing models with clear usage restrictions and dataset documentation.
 
 \section{Conclusion}
 
-We proposed \method, a three-way audio-visual deepfake detector that routes visual evidence into manipulation, content, and domain factors using synchronized audio context. The key finding is that the three-way factorization is itself the enabling architectural condition for cross-domain visual-fake detection: domain adversarial pressure applied to a binary representation degrades FV-RA performance (from 0.500 to 0.450), while \method\ improves it to $0.659{\pm}0.079$. Head-ablation analysis shows that the FV-RA decision in \method\ drops by $0.354$ when the manipulation factor is masked, directly evidencing the routing mechanism the architecture creates. Taken together, these results support a routing-based rather than invariance-based explanation of the cross-domain gain.
+We proposed \method, a three-way audio-visual deepfake detector that separates shared content, modality-unique manipulation evidence, and residual domain-sensitive signal. The key finding is that the three-way factorization is itself the enabling architectural condition for cross-domain visual-fake detection: domain adversarial pressure applied to a two-way representation degrades FV-RA performance (from 0.500 to 0.450), while \method\ improves it to $0.659{\pm}0.079$. Subspace probes identify the visual-unique channel as the strongest OOD carrier, and head-ablation analysis shows that masking this channel drops FV-RA by $0.354$ in a representative trained model. Taken together, these results support a routing-based rather than invariance-based explanation of the cross-domain gain.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

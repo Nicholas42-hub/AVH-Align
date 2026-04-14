@@ -69,150 +69,111 @@ def arrow(ax, x0, y0, x1, y1, color=C_DARK, lw=1.0, arrowstyle="-|>",
 
 
 def make_overview():
-    fig, ax = plt.subplots(figsize=(7.0, 3.8))
+    fig, ax = plt.subplots(figsize=(7.4, 4.0))
     ax.set_xlim(0, 1.0)
     ax.set_ylim(0, 1.0)
     ax.axis("off")
 
-    # ── column x-centres & row y positions ───────────────────────────────────
-    bw, bh = 0.13, 0.09   # box width / height
-    bh_enc = 0.11          # encoder boxes
+    bw, bh = 0.14, 0.09
+    y_input = 0.84
+    y_enc = 0.68
+    y_split1 = 0.50
+    y_split2 = 0.32
+    y_bottom = 0.10
 
-    # Row y positions (bottom of box)
-    y_input  = 0.84
-    y_enc    = 0.69
-    y_feat   = 0.58   # feature label row (text only)
-    y_router = 0.44
-    y_expert = 0.28
-    y_loss   = 0.08
+    x_vis = 0.07
+    x_aud = 0.27
+    x_shared = 0.47
+    x_unique = 0.66
+    x_resid = 0.84
 
-    # X positions
-    x_vis  = 0.08
-    x_aud  = 0.30
-    x_rout = 0.50   # router centre
-    rw     = 0.18   # router box width
-    xl     = 0.30   # left branch x
-    xm     = 0.50   # middle branch x
-    xr     = 0.70   # right branch x
-    ew     = 0.12   # expert width
+    # Inputs and encoders
+    draw_box(ax, (x_vis, y_input), bw, bh, "Visual Input",
+             sublabel=r"$z_v$", color="#EEF4FF", edgecolor="#4C72B0")
+    draw_box(ax, (x_aud, y_input), bw, bh, "Audio Input",
+             sublabel=r"$z_a$", color="#FFF4E0", edgecolor="#C07A00")
+    draw_box(ax, (x_vis, y_enc), bw, 0.11, "Frozen Encoder",
+             sublabel="AV-HuBERT", color="#DAE8FC", edgecolor="#4C72B0", fontsize=8)
+    draw_box(ax, (x_aud, y_enc), bw, 0.11, "Frozen Encoder",
+             sublabel="AV-HuBERT", color="#FFE6CC", edgecolor="#C07A00", fontsize=8)
+    arrow(ax, x_vis + bw / 2, y_input, x_vis + bw / 2, y_enc + 0.11, color="#4C72B0")
+    arrow(ax, x_aud + bw / 2, y_input, x_aud + bw / 2, y_enc + 0.11, color="#C07A00")
 
-    # ── Input blocks ─────────────────────────────────────────────────────────
-    draw_box(ax, (x_vis, y_input), bw, bh, "Face Frames",
-             sublabel=r"$x^v \in \mathbb{R}^{T\times H\times W}$",
-             color="#EEF4FF", edgecolor="#4C72B0")
-    draw_box(ax, (x_aud, y_input), bw, bh, "Audio",
-             sublabel=r"$x^a$",
-             color="#FFF4E0", edgecolor="#C07A00")
+    # First split: shared + hidden
+    draw_box(ax, (x_shared - 0.09, y_split1), 0.16, 0.10,
+             "Shared Factors", sublabel=r"$s_v, s_a$", color="#DDEEFF",
+             edgecolor=C_CON, fontsize=8, bold=True)
+    draw_box(ax, (x_shared + 0.10, y_split1), 0.16, 0.10,
+             "Modality-Specific", sublabel=r"$h_v, h_a$", color="#F7F7F7",
+             edgecolor="#888888", fontsize=7.8)
+    arrow(ax, x_vis + bw / 2, y_enc, x_shared - 0.01, y_split1 + 0.10,
+          color="#4C72B0", connectionstyle="arc3,rad=-0.10")
+    arrow(ax, x_aud + bw / 2, y_enc, x_shared + 0.17, y_split1 + 0.10,
+          color="#C07A00", connectionstyle="arc3,rad=0.10")
 
-    # ── Encoder blocks ────────────────────────────────────────────────────────
-    draw_box(ax, (x_vis, y_enc), bw, bh_enc, "Visual Encoder",
-             sublabel="AV-HuBERT", color="#DAE8FC", edgecolor="#4C72B0",
-             fontsize=8, bold=False)
-    draw_box(ax, (x_aud, y_enc), bw, bh_enc, "Audio Encoder",
-             sublabel="AV-HuBERT", color="#FFE6CC", edgecolor="#C07A00",
-             fontsize=8)
+    # Alignment annotation
+    ax.annotate("", xy=(x_shared + 0.02, y_split1 + 0.13),
+                xytext=(x_shared - 0.02, y_split1 + 0.13),
+                arrowprops=dict(arrowstyle="<->", color=C_CON, lw=1.0))
+    ax.text(x_shared, y_split1 + 0.16, r"$\mathcal{L}_{\rm align}$",
+            ha="center", va="center", fontsize=7, color=C_CON)
 
-    # ── Feature labels ────────────────────────────────────────────────────────
-    ax.text(x_vis + bw / 2, y_feat + 0.01,
-            r"$V\!\in\!\mathbb{R}^{T\!\times\!C}$",
-            ha="center", va="center", fontsize=7.5, color="#4C72B0")
-    ax.text(x_aud + bw / 2, y_feat + 0.01,
-            r"$A\!\in\!\mathbb{R}^{T\!\times\!C}$",
-            ha="center", va="center", fontsize=7.5, color="#C07A00")
+    # Second split: unique + residual
+    draw_box(ax, (x_unique - 0.08, y_split2), 0.15, 0.10,
+             "Unique Factors", sublabel=r"$u_v, u_a$", color="#FDDEDE",
+             edgecolor=C_MAN, fontsize=8, bold=True)
+    draw_box(ax, (x_resid - 0.08, y_split2), 0.15, 0.10,
+             "Residual Factors", sublabel=r"$r_v, r_a$", color="#DDFADD",
+             edgecolor=C_DOM, fontsize=8, bold=True)
+    arrow(ax, x_shared + 0.18, y_split1, x_unique, y_split2 + 0.10,
+          color="#666666", connectionstyle="arc3,rad=-0.05")
+    arrow(ax, x_shared + 0.18, y_split1, x_resid, y_split2 + 0.10,
+          color="#666666", connectionstyle="arc3,rad=0.10")
 
-    # ── Router block ──────────────────────────────────────────────────────────
-    rx = x_rout - rw / 2
-    draw_box(ax, (rx, y_router), rw, 0.10,
-             "Audio-conditioned Router",
-             sublabel=r"$g_t = \mathrm{softmax}(W_r[v_t;a_t;v_t\!\odot\!a_t])$",
-             color="#F0E6F6", edgecolor="#7B2D8B", fontsize=7.5, bold=True)
+    # Orthogonality note
+    ax.annotate("", xy=(x_resid - 0.01, y_split2 + 0.05),
+                xytext=(x_unique + 0.07, y_split2 + 0.05),
+                arrowprops=dict(arrowstyle="<->", color="#888888", lw=0.9))
+    ax.text((x_unique + x_resid) / 2, y_split2 + 0.08,
+            r"$\mathcal{L}_{\rm ortho}$", ha="center", va="center",
+            fontsize=7, color="#888888")
 
-    # ── Expert blocks ─────────────────────────────────────────────────────────
-    draw_box(ax, (xl - ew / 2, y_expert), ew, 0.10,
-             "Manip. Expert\n$E_m$", color="#FDDEDE", edgecolor=C_MAN, fontsize=8)
-    draw_box(ax, (xm - ew / 2, y_expert), ew, 0.10,
-             "Content Expert\n$E_c$", color="#DDEEFF", edgecolor=C_CON, fontsize=8)
-    draw_box(ax, (xr - ew / 2, y_expert), ew, 0.10,
-             "Domain Expert\n$E_d$", color="#DDFADD", edgecolor=C_DOM, fontsize=8)
+    # Task and residual heads
+    draw_box(ax, (0.50, y_bottom), 0.22, 0.11,
+             "Task Branch", sublabel=r"$Z_{\rm task} = [s_v,u_v,s_a,u_a]$",
+             color="#FFF0F0", edgecolor=C_MAN, fontsize=7.8, bold=True)
+    draw_box(ax, (0.80, y_bottom), 0.18, 0.11,
+             "Domain Branch", sublabel=r"$Z_{\rm res} = [r_v,r_a]$",
+             color="#F0FFF0", edgecolor=C_DOM, fontsize=7.6, bold=True)
+    arrow(ax, x_shared - 0.01, y_split1, 0.53, y_bottom + 0.11,
+          color=C_CON, connectionstyle="arc3,rad=-0.10")
+    arrow(ax, x_unique, y_split2, 0.50, y_bottom + 0.11,
+          color=C_MAN, connectionstyle="arc3,rad=0.05")
+    arrow(ax, x_resid, y_split2, 0.80, y_bottom + 0.11,
+          color=C_DOM, connectionstyle="arc3,rad=-0.05")
 
-    # ── Factor labels ─────────────────────────────────────────────────────────
-    for x, lbl, col in [(xl, r"$H^m$", C_MAN),
-                         (xm, r"$H^c$", C_CON),
-                         (xr, r"$H^d$", C_DOM)]:
-        ax.text(x, y_expert - 0.03, lbl, ha="center", va="center",
-                fontsize=9, color=col, fontweight="bold")
+    # Output and domain losses
+    draw_box(ax, (0.45, 0.01), 0.12, 0.07, "Detector",
+             sublabel=r"$\mathcal{L}_{\rm fake}$", color="#FFF7F7",
+             edgecolor=C_MAN, fontsize=7.4)
+    draw_box(ax, (0.80, 0.01), 0.16, 0.07, "Domain Classifier",
+             sublabel=r"$\mathcal{L}_{\rm dom}$", color="#F7FFF7",
+             edgecolor=C_DOM, fontsize=7.2)
+    arrow(ax, 0.61, y_bottom, 0.51, 0.08, color=C_MAN)
+    arrow(ax, 0.89, y_bottom, 0.88, 0.08, color=C_DOM)
 
-    # ── Loss boxes ────────────────────────────────────────────────────────────
-    lw_box = 0.115
-    # Manipulation losses
-    draw_box(ax, (xl - lw_box / 2, y_loss), lw_box, 0.08,
-             r"$\mathcal{L}_{\rm fake}$" + "\n" + r"$+ \mathcal{L}_{\rm adv}$",
-             color="#FFF0F0", edgecolor=C_MAN, fontsize=7.5)
-    # Content loss
-    draw_box(ax, (xm - lw_box / 2, y_loss), lw_box, 0.08,
-             r"$\mathcal{L}_{\rm align}$",
-             color="#F0F4FF", edgecolor=C_CON, fontsize=7.5)
-    # Domain loss
-    draw_box(ax, (xr - lw_box / 2, y_loss), lw_box, 0.08,
-             r"$\mathcal{L}_{\rm dom}$",
-             color="#F0FFF0", edgecolor=C_DOM, fontsize=7.5)
+    # GRL / push-pull note
+    arrow(ax, 0.61, y_bottom + 0.05, 0.72, 0.08, color="#7B2D8B",
+          lw=1.0, connectionstyle="arc3,rad=-0.20")
+    ax.text(0.69, 0.13, r"GRL $\rightarrow \mathcal{L}_{\rm adv}$",
+            fontsize=7, color="#7B2D8B", ha="center",
+            bbox=dict(boxstyle="round,pad=0.12", fc="#F6EEFA", ec="#7B2D8B", lw=0.7))
 
-    # ── Orthogonality annotation ───────────────────────────────────────────────
-    ax.annotate("", xy=(xm - ew / 2 - 0.01, y_expert + 0.05),
-                xytext=(xl + ew / 2 + 0.01, y_expert + 0.05),
-                arrowprops=dict(arrowstyle="<->", color="#888888", lw=0.8,
-                                connectionstyle="arc3,rad=0.0"))
-    ax.annotate("", xy=(xr - ew / 2 - 0.01, y_expert + 0.05),
-                xytext=(xm + ew / 2 + 0.01, y_expert + 0.05),
-                arrowprops=dict(arrowstyle="<->", color="#888888", lw=0.8,
-                                connectionstyle="arc3,rad=0.0"))
-    ax.text((xl + xr) / 2, y_expert + 0.07,
-            r"$\mathcal{L}_{\rm ortho}$",
-            ha="center", va="center", fontsize=7, color="#888888")
-
-    # ── Arrows: input → encoder ───────────────────────────────────────────────
-    arrow(ax, x_vis + bw / 2, y_input, x_vis + bw / 2, y_enc + bh_enc,
-          color="#4C72B0")
-    arrow(ax, x_aud + bw / 2, y_input, x_aud + bw / 2, y_enc + bh_enc,
-          color="#C07A00")
-
-    # ── Arrows: encoder → feature text (skip, merge into router) ─────────────
-    arrow(ax, x_vis + bw / 2, y_enc, x_vis + bw / 2, y_feat + 0.04,
-          color="#4C72B0")
-    arrow(ax, x_aud + bw / 2, y_enc, x_aud + bw / 2, y_feat + 0.04,
-          color="#C07A00")
-
-    # ── Arrows: features → router ─────────────────────────────────────────────
-    arrow(ax, x_vis + bw / 2, y_feat - 0.005, x_rout - 0.01, y_router + 0.05,
-          color="#7B2D8B", connectionstyle="arc3,rad=-0.15")
-    arrow(ax, x_aud + bw / 2, y_feat - 0.005, x_rout + 0.01, y_router + 0.05,
-          color="#7B2D8B", connectionstyle="arc3,rad=0.15")
-
-    # ── Arrows: router → experts ──────────────────────────────────────────────
-    router_bot_y = y_router
-    for x_ex, col, label in [(xl, C_MAN, "$g^m$"),
-                               (xm, C_CON, "$g^c$"),
-                               (xr, C_DOM, "$g^d$")]:
-        arrow(ax, x_rout, router_bot_y, x_ex, y_expert + 0.10,
-              color=col, lw=1.1,
-              connectionstyle=f"arc3,rad={0.25 if x_ex < x_rout else -0.25 if x_ex > x_rout else 0.0}")
-        offset = -0.03 if x_ex < x_rout else 0.03 if x_ex > x_rout else 0.0
-        ax.text(x_rout + offset * 0.5,
-                (router_bot_y + y_expert + 0.10) / 2 - 0.02,
-                label, fontsize=7, color=col, ha="center")
-
-    # ── Arrows: experts → losses ──────────────────────────────────────────────
-    for x_ex in [xl, xm, xr]:
-        arrow(ax, x_ex, y_expert, x_ex, y_loss + 0.08, color="#999999", lw=0.8)
-
-    # ── Inference arrow ───────────────────────────────────────────────────────
-    ax.annotate("", xy=(xl - lw_box / 2 - 0.08, y_loss + 0.04),
-                xytext=(xl - lw_box / 2 - 0.01, y_loss + 0.04),
-                arrowprops=dict(arrowstyle="<-", color=C_MAN, lw=1.4))
-    ax.text(xl - lw_box / 2 - 0.085, y_loss + 0.04,
-            "Inference\n(only $H^m$)", ha="right", va="center",
-            fontsize=7, color=C_MAN,
-            bbox=dict(boxstyle="round,pad=0.1", fc="#FFF5F5", ec=C_MAN, lw=0.7))
+    # Inference note
+    ax.text(0.31, 0.11,
+            "Inference reads only\nshared + unique task factors",
+            ha="center", va="center", fontsize=7.1, color=C_MAN,
+            bbox=dict(boxstyle="round,pad=0.18", fc="#FFF5F5", ec=C_MAN, lw=0.7))
 
     fig.savefig("overview.pdf", bbox_inches="tight", dpi=300)
     fig.savefig("overview.png", bbox_inches="tight", dpi=300)
@@ -425,6 +386,97 @@ def make_tsne():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Figure 4 – Subspace probe bar chart + Head-ablation sensitivity
+# ══════════════════════════════════════════════════════════════════════════════
+
+def make_analysis_figure():
+    """Two-panel summary figure:
+    Left  – grouped bar chart: OOD probe AUC vs domain-probe AUC per subspace.
+    Right – horizontal bar chart of ΔFV-RA per model (head-ablation routing sensitivity).
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.2))
+    fig.subplots_adjust(wspace=0.42)
+
+    # ── Left: subspace probe comparison ──────────────────────────────────────
+    ax = axes[0]
+    labels = [
+        "Two-way\n$Z_c$",
+        "Two-way\n$v_c$",
+        "Three-way\n$s_v$",
+        "Three-way\n$u_v$",
+        r"\textbf{Ours}" + "\n$s_v$",
+        r"\textbf{Ours}" + "\n$u_v$",
+    ]
+    # plain labels for matplotlib (no LaTeX bold in tick labels by default)
+    labels_plain = [
+        "Two-way $Z_c$",
+        "Two-way $v_c$",
+        "Three-way $s_v$",
+        "Three-way $u_v$",
+        "Ours $s_v$",
+        "Ours $u_v$",
+    ]
+    ood    = [0.705, 0.891, 0.814, 0.825, 0.726, 0.924]
+    domain = [0.998, 0.994, 0.992, 0.967, 0.989, 0.976]
+
+    x = np.arange(len(labels_plain))
+    w = 0.36
+    bar1 = ax.bar(x - w / 2, ood,    w, label="OOD AUC",    color="#1F77B4", alpha=0.88)
+    bar2 = ax.bar(x + w / 2, domain, w, label="Domain AUC", color="#FF7F0E", alpha=0.72)
+
+    # Annotate the peak OOD bar
+    ax.annotate("0.924\n(Ours $u_v$)",
+                xy=(x[-1] - w / 2, 0.924), xytext=(x[-1] - w / 2 - 0.9, 0.860),
+                fontsize=6.5, color="#1F77B4",
+                arrowprops=dict(arrowstyle="-|>", color="#1F77B4", lw=0.8))
+
+    ax.axhline(0.705, color="#1F77B4", lw=0.8, ls="--", alpha=0.5)
+    ax.text(4.8, 0.710, "Two-way\nbaseline", fontsize=5.5, color="#1F77B4", ha="right")
+
+    ax.set_ylim(0.65, 1.04)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels_plain, fontsize=6.8, rotation=20, ha="right")
+    ax.set_ylabel("AUC", fontsize=8)
+    ax.set_title("Subspace probes: OOD vs. domain", fontsize=8.5, fontweight="bold")
+    ax.legend(fontsize=7, loc="upper left", framealpha=0.9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.yaxis.grid(True, lw=0.4, alpha=0.5)
+    ax.set_axisbelow(True)
+
+    # ── Right: head-ablation ΔFV-RA ───────────────────────────────────────────
+    ax = axes[1]
+    models   = ["Two-way\nbaseline", "Three-way,\nno push-pull", "Ours\n(TriRoute)"]
+    deltas   = [-0.034, -0.113, -0.354]
+    colors   = ["#AEC7E8", "#FFBB78", "#D62728"]
+
+    bars = ax.barh(models, np.abs(deltas), color=colors, alpha=0.90, height=0.5)
+    for bar, d in zip(bars, deltas):
+        ax.text(bar.get_width() + 0.005, bar.get_y() + bar.get_height() / 2,
+                f"{d:.3f}", va="center", fontsize=8, color="#333333")
+
+    ax.set_xlim(0, 0.43)
+    ax.set_xlabel(r"$|\Delta\,\mathrm{FV{-}RA}|$ (head ablation drop)", fontsize=8)
+    ax.set_title("Routing dependence on $u_v$\n(larger = stronger routing)", fontsize=8.5, fontweight="bold")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.xaxis.grid(True, lw=0.4, alpha=0.5)
+    ax.set_axisbelow(True)
+    ax.tick_params(axis="y", labelsize=8)
+
+    # Add annotation arrow on the last bar
+    ax.annotate("10× larger\nthan two-way",
+                xy=(0.354, 2), xytext=(0.28, 1.6),
+                fontsize=6.5, color="#D62728",
+                arrowprops=dict(arrowstyle="-|>", color="#D62728", lw=0.8))
+
+    fig.savefig("analysis.pdf", bbox_inches="tight", dpi=300)
+    fig.savefig("analysis.png", bbox_inches="tight", dpi=300)
+    plt.close(fig)
+    print("  [OK] analysis.pdf")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     import os
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -433,4 +485,5 @@ if __name__ == "__main__":
     make_overview()
     make_routing_map()
     make_tsne()
+    make_analysis_figure()
     print("Done.")
