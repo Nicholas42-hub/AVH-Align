@@ -1,0 +1,80 @@
+# ============================================================
+#  A42 — Z_c/Z_s Causal + Domain Adversarial (Frozen Encoder)
+#
+#  Extends A2 (Z_c/Z_s + label GRL on Z_s) with A6-style
+#  domain push-pull objective:
+#
+#    L_dadv:  GRL(domain_head_c(Z_c_pool)) → expels domain from Z_c
+#    L_ddis:  domain_head_s(Z_s_pool)      → concentrates domain in Z_s
+#
+#  Frozen AV-HuBERT encoder: domain GRL acts only on projection heads,
+#  no interference with encoder's generalizable representations.
+#
+#  Training data:
+#    Domain 0 = AV1M train  (task-labelled, full supervision)
+#    Domain 1 = FAVC val-real (no task label)
+#
+#  Losses:
+#    L_task   — CE(causal_head(Z_c))               [AV1M only]
+#    L_adv    — CE(adv_head(GRL(Z_s)), label)       [AV1M only]
+#    L_dadv   — BCE(domain_head_c(GRL(Z_c_pool)))   [all clips]
+#    L_ddis   — BCE(domain_head_s(Z_s_pool))        [all clips]
+#    L_orth   — cos²(Z_c, Z_s)                      [AV1M only]
+# ============================================================
+
+ablation_id: "A42"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+# Oversample FAVC val-real so batches contain enough domain=1 samples
+favc_oversample: 14
+
+model_hparams:
+  feat_dim:  1024
+  proj_dim:  512
+
+  # ── Label adversarial on Z_s (A2) ────────────────────────────────────────
+  lambda_adv:    10.0   # weight for GRL label adversarial on Z_s
+  grl_alpha:      5.0   # GRL reversal strength for label head
+
+  # ── Domain adversarial on Z_c (A6) ───────────────────────────────────────
+  lambda_dadv:    1.0   # weight for GRL domain adversarial on Z_c
+  grl_domain_alpha: 1.0 # GRL reversal strength for domain head on Z_c
+
+  # ── Domain discriminative on Z_s (A6) ────────────────────────────────────
+  lambda_ddis:    1.0   # weight for domain discriminative on Z_s
+
+  # ── Orthogonality ─────────────────────────────────────────────────────────
+  lambda_orth:    0.1
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A42/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A42/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A42/results"

@@ -298,6 +298,72 @@ class FakeAVCeleb_NPZ_Dataset(Dataset):
 
 ###### ######
 
+###### AVLips NPZ (per-clip, cross-dataset eval) ######
+
+class AVLips_NPZ_Dataset(Dataset):
+    """
+    Per-clip NPZ dataset for AVLips cross-dataset evaluation.
+
+    Reads directly from deepfake_feature_extraction.py AVLips output:
+      root_path/0_real/*.npz  → label 0 (real)
+      root_path/1_fake/*.npz  → label 1 (fake)
+
+    Expected config keys:
+      root_path   — path to avlips_features/ directory
+      apply_l2    — (optional bool) L2-normalise features
+    """
+
+    CLASSES = {"0_real": 0, "1_fake": 1}
+
+    def __init__(self, config):
+        self.config = config
+        self.root_path = config["root_path"]
+        self.apply_l2 = config.get("apply_l2", False)
+
+        if not os.path.isdir(self.root_path):
+            raise FileNotFoundError(
+                f"AVLips features directory not found: {self.root_path}\n"
+                "Run extract_features_avlips.slurm first."
+            )
+
+        self.items = []  # (abs_path, rel_path, label)
+        for cls, label in sorted(self.CLASSES.items()):
+            cls_dir = os.path.join(self.root_path, cls)
+            if not os.path.isdir(cls_dir):
+                print(f"[AVLips_NPZ_Dataset] WARNING: {cls_dir} not found, skipping.")
+                continue
+            for fname in sorted(os.listdir(cls_dir)):
+                if not fname.endswith(".npz"):
+                    continue
+                abs_path = os.path.join(cls_dir, fname)
+                rel_path = os.path.join(cls, fname)
+                self.items.append((abs_path, rel_path, label))
+
+        n_real = sum(1 for _, _, l in self.items if l == 0)
+        n_fake = sum(1 for _, _, l in self.items if l == 1)
+        print(
+            f"AVLips_NPZ_Dataset: {len(self.items)} clips "
+            f"(real={n_real}, fake={n_fake})",
+            flush=True,
+        )
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        abs_path, rel_path, label = self.items[idx]
+        feats = np.load(abs_path, allow_pickle=True)
+        video = feats["visual"].astype(np.float32)
+        audio = feats["audio"].astype(np.float32)
+
+        if self.apply_l2:
+            video = video / (np.linalg.norm(video, ord=2, axis=-1, keepdims=True) + 1e-8)
+            audio = audio / (np.linalg.norm(audio, ord=2, axis=-1, keepdims=True) + 1e-8)
+
+        return torch.tensor(video), torch.tensor(audio), label, rel_path
+
+###### ######
+
 def load_data(config, test=False):
     if test:
         if config["name"] == "AV1M":
@@ -308,8 +374,10 @@ def load_data(config, test=False):
             test_ds = FakeAVCeleb_Dataset(config, split="test")
         elif config["name"] == "FAVC_NPZ":
             test_ds = FakeAVCeleb_NPZ_Dataset(config, split=config.get("split", "test"))
+        elif config["name"] == "AVLIPS_NPZ":
+            test_ds = AVLips_NPZ_Dataset(config)
         else:
-            raise ValueError("Dataset name error. Expected: AV1M, AVLips, FAVC, FAVC_NPZ; Got: " + config["name"])
+            raise ValueError("Dataset name error. Expected: AV1M, AVLips, AVLIPS_NPZ, FAVC, FAVC_NPZ; Got: " + config["name"])
 
         test_dl = DataLoader(test_ds, shuffle=False, batch_size=1)
 

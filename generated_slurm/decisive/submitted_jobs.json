@@ -1,0 +1,146 @@
+[
+  {
+    "experiment": "A40_e2e",
+    "eval_probe500_auc": "23551646",
+    "eval_probe500_domain": "23551647",
+    "eval_full_auc": "23551648"
+  },
+  {
+    "experiment": "A2_e2e_dadv",
+    "eval_probe500_auc": "23551649",
+    "eval_probe500_domain": "23551650",
+    "eval_full_auc": "23551651"
+  },
+  {
+    "experiment": "A34_e2e",
+    "eval_probe500_auc": "23551652",
+    "eval_probe500_domain": "23551653",
+    "eval_full_auc": "23551654"
+  },
+  {
+    "experiment": "A41_e2e",
+    "eval_probe500_auc": "23551655",
+    "eval_probe500_domain": "23551656",
+    "eval_full_auc": "23551657"
+  },
+  {
+    "experiment": "decisive_baseline_samepipe_seed42",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_baseline_samepipe_seed42.yaml",
+    "train_job": "23551658",
+    "eval_probe500_auc": "23551659",
+    "eval_probe500_domain": "23551660",
+    "eval_full_auc": "23551661"
+  },
+  {
+    "experiment": "decisive_baseline_samepipe_seed43",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_baseline_samepipe_seed43.yaml",
+    "train_job": "23551662",
+    "eval_probe500_auc": "23551663",
+    "eval_probe500_domain": "23551664",
+    "eval_full_auc": "23551665"
+  },
+  {
+    "experiment": "decisive_baseline_samepipe_seed44",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_baseline_samepipe_seed44.yaml",
+    "train_job": "23551666",
+    "eval_probe500_auc": "23551667",
+    "eval_probe500_domain": "23551668",
+    "eval_full_auc": "23551669"
+  },
+  {
+    "experiment": "decisive_A40_seed42",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A40_seed42.yaml",
+    "train_job": "23551670",
+    "eval_probe500_auc": "23551671",
+    "eval_probe500_domain": "23551672",
+    "eval_full_auc": "23551673"
+  },
+  {
+    "experiment": "decisive_A40_seed44",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A40_seed44.yaml",
+    "train_job": "23551674",
+    "eval_probe500_auc": "23551675",
+    "eval_probe500_domain": "23551676",
+    "eval_full_auc": "23551677"
+  },
+  {
+    "experiment": "decisive_A41lite1_seed42",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A41lite1_seed42.yaml",
+    "train_job": "23551678",
+    "eval_probe500_auc": "23551679",
+    "eval_probe500_domain": "23551680",
+    "eval_full_auc": "23551681"
+  },
+  {
+    "experiment": "decisive_A41lite1_seed43",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A41lite1_seed43.yaml",
+    "train_job": "23551682",
+    "eval_probe500_auc": "23551683",
+    "eval_probe500_domain": "23551684",
+    "eval_full_auc": "23551685"
+  },
+  {
+    "experiment": "decisive_A41lite1_seed44",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A41lite1_seed44.yaml",
+    "train_job": "23551686",
+    "eval_probe500_auc": "23551687",
+    "eval_probe500_domain": "23551688",
+    "eval_full_auc": "23551689"
+  },
+  {
+    "experiment": "decisive_A41lite3_seed42",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A41lite3_seed42.yaml",
+    "train_job": "23551690",
+    "eval_probe500_auc": "23551691",
+    "eval_probe500_domain": "23551692",
+    "eval_full_auc": "23551693"
+  },
+  {
+    "experiment": "decisive_A41lite3_seed43",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A41lite3_seed43.yaml",
+    "train_job": "23551694",
+    "eval_probe500_auc": "23551695",
+    "eval_probe500_domain": "23551696",
+    "eval_full_auc": "23551697"
+  },
+  {
+    "experiment": "decisive_A41lite3_seed44",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A41lite3_seed44.yaml",
+    "train_job": "23551698",
+    "eval_probe500_auc": "23551699",
+    "eval_probe500_domain": "23551700",
+    "eval_full_auc": "23551701"
+  },
+  {
+    "experiment": "decisive_A2e2e_dadv_seed42",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A2e2e_dadv_seed42.yaml",
+    "train_job": "23551702",
+    "eval_probe500_auc": "23551703",
+    "eval_probe500_domain": "23551704",
+    "eval_full_auc": "23551705"
+  },
+  {
+    "experiment": "decisive_A2e2e_dadv_seed44",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A2e2e_dadv_seed44.yaml",
+    "train_job": "23551706",
+    "eval_probe500_auc": "23551707",
+    "eval_probe500_domain": "23551708",
+    "eval_full_auc": "23551709"
+  },
+  {
+    "experiment": "decisive_A34e2e_seed42",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A34e2e_seed42.yaml",
+    "train_job": "23551710",
+    "eval_probe500_auc": "23551711",
+    "eval_probe500_domain": "23551712",
+    "eval_full_auc": "23551713"
+  },
+  {
+    "experiment": "decisive_A34e2e_seed44",
+    "config": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/configs/decisive/decisive_A34e2e_seed44.yaml",
+    "train_job": "23551714",
+    "eval_probe500_auc": "23551715",
+    "eval_probe500_domain": "23551716",
+    "eval_full_auc": "23551717"
+  }
+]

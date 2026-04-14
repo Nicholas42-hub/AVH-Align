@@ -205,8 +205,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Perturbation robustness: detection AUC under input noise.")
     parser.add_argument("--ckpt_path",      required=True)
-    parser.add_argument("--model",          choices=["causal", "ablation", "modal", "baseline", "fcd", "fcd_a6", "fcd_a7", "sad_a8"], default="ablation",
-                        help="causal=AVH_Causal, ablation=AVH_Causal_Ablation (A0-A4), fcd=AVH_FCD (A5), fcd_a6=AVH_FCD_A6 (A6), fcd_a7=AVH_FCD_A7 (A7), sad_a8=AVH_SAD_A8 (A8), modal=AVH_Causal_Modal (B1/B2/B3), baseline=AVH_Sup (paper model)")
+    parser.add_argument("--model",          choices=["causal", "ablation", "modal", "baseline", "fcd", "fcd_a6", "fcd_a7", "sad_a8", "causal_a42", "causal_a43", "causal_a44"], default="ablation",
+                        help="causal=AVH_Causal, ablation=AVH_Causal_Ablation (A0-A4), fcd=AVH_FCD (A5), fcd_a6=AVH_FCD_A6 (A6), fcd_a7=AVH_FCD_A7 (A7), sad_a8=AVH_SAD_A8 (A8), modal=AVH_Causal_Modal (B1/B2/B3), baseline=AVH_Sup (paper model), causal_a42/a43/a44=domain-aware binary")
     parser.add_argument("--config",         required=True)
     parser.add_argument("--favc_root",      required=True,
                         help="Root of FakeAVCeleb NPZ features")
@@ -279,6 +279,15 @@ def main():
         filtered_state = {k: v for k, v in ckpt["state_dict"].items()
                           if k in model_state and v.shape == model_state[k].shape}
         model.load_state_dict(filtered_state, strict=False)
+    elif args.model == "causal_a42":
+        from mlp_causal_a42 import AVH_Causal_A42
+        model = AVH_Causal_A42.load_from_checkpoint(args.ckpt_path)
+    elif args.model == "causal_a43":
+        from mlp_causal_a43 import AVH_Causal_A43
+        model = AVH_Causal_A43.load_from_checkpoint(args.ckpt_path)
+    elif args.model == "causal_a44":
+        from mlp_causal_a44 import AVH_Causal_A44
+        model = AVH_Causal_A44.load_from_checkpoint(args.ckpt_path)
     else:
         from mlp_causal_ablation import AVH_Causal_Ablation
         ckpt = torch.load(args.ckpt_path, map_location="cpu", weights_only=False)

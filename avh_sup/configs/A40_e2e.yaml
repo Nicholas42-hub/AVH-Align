@@ -1,0 +1,109 @@
+# ============================================================
+#  A40_e2e — A39 + Z_c mean alignment
+# ============================================================
+#
+#  Diagnosis of A39 failure (16 epochs):
+#    domain_auc_zc_raw      = 1.000  ← BAD: Z_c is domain-discriminative
+#    domain_auc_zc_centered = 0.014  ← GOOD: Z_c covariance is already clean
+#    domain_auc_zs_raw      = 1.000  ← expected: Z_s absorbs domain (by design)
+#
+#  The ONLY remaining domain signal in Z_c is its MEAN offset.
+#  A logistic regression can perfectly separate domains using only the mean.
+#  Once we align the Z_c means, the domain probe on Z_c should drop to ~0.5.
+#
+#  A40 adds a single targeted fix on top of A39:
+#    L_mean_zc = ||mean(Z_c[domain=0]) - mean(Z_c[domain=1])||²
+#
+#  Why this works:
+#    - zc_centered = 0.014 means the covariance of Z_c is ALREADY domain-invariant
+#    - Only the per-dimension mean differs across domains
+#    - L_mean_zc directly closes this gap (gradient through visual/audio causal projs)
+#    - Does NOT conflict with ladv_ds (that operates on Z_s, not Z_c)
+#
+#  Why NOT fighting with ladv_ds:
+#    - ladv_ds: pushes Z_s to predict domain (routes domain info to Z_s mean)
+#    - L_mean_zc: pushes Z_c mean to be domain-invariant
+#    - These are separate projections; the encoder can satisfy both.
+#
+#  Lambda calibration:
+#    - zc_raw=1.0 → large mean gap between domains in Z_c
+#    - F.mse_loss(mean_d0, mean_d1) ≈ 0.01-0.1 (empirical)
+#    - task_loss ≈ 0.01-0.05
+#    - lambda_mean_align_zc=5.0: strong enough to close the gap quickly
+#
+#  Full loss (A40):
+#    L = L_task                          (Z_c classification, AV1M only)
+#      + lambda_ladv_ds * L_ladv_ds      (label-aware domain pull on Z_s, as A39)
+#      + lambda_mean_zc * L_mean_zc      (NEW: Z_c mean alignment)
+#
+#  No IPW, no GRL — same as A39.
+# ============================================================
+
+ablation_id: "A40_e2e"
+ablation:
+  use_adv:    false
+  use_sg:     true
+  use_domain: false
+
+data_paths:
+  e2e_train_csv: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv"
+  e2e_val_csv:   "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv"
+  favc_raw_root: "/scratch/punim2637/nnliang/favc_preprocessed"
+
+model_hparams:
+  avhubert_ckpt:     "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:     "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers: -1
+
+  max_frames: 150
+  feat_dim:   1024
+  proj_dim:   512
+  proj_dim_spurious: 512
+
+  # Disabled (same as A39)
+  lambda_ipw:         0.0
+  ipw_clip_min:       0.1
+  ipw_clip_max:      10.0
+  ipw_warmup_epochs:  0
+
+  lambda_grl:         0.0
+  grl_warmup_epochs:  0
+
+  # Label-aware domain pull on Z_s (same as A39)
+  lambda_ladv_ds:     1.0
+
+  # NEW: Z_c mean alignment — primary intervention in A40
+  lambda_mean_zc:     5.0
+
+  lr_encoder:      5.0e-6
+  lr:              1.0e-4
+  lr_domain_pred:  1.0e-4
+  weight_decay:    1.0e-4
+
+batch_size:              8
+accumulate_grad_batches: 4
+num_workers:             6
+favc_oversample:         1
+favc_real_only:          false
+balanced_domain_sampler: true
+gradient_clip_val:       1.0
+precision:               "16-mixed"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A40_e2e/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A40_e2e/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 30
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 10
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A40_e2e/results"

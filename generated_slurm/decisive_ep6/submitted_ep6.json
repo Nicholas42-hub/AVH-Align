@@ -1,0 +1,92 @@
+{
+  "decisive_A34e2e_seed42": {
+    "experiment": "decisive_A34e2e_seed42",
+    "eval_ep6_probe500_auc": "23554624",
+    "eval_ep6_probe500_domain": "23554625",
+    "eval_ep6_full_auc": "23554626"
+  },
+  "decisive_A2e2e_dadv_seed42": {
+    "experiment": "decisive_A2e2e_dadv_seed42",
+    "eval_ep6_probe500_auc": "23554644",
+    "eval_ep6_probe500_domain": "23554645",
+    "eval_ep6_full_auc": "23554646"
+  },
+  "decisive_A2e2e_dadv_seed44": {
+    "experiment": "decisive_A2e2e_dadv_seed44",
+    "eval_ep6_probe500_auc": "23554662",
+    "eval_ep6_probe500_domain": "23554663",
+    "eval_ep6_full_auc": "23554664"
+  },
+  "decisive_A34e2e_seed44": {
+    "experiment": "decisive_A34e2e_seed44",
+    "eval_ep6_probe500_auc": "23554686",
+    "eval_ep6_probe500_domain": "23554687",
+    "eval_ep6_full_auc": "23554688"
+  },
+  "decisive_baseline_samepipe_seed42": {
+    "experiment": "decisive_baseline_samepipe_seed42",
+    "eval_ep6_probe500_auc": "23554905",
+    "eval_ep6_probe500_domain": "23554906",
+    "eval_ep6_full_auc": "23554907"
+  },
+  "decisive_baseline_samepipe_seed43": {
+    "experiment": "decisive_baseline_samepipe_seed43",
+    "eval_ep6_probe500_auc": "23554910",
+    "eval_ep6_probe500_domain": "23554911",
+    "eval_ep6_full_auc": "23554912"
+  },
+  "decisive_baseline_samepipe_seed44": {
+    "experiment": "decisive_baseline_samepipe_seed44",
+    "eval_ep6_probe500_auc": "23554919",
+    "eval_ep6_probe500_domain": "23554920",
+    "eval_ep6_full_auc": "23554921"
+  },
+  "decisive_A40_seed44": {
+    "experiment": "decisive_A40_seed44",
+    "eval_ep6_probe500_auc": "23554966",
+    "eval_ep6_probe500_domain": "23554967",
+    "eval_ep6_full_auc": "23554968"
+  },
+  "decisive_A41lite1_seed42": {
+    "experiment": "decisive_A41lite1_seed42",
+    "eval_ep6_probe500_auc": "23554971",
+    "eval_ep6_probe500_domain": "23554972",
+    "eval_ep6_full_auc": "23554973"
+  },
+  "decisive_A40_seed42": {
+    "experiment": "decisive_A40_seed42",
+    "eval_ep6_probe500_auc": "23554986",
+    "eval_ep6_probe500_domain": "23554987",
+    "eval_ep6_full_auc": "23554988"
+  },
+  "decisive_A41lite1_seed43": {
+    "experiment": "decisive_A41lite1_seed43",
+    "eval_ep6_probe500_auc": "23555009",
+    "eval_ep6_probe500_domain": "23555010",
+    "eval_ep6_full_auc": "23555011"
+  },
+  "decisive_A41lite1_seed44": {
+    "experiment": "decisive_A41lite1_seed44",
+    "eval_ep6_probe500_auc": "23555048",
+    "eval_ep6_probe500_domain": "23555049",
+    "eval_ep6_full_auc": "23555050"
+  },
+  "decisive_A41lite3_seed42": {
+    "experiment": "decisive_A41lite3_seed42",
+    "eval_ep6_probe500_auc": "23555120",
+    "eval_ep6_probe500_domain": "23555121",
+    "eval_ep6_full_auc": "23555122"
+  },
+  "decisive_A41lite3_seed43": {
+    "experiment": "decisive_A41lite3_seed43",
+    "eval_ep6_probe500_auc": "23555147",
+    "eval_ep6_probe500_domain": "23555148",
+    "eval_ep6_full_auc": "23555149"
+  },
+  "decisive_A41lite3_seed44": {
+    "experiment": "decisive_A41lite3_seed44",
+    "eval_ep6_probe500_auc": "23555219",
+    "eval_ep6_probe500_domain": "23555220",
+    "eval_ep6_full_auc": "23555221"
+  }
+}

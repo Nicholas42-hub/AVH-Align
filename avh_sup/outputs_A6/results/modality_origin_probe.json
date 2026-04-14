@@ -1,0 +1,9 @@
+{
+  "task": "modality_origin (FV-RA=0 vs RV-FA=1)",
+  "n_fvra": 1854,
+  "n_rvfa": 100,
+  "zc_auc": 1.0,
+  "zc_std": 0.0,
+  "zs_auc": 1.0,
+  "zs_std": 0.0
+}

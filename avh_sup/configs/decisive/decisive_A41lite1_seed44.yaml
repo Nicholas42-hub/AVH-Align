@@ -1,0 +1,48 @@
+ablation_id: decisive_A41lite1_seed44
+ablation:
+  use_adv: true
+  use_sg: true
+  use_domain: false
+data_paths:
+  e2e_train_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv
+  e2e_val_csv: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv
+  favc_raw_root: /scratch/punim2637/nnliang/favc_preprocessed
+model_hparams:
+  avhubert_ckpt: /data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt
+  avhubert_root: /data/projects/punim2637/nnliang/av_hubert/avhubert
+  n_unfreeze_layers: -1
+  max_frames: 150
+  feat_dim: 1024
+  proj_dim: 512
+  proj_dim_spurious: 512
+  lambda_adv: 1.0
+  grl_alpha: 5.0
+  lambda_ladv_ds: 1.0
+  lambda_mean_zc: 5.0
+  lr_encoder: 5.0e-06
+  lr: 0.0001
+  lr_domain_pred: 0.0001
+  weight_decay: 0.0001
+batch_size: 8
+accumulate_grad_batches: 4
+num_workers: 6
+favc_oversample: 1
+favc_real_only: false
+balanced_domain_sampler: true
+gradient_clip_val: 1.0
+precision: 16-mixed
+callbacks:
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_decisive_A41lite1_seed44/logs
+    name: csv
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_decisive_A41lite1_seed44/ckpts
+    metric: val_auc_causal
+    mode: max
+epochs: 30
+seed: 44
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 10
+output_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_decisive_A41lite1_seed44/results

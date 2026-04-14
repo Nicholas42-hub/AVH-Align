@@ -1,0 +1,16 @@
+{
+  "checkpoint": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_decisive_baseline_samepipe_seed43/ckpts/last.ckpt",
+  "favc_csv": null,
+  "n_av1m_clips": 3151,
+  "n_favc_clips": 21544,
+  "n_favc_real": 500,
+  "n_favc_fake": 21044,
+  "in_domain_auc": {
+    "causal": 0.9999919982075984,
+    "spurious": 0.3984639225853258
+  },
+  "cross_domain_auc": {
+    "causal": 0.7887606918836723,
+    "spurious": 0.38622229614141795
+  }
+}

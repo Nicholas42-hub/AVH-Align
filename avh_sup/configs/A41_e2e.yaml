@@ -1,0 +1,88 @@
+# ============================================================
+#  A41_e2e — A40 + Z_s label adversarial (use_adv=True)
+# ============================================================
+#
+#  Problem with A40 (and all previous experiments):
+#    Z_s label probe = 0.999  →  Z_s and Z_c are REDUNDANT,
+#    not complementary. Z_s should be task-irrelevant.
+#
+#  A41 adds the missing loss from the original A1/A2 design:
+#    L_adv_zs = CE(adv_head(GRL(Z_s)), cls_labels)
+#  This forces Z_s to NOT predict fake/real (GRL reverses gradient).
+#
+#  Full loss (A41):
+#    L = L_task                          (Z_c classification, AV1M only)
+#      + lambda_adv   * L_adv_zs         (GRL: expel label from Z_s)
+#      + lambda_ladv_ds * L_ladv_ds      (label-aware domain pull into Z_s)
+#      + lambda_mean_zc * L_mean_zc      (Z_c mean alignment)
+#
+#  Expected outcome:
+#    Z_c: domain-invariant (mean aligned) + task-relevant
+#    Z_s: domain-aware (pull) + task-irrelevant (adv)  ← true separation
+#
+#  lambda_adv: same as A1/A2 default (10.0), grl_alpha=5.0
+# ============================================================
+
+ablation_id: "A41_e2e"
+ablation:
+  use_adv:    true    # NEW vs A40: GRL on Z_s to expel label info
+  use_sg:     true
+  use_domain: false
+
+data_paths:
+  e2e_train_csv: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/train_e2e_full.csv"
+  e2e_val_csv:   "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m_e2e/val_e2e_full.csv"
+  favc_raw_root: "/scratch/punim2637/nnliang/favc_preprocessed"
+
+model_hparams:
+  avhubert_ckpt:     "/data/projects/punim2637/nnliang/av_hubert/avhubert/self_large_vox_433h.pt"
+  avhubert_root:     "/data/projects/punim2637/nnliang/av_hubert/avhubert"
+  n_unfreeze_layers: -1
+
+  max_frames: 150
+  feat_dim:   1024
+  proj_dim:   512
+  proj_dim_spurious: 512
+
+  # Z_s label adversarial (from A1/A2)
+  lambda_adv:    10.0
+  grl_alpha:      5.0
+
+  # Label-aware domain pull on Z_s (from A39)
+  lambda_ladv_ds: 1.0
+
+  # Z_c mean alignment (from A40)
+  lambda_mean_zc: 5.0
+
+  lr_encoder:      5.0e-6
+  lr:              1.0e-4
+  lr_domain_pred:  1.0e-4
+  weight_decay:    1.0e-4
+
+batch_size:              8
+accumulate_grad_batches: 4
+num_workers:             6
+favc_oversample:         1
+favc_real_only:          false
+balanced_domain_sampler: true
+gradient_clip_val:       1.0
+precision:               "16-mixed"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A41_e2e/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A41_e2e/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 30
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 10
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A41_e2e/results"

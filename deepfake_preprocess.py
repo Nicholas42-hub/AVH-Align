@@ -23,9 +23,12 @@ FFMPEG_BIN_PATH = "/apps/easybuild-2022/easybuild/software/Compiler/GCCcore/11.3
 FFMPEG_PATH = os.path.join(FFMPEG_BIN_PATH, "ffmpeg")
 skvideo.setFFmpegPath(FFMPEG_BIN_PATH)
 
+# Absolute paths so the script works regardless of CWD
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Constants for both datasets
-FACE_PREDICTOR_PATH = "content/data/misc/shape_predictor_68_face_landmarks.dat"
-MEAN_FACE_PATH = "content/data/misc/20words_mean_face.npy"
+FACE_PREDICTOR_PATH = os.path.join(_SCRIPT_DIR, "content/data/misc/shape_predictor_68_face_landmarks.dat")
+MEAN_FACE_PATH = os.path.join(_SCRIPT_DIR, "content/data/misc/20words_mean_face.npy")
 STD_SIZE = (256, 256)
 STABLE_PNTS_IDS = [33, 36, 39, 42, 45]
 
@@ -159,9 +162,46 @@ def process_fakeavceleb(category, metadata_file_path, input_root, save_path, max
             except Exception as e:
                 print(f"[ERROR] Error in video {os.path.join(input_dir, filename)}: {e}")
 
+def process_avlips(data_path, save_path, max_workers):
+    """Preprocess AVLips videos: extract mouth ROI for 0_real and 1_fake subdirs."""
+    classes = ["0_real", "1_fake"]
+    for cls in classes:
+        input_dir = os.path.join(data_path, cls)
+        output_dir = os.path.join(save_path, cls)
+        os.makedirs(output_dir, exist_ok=True)
+
+        video_files = sorted([
+            f for f in os.listdir(input_dir) if f.endswith(".mp4")
+        ])
+        print(f"\n[AVLips] Processing {cls}: {len(video_files)} videos", flush=True)
+
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(
+                    preprocess_video,
+                    input_dir,
+                    filename,
+                    output_dir,
+                    FACE_PREDICTOR_PATH,
+                    MEAN_FACE_PATH,
+                ): filename
+                for filename in video_files
+            }
+
+            for future in tqdm(as_completed(futures), total=len(futures),
+                               desc=f"Preprocessing AVLips {cls}"):
+                filename = futures[future]
+                try:
+                    result = future.result()
+                    if not result:
+                        print(f"[WARN] Failed: {os.path.join(input_dir, filename)}")
+                except Exception as e:
+                    print(f"[ERROR] {os.path.join(input_dir, filename)}: {e}")
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Preprocess videos for FakeAVCeleb or AV1M dataset")
-    parser.add_argument('--dataset', default='AV1M', help='Select dataset: FakeAVCeleb (favc) or AV1M (av1m)')
+    parser = argparse.ArgumentParser(description="Preprocess videos for FakeAVCeleb, AV1M, or AVLips dataset")
+    parser.add_argument('--dataset', default='AV1M', help='Select dataset: FakeAVCeleb, AV1M, or AVLips')
     parser.add_argument('--split', default='train', help='For AV1M: data split to process (e.g., val, train)')
     parser.add_argument("--metadata", type=str, default="av1m_metadata/train_metadata.csv", help="Path to the dataset metadata")
     parser.add_argument('--category', choices=['RealVideo-RealAudio', 'RealVideo-FakeAudio', 'FakeVideo-RealAudio', 'FakeVideo-FakeAudio'], default='all', help='For FakeAVCeleb: select category (RealVideo-RealAudio, etc.)')
@@ -187,6 +227,9 @@ def main():
             path_to_images_root = os.path.join(args.data_path, "train")
             save_path =  os.path.join(args.save_path, "train")
         process_av1m(args.metadata, path_to_images_root, save_path, args.max_workers)
+
+    elif args.dataset == 'AVLips':
+        process_avlips(args.data_path, args.save_path, args.max_workers)
 
 if __name__ == "__main__":
     main()

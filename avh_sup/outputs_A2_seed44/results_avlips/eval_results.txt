@@ -1,0 +1,12 @@
+AVLips Cross-Dataset Evaluation
+Model   : ablation
+Ckpt    : outputs_A2_seed44/ckpts/model-epoch=13.ckpt
+Features: /data/projects/punim2637/nnliang/AVH-Align/data/avlips_features
+============================================================
+
+[OVERALL] N=7602 (real=3396, fake=4206)
+  AUC : 0.5067
+  AP  : 0.5795
+
+============================================================
+Results saved to: outputs_A2_seed44/results_avlips/eval_results.txt

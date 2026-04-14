@@ -1,0 +1,39 @@
+{
+  "probe_design": "FakeVideo-RealAudio (0) vs FakeVideo-FakeAudio (1)",
+  "ckpt_path": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6/ckpts/model-epoch=15.ckpt",
+  "model_class": "AVH_FCD_A6",
+  "n_clips_per_class": 1000,
+  "n_clips_total": 2000,
+  "n_folds": 5,
+  "seed": 42,
+  "random_chance": 0.5,
+  "raw_auc_mean": 1.0,
+  "raw_auc_std": 0.0,
+  "raw_auc_folds": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "causal_auc_mean": 0.9995349999999998,
+  "causal_auc_std": 0.0003238826948140453,
+  "causal_auc_folds": [
+    0.99985,
+    0.9993,
+    0.999575,
+    0.9999,
+    0.99905
+  ],
+  "causal_delta_raw": -0.000465,
+  "spurious_auc_mean": 0.99993,
+  "spurious_auc_std": 0.00010653637876332273,
+  "spurious_auc_folds": [
+    1.0,
+    1.0,
+    0.999925,
+    1.0,
+    0.999725
+  ],
+  "spurious_delta_raw": -7e-05
+}

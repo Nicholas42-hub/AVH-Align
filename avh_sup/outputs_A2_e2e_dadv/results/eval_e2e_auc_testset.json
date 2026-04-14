@@ -1,0 +1,16 @@
+{
+  "checkpoint": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_e2e_dadv/ckpts/model-epoch=10-val_auc_causal=0.9999.ckpt",
+  "favc_csv": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc/test_split.csv",
+  "n_av1m_clips": 3151,
+  "n_favc_clips": 1114,
+  "n_favc_real": 26,
+  "n_favc_fake": 1088,
+  "in_domain_auc": {
+    "causal": 0.9999434540003628,
+    "spurious": 0.4835851230675671
+  },
+  "cross_domain_auc": {
+    "causal": 0.7690893665158369,
+    "spurious": 0.2290370475113122
+  }
+}

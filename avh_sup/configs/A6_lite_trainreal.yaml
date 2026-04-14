@@ -1,0 +1,64 @@
+# ============================================================
+#  A6-lite-trainreal
+#
+#  Domain push-pull with reduced strength + warmup.
+#  Hypothesis: A6's instability comes from domain gradient being
+#  too early and too strong, disrupting unique channel routing.
+#
+#  Changes vs A6_leakage_trainreal:
+#    lambda_dadv: 1.0 → 0.2
+#    lambda_ddis: 1.0 → 0.2
+#    warmup_epochs: 5  (domain losses zeroed for first 5 epochs)
+# ============================================================
+
+ablation_id: "A6_lite_trainreal"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_npz_matched"
+  split: "train"
+  real_only: true
+  apply_l2: true
+
+model_hparams:
+  feat_dim: 1024
+  syn_dim: 256
+  spec_dim: 256
+  sda_dim: 128
+  mi_dim: 128
+
+  lambda_mi: 1.0
+  lambda_sda: 0.5
+  lambda_dis: 1.0
+  lambda_orth: 0.1
+  lambda_dadv: 0.2      # reduced from 1.0
+  lambda_ddis: 0.2      # reduced from 1.0
+  grl_alpha: 1.0
+  warmup_epochs: 5      # no domain loss for first 5 epochs
+
+  sda_eps: 0.05
+  sda_n_iter: 5
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_lite_trainreal/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_lite_trainreal/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric: "val_auc_causal"
+  mode: "max"
+  patience: 20

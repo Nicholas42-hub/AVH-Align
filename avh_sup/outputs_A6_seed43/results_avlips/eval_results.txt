@@ -1,0 +1,20 @@
+AVLips Cross-Dataset Evaluation
+Model   : fcd_a6
+Ckpt    : outputs_A6_seed43/ckpts/model-epoch=15.ckpt
+Features: /data/projects/punim2637/nnliang/AVH-Align/data/avlips_features
+============================================================
+
+[FULL] N=7602 (real=3396, fake=4206)
+  AUC : 0.7340
+  AP  : 0.7484
+
+[CAUSAL] N=7602 (real=3396, fake=4206)
+  AUC : 0.7340
+  AP  : 0.7484
+
+[SPURIOUS] N=7602 (real=3396, fake=4206)
+  AUC : 0.5015
+  AP  : 0.5683
+
+============================================================
+Results saved to: outputs_A6_seed43/results_avlips/eval_results.txt

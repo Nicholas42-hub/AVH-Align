@@ -1,0 +1,38 @@
+{
+  "probe_design": "binary: AV1M (0) vs FakeAVCeleb (1)",
+  "ckpt_path": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A44/ckpts/model-epoch=02.ckpt",
+  "n_clips_per_domain": 2000,
+  "n_clips_total": 4000,
+  "n_folds": 5,
+  "seed": 42,
+  "random_chance": 0.5,
+  "raw_auc_mean": 0.9990062500000001,
+  "raw_auc_std": 0.0005452350410602826,
+  "raw_auc_folds": [
+    0.9992625,
+    0.998475,
+    0.99975625,
+    0.9982875,
+    0.99925
+  ],
+  "causal_auc_mean": 0.9972887500000001,
+  "causal_auc_std": 0.0004232943715666313,
+  "causal_auc_folds": [
+    0.99733125,
+    0.9967250000000001,
+    0.99803125,
+    0.9971625000000001,
+    0.99719375
+  ],
+  "causal_delta_raw": -0.001718,
+  "spurious_auc_mean": 0.9978175,
+  "spurious_auc_std": 0.0006911765331664123,
+  "spurious_auc_folds": [
+    0.998575,
+    0.99741875,
+    0.99873125,
+    0.9971062500000001,
+    0.9972562500000001
+  ],
+  "spurious_delta_raw": -0.001189
+}

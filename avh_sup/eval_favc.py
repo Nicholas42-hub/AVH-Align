@@ -132,7 +132,7 @@ def print_and_write(text, fh):
 def main():
     parser = argparse.ArgumentParser(description="Cross-dataset eval on FakeAVCeleb")
     parser.add_argument("--ckpt",           required=True, help="Path to .ckpt checkpoint")
-    parser.add_argument("--model",          choices=["baseline", "causal", "ablation", "modal", "fcd", "fcd_a6", "fcd_a7", "sad_a8"], default="baseline")
+    parser.add_argument("--model",          choices=["baseline", "causal", "ablation", "modal", "fcd", "fcd_a6", "fcd_a6_lite", "fcd_a6_sharedonly", "fcd_a7", "sad_a8", "sad_a9", "causal_mi", "causal_a42", "causal_a43", "causal_a44"], default="baseline")
     parser.add_argument("--features_path",  required=True, help="Root of favc_features/ dir")
     parser.add_argument("--csv_root_path",  default="csv_metadata/favc",
                         help="Dir with {split}_split.csv files")
@@ -165,15 +165,64 @@ def main():
     elif args.model == "fcd_a6":
         from mlp_fcd_a6 import AVH_FCD_A6
         model = AVH_FCD_A6.load_from_checkpoint(args.ckpt)
+    elif args.model == "fcd_a6_lite":
+        from mlp_fcd_a6_lite import AVH_FCD_A6_Lite
+        model = AVH_FCD_A6_Lite.load_from_checkpoint(args.ckpt)
+    elif args.model == "fcd_a6_sharedonly":
+        from mlp_fcd_a6_sharedonly import AVH_FCD_A6_SharedOnly
+        model = AVH_FCD_A6_SharedOnly.load_from_checkpoint(args.ckpt)
     elif args.model == "fcd_a7":
         from mlp_fcd_a7 import AVH_FCD_A7
         model = AVH_FCD_A7.load_from_checkpoint(args.ckpt)
     elif args.model == "sad_a8":
         from mlp_sad_a8 import AVH_SAD_A8
         model = AVH_SAD_A8.load_from_checkpoint(args.ckpt)
+    elif args.model == "sad_a9":
+        from mlp_sad_a9 import AVH_SAD_A9
+        model = AVH_SAD_A9.load_from_checkpoint(args.ckpt)
+    elif args.model == "causal_mi":
+        # Checkpoint may have been saved from the MINE variant (mi_critic_spu layer)
+        # while the current mlp_causal_mi.py uses CLUB (club_predictor layer).
+        # Use shape-filtered loading so inference-relevant layers (projections +
+        # classification heads) load correctly even if the critic layer differs.
+        from mlp_causal_mi import AVH_Causal_MI
+        raw_ckpt = torch.load(args.ckpt, map_location="cpu", weights_only=False)
+        cfg = raw_ckpt["hyper_parameters"]["config"]
+        model = AVH_Causal_MI(config=cfg)
+        target_state = model.state_dict()
+        filtered = {k: v for k, v in raw_ckpt["state_dict"].items()
+                    if k in target_state and v.shape == target_state[k].shape}
+        model.load_state_dict(filtered, strict=False)
+        missing = [k for k in target_state if k not in filtered]
+        if missing:
+            print(f"  [causal_mi] {len(missing)} layers not loaded (critic mismatch): "
+                  f"{missing[:3]}{'...' if len(missing) > 3 else ''}", flush=True)
+    elif args.model == "causal_a42":
+        from mlp_causal_a42 import AVH_Causal_A42
+        model = AVH_Causal_A42.load_from_checkpoint(args.ckpt)
+    elif args.model == "causal_a43":
+        from mlp_causal_a43 import AVH_Causal_A43
+        model = AVH_Causal_A43.load_from_checkpoint(args.ckpt)
+    elif args.model == "causal_a44":
+        from mlp_causal_a44 import AVH_Causal_A44
+        model = AVH_Causal_A44.load_from_checkpoint(args.ckpt)
     else:  # ablation
+        # Use shape-filtered loading: the A2 checkpoint was saved with a
+        # full_head input dim that may differ from the current model definition
+        # (e.g. 1024 in ckpt vs 2048 in model when Z_s projection size changed).
+        # Loading with strict=False keeps all matching layers intact.
         from mlp_causal_ablation import AVH_Causal_Ablation
-        model = AVH_Causal_Ablation.load_from_checkpoint(args.ckpt)
+        raw_ckpt = torch.load(args.ckpt, map_location="cpu", weights_only=False)
+        cfg = raw_ckpt["hyper_parameters"]["config"]
+        model = AVH_Causal_Ablation(config=cfg)
+        target_state = model.state_dict()
+        filtered = {k: v for k, v in raw_ckpt["state_dict"].items()
+                    if k in target_state and v.shape == target_state[k].shape}
+        model.load_state_dict(filtered, strict=False)
+        missing = [k for k in target_state if k not in filtered]
+        if missing:
+            print(f"  [ablation] {len(missing)} layers skipped (shape mismatch): "
+                  f"{missing[:4]}{'...' if len(missing) > 4 else ''}", flush=True)
 
     model.to(device)
     model.eval()

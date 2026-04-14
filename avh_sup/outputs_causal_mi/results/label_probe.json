@@ -1,5 +1,5 @@
 {
-  "ckpt_path": "outputs_causal_mi/ckpts/model-epoch=08-v1.ckpt",
+  "ckpt_path": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_causal_mi/ckpts/model-epoch=08.ckpt",
   "n_av1m_clips": 2000,
   "n_favc_clips": 4089,
   "n_folds": 5,

@@ -35,16 +35,14 @@ from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.dirname(__file__))
-from train_e2e import E2EModel
-from datasets_e2e import (
-    AV1M_E2E_Dataset, FakeAVCeleb_E2E_Dataset, e2e_collate_fn
-)
+import importlib
+from datasets_e2e import FakeAVCeleb_E2E_Dataset, e2e_collate_fn
 
 
 # ── Score extraction (uses model's own classification heads) ──────────────────
 
 @torch.no_grad()
-def extract_scores(model: E2EModel, dataloader: DataLoader,
+def extract_scores(model, dataloader: DataLoader,
                    device: torch.device):
     """
     Forward pass through encoder + causal/spurious heads.
@@ -110,11 +108,21 @@ def main():
     parser.add_argument("--av1m_csv",    required=True,
                         help="csv_metadata/av1m_e2e dir with val_e2e_full.csv")
     parser.add_argument("--output_dir",  default="outputs_e2e/results")
+    parser.add_argument("--favc_csv",    default=None,
+                        help="Optional CSV (test_split.csv format) to restrict FAVC eval "
+                             "to a fixed clip set. When provided, --max_clips still applies "
+                             "as an upper bound.")
     parser.add_argument("--max_clips",   type=int, default=500,
                         help="Max clips per dataset (balanced)")
     parser.add_argument("--max_frames",  type=int, default=150)
     parser.add_argument("--batch_size",  type=int, default=4)
     parser.add_argument("--num_workers", type=int, default=2)
+    parser.add_argument("--model_module", default="train_e2e",
+                        help="Python module containing the model class (default: train_e2e)")
+    parser.add_argument("--model_class",  default="E2EModel",
+                        help="Model class name to load (default: E2EModel)")
+    parser.add_argument("--use_fullpath_csv", action="store_true",
+                        help="Use AV1M_E2E_FullPathDataset with val_e2e_full.csv")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -125,16 +133,25 @@ def main():
     print(f"Loading checkpoint: {args.ckpt}")
     with open(args.config) as f:
         config = yaml.safe_load(f)
-    model = E2EModel.load_from_checkpoint(args.ckpt, config=config)
+    _mod = importlib.import_module(args.model_module)
+    ModelCls = getattr(_mod, args.model_class)
+    model = ModelCls.load_from_checkpoint(args.ckpt, config=config, strict=False)
     model.eval()
     model.to(device)
     print("Model loaded OK")
 
     # ── AV1M val dataset (in-domain) ──────────────────────────────────────────
-    av1m_ds = AV1M_E2E_Dataset(
-        args.av1m_raw,
-        os.path.join(args.av1m_csv, "val_labels.csv"),
-        split="val", max_frames=args.max_frames)
+    if args.use_fullpath_csv:
+        from datasets_e2e import AV1M_E2E_FullPathDataset
+        av1m_ds = AV1M_E2E_FullPathDataset(
+            os.path.join(args.av1m_csv, "val_e2e_full.csv"),
+            max_frames=args.max_frames)
+    else:
+        from datasets_e2e import AV1M_E2E_Dataset
+        av1m_ds = AV1M_E2E_Dataset(
+            args.av1m_raw,
+            os.path.join(args.av1m_csv, "val_labels.csv"),
+            split="val", max_frames=args.max_frames)
     n_av1m = min(args.max_clips, len(av1m_ds))
     av1m_sub = Subset(av1m_ds, list(range(n_av1m)))
     av1m_loader = DataLoader(
@@ -143,7 +160,8 @@ def main():
     print(f"AV1M val clips: {n_av1m}")
 
     # ── FAVC dataset (cross-domain) ───────────────────────────────────────────
-    favc_ds = FakeAVCeleb_E2E_Dataset(args.favc_raw, max_frames=args.max_frames)
+    favc_ds = FakeAVCeleb_E2E_Dataset(args.favc_raw, max_frames=args.max_frames,
+                                      csv_path=args.favc_csv)
     n_favc = min(args.max_clips, len(favc_ds))
     rng = np.random.default_rng(42)
     favc_idx = rng.choice(len(favc_ds), size=n_favc, replace=False).tolist()
@@ -175,6 +193,7 @@ def main():
     # ── Compose results ───────────────────────────────────────────────────────
     results = {
         "checkpoint": args.ckpt,
+        "favc_csv": args.favc_csv,
         "n_av1m_clips": int(len(sc_causal_id)),
         "n_favc_clips": int(len(sc_causal_xd)),
         "n_favc_real": n_real_xd,
@@ -189,7 +208,8 @@ def main():
         },
     }
 
-    out_path = os.path.join(args.output_dir, "eval_e2e_auc.json")
+    fname = "eval_e2e_auc_testset.json" if args.favc_csv else "eval_e2e_auc.json"
+    out_path = os.path.join(args.output_dir, fname)
     with open(out_path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"\nResults saved → {out_path}")

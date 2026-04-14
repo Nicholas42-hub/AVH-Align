@@ -1,0 +1,56 @@
+{
+  "ckpt_path": "outputs_A2/ckpts/model-epoch=09.ckpt",
+  "model_class": "AVH_Causal_Ablation",
+  "n_av1m": 2000,
+  "n_favc": 4089,
+  "subspaces": {
+    "v_c": {
+      "dim": 512,
+      "label_ind_auc": 0.5703984744640085,
+      "label_ind_std": 0.0313156785486075,
+      "label_ood_auc": 0.8905728252694911,
+      "domain_auc": 0.9944279618917082,
+      "domain_std": 0.0016620837441362127
+    },
+    "a_c": {
+      "dim": 512,
+      "label_ind_auc": 0.9431495007041123,
+      "label_ind_std": 0.008343618980381395,
+      "label_ood_auc": 0.755285785911256,
+      "domain_auc": 0.9823663516413139,
+      "domain_std": 0.0035240276223323782
+    },
+    "v_s": {
+      "dim": 512,
+      "label_ind_auc": 0.5570069876805314,
+      "label_ind_std": 0.030401428376662546,
+      "label_ood_auc": 0.9140273251441464,
+      "domain_auc": 0.9895386589376723,
+      "domain_std": 0.0030047644061714086
+    },
+    "a_s": {
+      "dim": 512,
+      "label_ind_auc": 0.9157681584259253,
+      "label_ind_std": 0.008834091443487414,
+      "label_ood_auc": 0.7625821007771372,
+      "domain_auc": 0.9796932797251559,
+      "domain_std": 0.00588968274090216
+    },
+    "Z_c": {
+      "dim": 1024,
+      "label_ind_auc": 0.94200604977304,
+      "label_ind_std": 0.008281953428242802,
+      "label_ood_auc": 0.7052080721985461,
+      "domain_auc": 0.9975410852214404,
+      "domain_std": 0.0011755800330258783
+    },
+    "Z_s": {
+      "dim": 1024,
+      "label_ind_auc": 0.9189817989878669,
+      "label_ind_std": 0.00799763433344806,
+      "label_ood_auc": 0.739597643519679,
+      "domain_auc": 0.996243930175698,
+      "domain_std": 0.0016742539757582057
+    }
+  }
+}

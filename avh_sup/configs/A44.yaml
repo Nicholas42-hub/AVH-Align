@@ -1,0 +1,74 @@
+# ============================================================
+#  A44 — Z_c/Z_s Causal + Domain Adversarial + Sinkhorn SDA
+#
+#  Extends A42 with Sinkhorn cross-modal alignment on Z_c:
+#    L_SDA = Sinkhorn(sda_proj(mean v_c), sda_proj(mean a_c))
+#
+#  Motivation: A42 domain probe showed Z_c raw AUC = 0.95 (mean-shift).
+#  GRL cannot fix mean drift in frozen encoder. SDA explicitly aligns
+#  visual and audio causal projections → AV sync = domain-agnostic signal.
+#
+#  All other settings identical to A42.
+# ============================================================
+
+ablation_id: "A44"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+favc_oversample: 14
+
+model_hparams:
+  feat_dim:  1024
+  proj_dim:  512
+
+  # ── SDA (NEW in A44) ──────────────────────────────────────────────────────
+  sda_dim:    128     # shared projection dim for Sinkhorn alignment
+  sda_eps:    0.05    # Sinkhorn ε (regularisation)
+  sda_n_iter: 5       # Sinkhorn iterations (fast; degenerates to L2 at B=1)
+  lambda_sda: 1.0     # weight for SDA loss
+
+  # ── Label adversarial on Z_s (A2) ────────────────────────────────────────
+  lambda_adv:    10.0
+  grl_alpha:      5.0
+
+  # ── Domain adversarial on Z_c (A6) ───────────────────────────────────────
+  lambda_dadv:    1.0
+  grl_domain_alpha: 1.0
+
+  # ── Domain discriminative on Z_s (A6) ────────────────────────────────────
+  lambda_ddis:    1.0
+
+  # ── Orthogonality ─────────────────────────────────────────────────────────
+  lambda_orth:    0.1
+
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A44/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A44/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 43
+
+early_stopping:
+  metric:   "val_auc_causal"
+  mode:     "max"
+  patience: 20
+
+output_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A44/results"

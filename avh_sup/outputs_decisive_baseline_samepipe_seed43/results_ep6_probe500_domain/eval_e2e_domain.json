@@ -1,0 +1,23 @@
+{
+  "checkpoint": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_decisive_baseline_samepipe_seed43/ckpts/last.ckpt",
+  "n_av1m_clips": 500,
+  "n_favc_clips": 500,
+  "domain_probe": {
+    "Z_c_auc_mean": 0.9809600000000002,
+    "Z_c_auc_std": 0.0050369038108743335,
+    "Z_s_auc_mean": 0.9849,
+    "Z_s_auc_std": 0.004287190222045192
+  },
+  "label_probe_indomain": {
+    "Z_c_auc_mean": 0.9704511711711712,
+    "Z_c_auc_std": 0.02075170923044734,
+    "Z_s_auc_mean": 0.9704783367983367,
+    "Z_s_auc_std": 0.003914755858416548
+  },
+  "label_probe_ood_favc": {
+    "Z_c_auc_mean": 0.9887123921733642,
+    "Z_c_auc_std": 0.011470668638967974,
+    "Z_s_auc_mean": 0.9921488182902027,
+    "Z_s_auc_std": 0.00804068490188999
+  }
+}

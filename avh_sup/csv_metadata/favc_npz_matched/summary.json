@@ -1,0 +1,41 @@
+{
+  "features_root": "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features",
+  "source_csv_root": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc",
+  "output_csv_root": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_npz_matched",
+  "n_feature_npz": 4089,
+  "splits": {
+    "train": {
+      "source_csv": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc/train_split.csv",
+      "n_source_rows": 13380,
+      "n_matched_rows": 2599,
+      "category_counts": {
+        "A": 65,
+        "B": 65,
+        "C": 1181,
+        "D": 1288
+      }
+    },
+    "val": {
+      "source_csv": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc/val_split.csv",
+      "n_source_rows": 1497,
+      "n_matched_rows": 376,
+      "category_counts": {
+        "A": 9,
+        "B": 9,
+        "C": 177,
+        "D": 181
+      }
+    },
+    "test": {
+      "source_csv": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc/test_split.csv",
+      "n_source_rows": 6667,
+      "n_matched_rows": 1114,
+      "category_counts": {
+        "A": 26,
+        "B": 26,
+        "C": 496,
+        "D": 566
+      }
+    }
+  }
+}

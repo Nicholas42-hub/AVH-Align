@@ -11,7 +11,7 @@
 #SBATCH --error=logs/train_A39_e2e_%j.err
 
 echo "============================================================"
-echo "  A39_e2e — Caren-priority simple test"
+echo "  A39_e2e — focused simple test"
 echo "  Z_c main classification only + label-aware domain pull on Z_s"
 echo "  FAVC all clips + BalancedDomainSampler"
 echo "  Job ID : $SLURM_JOB_ID"

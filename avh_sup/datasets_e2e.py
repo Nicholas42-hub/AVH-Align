@@ -167,9 +167,28 @@ class FakeAVCeleb_E2E_Dataset(Dataset):
     """
 
     def __init__(self, raw_root: str, fake_category: str = "all",
-                 max_frames: int = 200, real_only: bool = False):
+                 max_frames: int = 200, real_only: bool = False,
+                 csv_path: str = None):
         self.max_frames = max_frames
         self.transform  = build_video_transform()
+
+        # Optional: build allowed set from CSV (test_split.csv format:
+        #   source, category, full_path where full_path starts with "FakeAVCeleb/")
+        # Maps to roi rel path: strip "FakeAVCeleb/", replace ".mp4" -> "_roi.mp4"
+        allowed_rels = None
+        if csv_path is not None:
+            import csv as _csv
+            allowed_rels = set()
+            with open(csv_path, newline="") as fh:
+                reader = _csv.DictReader(fh)
+                for row in reader:
+                    fp = row["full_path"].strip()
+                    # strip leading "FakeAVCeleb/" if present
+                    if fp.startswith("FakeAVCeleb/"):
+                        fp = fp[len("FakeAVCeleb/"):]
+                    stem = fp[:-4] if fp.endswith(".mp4") else fp
+                    allowed_rels.add(stem + "_roi.mp4")
+            print(f"[FakeAVCeleb_E2E_Dataset] CSV filter: {len(allowed_rels)} clips from {csv_path}", flush=True)
 
         self.items = []
         for cat in os.listdir(raw_root):
@@ -195,6 +214,8 @@ class FakeAVCeleb_E2E_Dataset(Dataset):
                     roi = os.path.join(dirpath, stem + "_roi.mp4")
                     wav = os.path.join(dirpath, stem + ".wav")
                     rel = os.path.relpath(roi, raw_root)
+                    if allowed_rels is not None and rel not in allowed_rels:
+                        continue
                     self.items.append((roi, wav, label, rel))
 
         print(f"[FakeAVCeleb_E2E_Dataset] found {len(self.items)} clips", flush=True)

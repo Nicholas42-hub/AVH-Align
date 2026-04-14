@@ -3,6 +3,8 @@ A6 — FCD + Domain Adversarial training entry-point for AVH-Align.
 
 Usage:
   python train_test_fcd_a6.py --config_path configs/A6.yaml --mode train
+  python train_test_fcd_a6.py --config_path configs/A6.yaml --mode train --seed 42 \
+      --output_dir /path/to/outputs_A6_seed42
 
 Key difference from A5: trains on a mixed dataset:
   - AV1M train clips   (domain=0, task-labelled)
@@ -217,10 +219,52 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_path", required=True)
     parser.add_argument("--mode", default="train", choices=["train"])
+    parser.add_argument("--seed", type=int, default=None,
+                        help="Override seed in config")
+    parser.add_argument("--output_dir", type=str, default=None,
+                        help="Override logger/ckpt/results base directory")
+    parser.add_argument("--favc_domain_split", type=str, default=None,
+                        choices=["train", "val", "test"],
+                        help="Override FAVC domain split (default from config)")
+    parser.add_argument("--favc_domain_root_path", type=str, default=None,
+                        help="Override FAVC feature root for domain data")
+    parser.add_argument("--favc_domain_csv_root_path", type=str, default=None,
+                        help="Override FAVC csv root for domain data")
     args = parser.parse_args()
 
     with open(args.config_path) as f:
         config = yaml.safe_load(f)
+
+    # CLI overrides for submission sweeps / leakage-control ablations
+    if args.seed is not None:
+        config["seed"] = args.seed
+
+    if args.output_dir is not None:
+        base = args.output_dir
+        config["callbacks"]["logger"]["log_path"] = os.path.join(base, "logs")
+        config["callbacks"]["ckpt_args"]["ckpt_dir"] = os.path.join(base, "ckpts")
+        config["output_path"] = os.path.join(base, "results")
+        os.makedirs(os.path.join(base, "logs"), exist_ok=True)
+        os.makedirs(os.path.join(base, "ckpts"), exist_ok=True)
+        os.makedirs(os.path.join(base, "results"), exist_ok=True)
+
+    favc_cfg = config.setdefault("favc_domain_info", {})
+    if args.favc_domain_split is not None:
+        favc_cfg["split"] = args.favc_domain_split
+    if args.favc_domain_root_path is not None:
+        favc_cfg["root_path"] = args.favc_domain_root_path
+    if args.favc_domain_csv_root_path is not None:
+        favc_cfg["csv_root_path"] = args.favc_domain_csv_root_path
+
+    print("\n" + "=" * 68)
+    print("  A6 — FCD + Domain Push-Pull")
+    print(f"  seed={config.get('seed', 43)}")
+    print(f"  favc_domain_split={favc_cfg.get('split', 'val')}")
+    print(f"  favc_domain_root={favc_cfg.get('root_path', '<missing>')}")
+    print(f"  favc_domain_csv_root={favc_cfg.get('csv_root_path', '<missing>')}")
+    if args.output_dir is not None:
+        print(f"  output_dir={args.output_dir}")
+    print("=" * 68 + "\n")
 
     if args.mode == "train":
         train(config)

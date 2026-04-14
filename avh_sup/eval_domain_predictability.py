@@ -20,7 +20,7 @@ Expected probe outcomes:
 
   A3 (domain adversarial on Z_s):
     Z_s AUC ≈ 0.5    — GRL successfully suppressed domain info from Z_s
-                        (the goal Karen/John emphasised: ZS low domain AUC)
+                        (the target behavior: Z_s low domain AUC)
     Z_c AUC >> 0.5   — causal branch is unconstrained; can still encode domain
 
 For fairness the probe uses a balanced subsample: equal numbers of clips
@@ -226,20 +226,32 @@ def main():
     # Auto-detect model class:
     #   A9: sync_dim + lambda_mmd  (SAD + MMD)
     #   A8: sync_dim (SAD + GRL)
-    #   A7: lambda_ladv  (FCD + label adversarial)
-    #   A6: lambda_dadv  (FCD + domain adversarial)
+    #   A7: syn_dim + lambda_ladv  (FCD + label adversarial)
+    #   A6: syn_dim + lambda_dadv  (FCD + domain adversarial)
     #   A5/earlier: syn_dim or no distinguishing key
+    #   A44: proj_dim + sda_dim    (binary + Sinkhorn + domain)
+    #   A42/A43: proj_dim + lambda_dadv (binary + domain, no syn_dim)
     _hp = ckpt_cfg.get("model_hparams", {})
+    _ablation_id = ckpt_cfg.get("ablation_id", "")
     if "sync_dim" in _hp and "lambda_mmd" in _hp:
         model = AVH_SAD_A9(config=ckpt_cfg)
     elif "sync_dim" in _hp:
         model = AVH_SAD_A8(config=ckpt_cfg)
-    elif "lambda_ladv" in _hp:
+    elif "lambda_ladv" in _hp and "syn_dim" in _hp:
         model = AVH_FCD_A7(config=ckpt_cfg)
-    elif "lambda_dadv" in _hp:
+    elif "lambda_dadv" in _hp and "syn_dim" in _hp:
         model = AVH_FCD_A6(config=ckpt_cfg)
     elif "syn_dim" in _hp:
         model = AVH_FCD(config=ckpt_cfg)
+    elif _ablation_id == "A44" or ("sda_dim" in _hp and "proj_dim" in _hp):
+        from mlp_causal_a44 import AVH_Causal_A44
+        model = AVH_Causal_A44(config=ckpt_cfg)
+    elif _ablation_id == "A43" or (_ablation_id == "" and "proj_dim" in _hp and "lambda_dadv" in _hp):
+        from mlp_causal_a43 import AVH_Causal_A43
+        model = AVH_Causal_A43(config=ckpt_cfg)
+    elif _ablation_id == "A42":
+        from mlp_causal_a42 import AVH_Causal_A42
+        model = AVH_Causal_A42(config=ckpt_cfg)
     else:
         model = AVH_Causal_Ablation(config=ckpt_cfg)
     print(f"  Model class: {model.__class__.__name__}")

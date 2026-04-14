@@ -39,16 +39,14 @@ from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.dirname(__file__))
-from train_e2e import E2EModel
-from datasets_e2e import (
-    AV1M_E2E_Dataset, FakeAVCeleb_E2E_Dataset, e2e_collate_fn
-)
+import importlib
+from datasets_e2e import FakeAVCeleb_E2E_Dataset, e2e_collate_fn
 
 
 # ── Representation extraction ─────────────────────────────────────────────────
 
 @torch.no_grad()
-def extract_zc_zs(model: E2EModel, dataloader: DataLoader, device: torch.device,
+def extract_zc_zs(model, dataloader: DataLoader, device: torch.device,
                   domain_label: int):
     """
     Run raw video/audio through the full e2e pipeline.
@@ -127,6 +125,12 @@ def main():
                         help="Evaluate only on the 20%% holdout not seen during training")
     parser.add_argument("--train_seed",  type=int, default=42,
                         help="Seed used for 80/20 split during training (default 42)")
+    parser.add_argument("--model_module", default="train_e2e",
+                        help="Python module containing the model class (default: train_e2e)")
+    parser.add_argument("--model_class",  default="E2EModel",
+                        help="Model class name to load (default: E2EModel)")
+    parser.add_argument("--use_fullpath_csv", action="store_true",
+                        help="Use AV1M_E2E_FullPathDataset with val_e2e_full.csv")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -137,17 +141,25 @@ def main():
     print(f"Loading checkpoint: {args.ckpt}")
     with open(args.config) as f:
         config = yaml.safe_load(f)
-    # Load via Lightning (handles hparams automatically)
-    model = E2EModel.load_from_checkpoint(args.ckpt, config=config)
+    _mod = importlib.import_module(args.model_module)
+    ModelCls = getattr(_mod, args.model_class)
+    model = ModelCls.load_from_checkpoint(args.ckpt, config=config, strict=False)
     model.eval()
     model.to(device)
     print("Model loaded OK")
 
     # ── AV1M val dataset ──────────────────────────────────────────────────────
-    av1m_ds = AV1M_E2E_Dataset(
-        args.av1m_raw,
-        os.path.join(args.av1m_csv, "val_labels.csv"),
-        split="val", max_frames=args.max_frames)
+    if args.use_fullpath_csv:
+        from datasets_e2e import AV1M_E2E_FullPathDataset
+        av1m_ds = AV1M_E2E_FullPathDataset(
+            os.path.join(args.av1m_csv, "val_e2e_full.csv"),
+            max_frames=args.max_frames)
+    else:
+        from datasets_e2e import AV1M_E2E_Dataset
+        av1m_ds = AV1M_E2E_Dataset(
+            args.av1m_raw,
+            os.path.join(args.av1m_csv, "val_labels.csv"),
+            split="val", max_frames=args.max_frames)
 
     if args.holdout_only:
         # Reproduce the exact 80/20 split used during training so we only

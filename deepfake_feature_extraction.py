@@ -15,8 +15,18 @@ from tqdm import tqdm
 np.float = np.float64
 np.int = np.int_
 
-import hubert_pretraining, hubert, hubert_asr
-import utils as avhubert_utils
+# Ensure avhubert is importable as a package (needed for relative imports inside it)
+import sys as _sys
+import importlib as _importlib
+_av_hubert_parent = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'av_hubert'))
+if _av_hubert_parent not in _sys.path:
+    _sys.path.insert(0, _av_hubert_parent)
+# Register avhubert modules with fairseq via package imports (keeps relative imports working)
+_importlib.import_module('avhubert.hubert_pretraining')
+_importlib.import_module('avhubert.hubert')
+_importlib.import_module('avhubert.hubert_asr')
+# Explicitly load the avhubert utils submodule (avhubert.__init__ star-imports shadow 'utils')
+avhubert_utils = _importlib.import_module('avhubert.utils')
 from fairseq import checkpoint_utils
 
 FPS = 25
@@ -152,13 +162,59 @@ def process_fakeavceleb(args, model, transform, category):
         np.savez(save_path, **save_dict)
         
 
+def process_avlips(args, model, transform):
+    """Extract AV-HuBERT features for AVLips 0_real / 1_fake directories.
+
+    Expects:
+      args.data_path   — root of avlips_preprocessed/ (contains 0_real/ and 1_fake/)
+      args.wav_path    — root of wav directory (contains 0_real/ and 1_fake/)
+      args.save_path   — output root (creates 0_real/ and 1_fake/ subdirs)
+    """
+    classes = ["0_real", "1_fake"]
+    for cls in classes:
+        roi_dir = os.path.join(args.data_path, cls)
+        wav_dir = os.path.join(args.wav_path, cls)
+        out_dir = os.path.join(args.save_path, cls)
+        os.makedirs(out_dir, exist_ok=True)
+
+        roi_files = sorted([f for f in os.listdir(roi_dir) if f.endswith("_roi.mp4")])
+        print(f"\n[AVLips] Feature extraction for {cls}: {len(roi_files)} clips", flush=True)
+
+        for roi_fname in tqdm(roi_files, desc=f"AVLips {cls}"):
+            stem = roi_fname[:-len("_roi.mp4")]  # e.g. "0", "1000", ...
+            roi_path = os.path.join(roi_dir, roi_fname)
+            wav_path = os.path.join(wav_dir, stem + ".wav")
+            npz_path = os.path.join(out_dir, stem + ".npz")
+
+            if os.path.exists(npz_path):
+                continue  # already done
+
+            if not os.path.exists(wav_path):
+                print(f"[WARN] WAV missing for {roi_fname}: {wav_path}")
+                continue
+
+            try:
+                feature_audio, feature_vid, feature_multimodal = extract_features(
+                    model, roi_path, wav_path, transform, args.trimmed
+                )
+            except Exception as e:
+                print(f"[WARN] Failed for {roi_fname}: {e}")
+                continue
+
+            np.savez(npz_path,
+                     visual=feature_vid,
+                     audio=feature_audio,
+                     multimodal=feature_multimodal)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Extract AVHubert features")
     parser.add_argument("--dataset", type=str, default="AV1M", help="Dataset to extract features for")
     parser.add_argument("--metadata", type=str,default="av1m_metadata/train_metadata.csv", help="Path to the dataset metadata (for AV1M this dictates the train/val/test split to extract features for)")
     parser.add_argument("--split", default="train", help="For AV1M: data split to process (e.g., val, train)")
     parser.add_argument("--ckpt_path", type=str, default="self_large_vox_433h.pt", help="Path to AVHubert checkpoint")
-    parser.add_argument("--data_path", type=str, default="av1m_preprocessed/", help="Path to the root folder pf preprocessed data")
+    parser.add_argument("--data_path", type=str, default="av1m_preprocessed/", help="Path to the root folder of preprocessed data (ROI videos)")
+    parser.add_argument("--wav_path", type=str, default="", help="For AVLips: path to wav root dir (with 0_real/ and 1_fake/ subdirs)")
     parser.add_argument("--save_path", type=str, default="av1m_features/", help="Output directory for saving features")
     parser.add_argument("--category", choices=["RealVideo-RealAudio", "RealVideo-FakeAudio", "FakeVideo-RealAudio", "FakeVideo-FakeAudio", "all"], default="all", help="For FakeAVCeleb: select category (RealVideo-RealAudio, etc.)")
     parser.add_argument("--trimmed", action="store_true", help="Wether to trimmed to starting silence or not")
@@ -185,6 +241,11 @@ def main():
 
         for category in categories:
             process_fakeavceleb(args, model, transform, category)
+
+    elif args.dataset == "AVLips":
+        if not args.wav_path:
+            parser.error("--wav_path is required for --dataset AVLips")
+        process_avlips(args, model, transform)
 
 if __name__ == "__main__":
     main()

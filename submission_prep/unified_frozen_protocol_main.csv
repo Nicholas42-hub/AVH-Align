@@ -1,0 +1,4 @@
+model,eval_results_path,protocol,status,overall_auc,overall_n,rv_fa_auc,fv_ra_auc,fv_fa_auc
+A2,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2/results_favc_matched/eval_results.txt,frozen_favc_npz_matched,ok,0.7928,1114,1.0,0.5462,0.9995
+A5,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5/results/eval_results.txt,frozen_favc_npz_matched,ok,0.8186,1114,0.9956,0.6156,0.9883
+A6,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6/results/eval_results.txt,frozen_favc_npz_matched,ok,0.8885,1114,1.0,0.7568,0.9987
