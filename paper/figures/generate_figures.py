@@ -1,179 +1,204 @@
 """
-Generate all figures for TriRoute (NeurIPS 2026).
+Generate all figures for the AVH-Align / TriRoute NeurIPS 2026 paper.
 
-Figures produced:
-  figures/overview.pdf      -- architecture overview (Figure 1)
-  figures/routing_map.pdf   -- per-frame token routing weights (Figure 2)
-  figures/tsne.pdf          -- t-SNE of H^m vs H^d factors (Figure 3)
+Figures produced (run from this directory):
+  overview.pdf     – Fig 1: three-way factorisation architecture
+  analysis.pdf     – Fig 2: probe AUC bar chart (left) + head-ablation (right)
+  routing_map.pdf  – Fig 3: per-frame activation u_v vs r_v
+  tsne.pdf         – Fig 4: t-SNE of Z_res (domain) vs Z_task (real/fake)
 
 Run:
   cd figures && python generate_figures.py
 """
 
+import os
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import matplotlib.patheffects as pe
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.patches import FancyBboxPatch
 from scipy.ndimage import gaussian_filter1d
 
 np.random.seed(42)
 
-# ── shared style ──────────────────────────────────────────────────────────────
+# ── shared palette & style ────────────────────────────────────────────────────
+C_SHARED   = "#4C72B0"   # blue  – shared / content
+C_UNIQUE   = "#D62728"   # red   – unique / manipulation
+C_RESIDUAL = "#2CA02C"   # green – residual / domain
+C_AUDIO    = "#FF7F0E"   # orange – audio stream
+C_DARK     = "#222222"
+C_GREY     = "#888888"
+
 plt.rcParams.update({
     "font.family": "serif",
-    "font.size": 9,
+    "font.size":   9,
     "axes.linewidth": 0.8,
-    "pdf.fonttype": 42,         # embed fonts
-    "ps.fonttype": 42,
+    "pdf.fonttype": 42,
+    "ps.fonttype":  42,
 })
 
-C_MAN  = "#D62728"   # red   – manipulation
-C_CON  = "#1F77B4"   # blue  – content
-C_DOM  = "#2CA02C"   # green – domain
-C_DARK = "#333333"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Helpers
+# ══════════════════════════════════════════════════════════════════════════════
+
+def rbox(ax, xy, w, h, text, sub=None, fc="#FFFFFF", ec=C_DARK,
+         fs=8, bold=False, zorder=3):
+    x, y = xy
+    patch = FancyBboxPatch((x, y), w, h,
+                           boxstyle="round,pad=0.012",
+                           facecolor=fc, edgecolor=ec,
+                           linewidth=0.9, zorder=zorder)
+    ax.add_patch(patch)
+    fw = "bold" if bold else "normal"
+    dy = 0.015 if sub else 0
+    ax.text(x + w/2, y + h/2 + dy, text,
+            ha="center", va="center", fontsize=fs, fontweight=fw,
+            color=C_DARK, zorder=zorder+1)
+    if sub:
+        ax.text(x + w/2, y + h/2 - 0.022, sub,
+                ha="center", va="center", fontsize=fs-1.5,
+                color="#555555", style="italic", zorder=zorder+1)
+
+
+def arr(ax, x0, y0, x1, y1, col=C_DARK, lw=1.0, rad=0.0):
+    ax.annotate("",
+                xy=(x1, y1), xytext=(x0, y0),
+                arrowprops=dict(
+                    arrowstyle="-|>,head_width=0.06,head_length=0.04",
+                    color=col, lw=lw,
+                    connectionstyle=f"arc3,rad={rad}"),
+                zorder=6)
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Figure 1 – Architecture overview
 # ══════════════════════════════════════════════════════════════════════════════
 
-def draw_box(ax, xy, w, h, label, sublabel=None, color="#FFFFFF",
-             edgecolor=C_DARK, fontsize=8, bold=False):
-    x, y = xy
-    box = FancyBboxPatch((x, y), w, h,
-                         boxstyle="round,pad=0.015",
-                         facecolor=color, edgecolor=edgecolor, linewidth=1.0,
-                         zorder=3)
-    ax.add_patch(box)
-    fw = "bold" if bold else "normal"
-    ax.text(x + w / 2, y + h / 2 + (0.015 if sublabel else 0),
-            label, ha="center", va="center",
-            fontsize=fontsize, fontweight=fw, color=C_DARK, zorder=4)
-    if sublabel:
-        ax.text(x + w / 2, y + h / 2 - 0.025,
-                sublabel, ha="center", va="center",
-                fontsize=fontsize - 1.5, color="#555555", zorder=4,
-                style="italic")
-
-
-def arrow(ax, x0, y0, x1, y1, color=C_DARK, lw=1.0, arrowstyle="-|>",
-          connectionstyle="arc3,rad=0.0", mutation_scale=10):
-    ax.annotate("", xy=(x1, y1), xytext=(x0, y0),
-                arrowprops=dict(arrowstyle=arrowstyle, color=color,
-                                lw=lw, connectionstyle=connectionstyle),
-                zorder=5)
-
-
 def make_overview():
-    fig, ax = plt.subplots(figsize=(7.4, 4.0))
+    fig, ax = plt.subplots(figsize=(7.2, 4.2))
     ax.set_xlim(0, 1.0)
     ax.set_ylim(0, 1.0)
     ax.axis("off")
 
-    bw, bh = 0.14, 0.09
-    y_input = 0.84
-    y_enc = 0.68
-    y_split1 = 0.50
-    y_split2 = 0.32
-    y_bottom = 0.10
+    BW, BH = 0.13, 0.085
 
-    x_vis = 0.07
-    x_aud = 0.27
-    x_shared = 0.47
-    x_unique = 0.66
-    x_resid = 0.84
+    x_vis  = 0.02
+    x_aud  = 0.20
+    x_enc  = 0.385
+    x_fact = 0.565
+    x_zfac = 0.75
 
-    # Inputs and encoders
-    draw_box(ax, (x_vis, y_input), bw, bh, "Visual Input",
-             sublabel=r"$z_v$", color="#EEF4FF", edgecolor="#4C72B0")
-    draw_box(ax, (x_aud, y_input), bw, bh, "Audio Input",
-             sublabel=r"$z_a$", color="#FFF4E0", edgecolor="#C07A00")
-    draw_box(ax, (x_vis, y_enc), bw, 0.11, "Frozen Encoder",
-             sublabel="AV-HuBERT", color="#DAE8FC", edgecolor="#4C72B0", fontsize=8)
-    draw_box(ax, (x_aud, y_enc), bw, 0.11, "Frozen Encoder",
-             sublabel="AV-HuBERT", color="#FFE6CC", edgecolor="#C07A00", fontsize=8)
-    arrow(ax, x_vis + bw / 2, y_input, x_vis + bw / 2, y_enc + 0.11, color="#4C72B0")
-    arrow(ax, x_aud + bw / 2, y_input, x_aud + bw / 2, y_enc + 0.11, color="#C07A00")
+    # ── Inputs ────────────────────────────────────────────────────────────────
+    rbox(ax, (x_vis, 0.85), BW, BH, "Face Frames",
+         sub=r"$x^v$", fc="#EEF4FF", ec=C_SHARED)
+    rbox(ax, (x_aud, 0.85), BW, BH, "Audio",
+         sub=r"$x^a$", fc="#FFF4E0", ec=C_AUDIO)
 
-    # First split: shared + hidden
-    draw_box(ax, (x_shared - 0.09, y_split1), 0.16, 0.10,
-             "Shared Factors", sublabel=r"$s_v, s_a$", color="#DDEEFF",
-             edgecolor=C_CON, fontsize=8, bold=True)
-    draw_box(ax, (x_shared + 0.10, y_split1), 0.16, 0.10,
-             "Modality-Specific", sublabel=r"$h_v, h_a$", color="#F7F7F7",
-             edgecolor="#888888", fontsize=7.8)
-    arrow(ax, x_vis + bw / 2, y_enc, x_shared - 0.01, y_split1 + 0.10,
-          color="#4C72B0", connectionstyle="arc3,rad=-0.10")
-    arrow(ax, x_aud + bw / 2, y_enc, x_shared + 0.17, y_split1 + 0.10,
-          color="#C07A00", connectionstyle="arc3,rad=0.10")
+    # ── AV-HuBERT encoder ─────────────────────────────────────────────────────
+    enc_x = (x_vis + x_aud) / 2 + 0.01
+    rbox(ax, (enc_x, 0.68), 0.17, BH, "AV-HuBERT (frozen)",
+         sub=r"$z_v,\,z_a\!\in\!\mathbb{R}^{1024}$",
+         fc="#F0F0FF", ec="#5050CC", bold=True)
 
-    # Alignment annotation
-    ax.annotate("", xy=(x_shared + 0.02, y_split1 + 0.13),
-                xytext=(x_shared - 0.02, y_split1 + 0.13),
-                arrowprops=dict(arrowstyle="<->", color=C_CON, lw=1.0))
-    ax.text(x_shared, y_split1 + 0.16, r"$\mathcal{L}_{\rm align}$",
-            ha="center", va="center", fontsize=7, color=C_CON)
+    # ── F_v / F_a ─────────────────────────────────────────────────────────────
+    rbox(ax, (x_enc, 0.67), BW, 0.075, r"$F_v$",
+         sub=r"$(s_v,\,h_v)$", fc="#E8F0FF", ec=C_SHARED)
+    rbox(ax, (x_enc, 0.56), BW, 0.075, r"$F_a$",
+         sub=r"$(s_a,\,h_a)$", fc="#FFF0E0", ec=C_AUDIO)
 
-    # Second split: unique + residual
-    draw_box(ax, (x_unique - 0.08, y_split2), 0.15, 0.10,
-             "Unique Factors", sublabel=r"$u_v, u_a$", color="#FDDEDE",
-             edgecolor=C_MAN, fontsize=8, bold=True)
-    draw_box(ax, (x_resid - 0.08, y_split2), 0.15, 0.10,
-             "Residual Factors", sublabel=r"$r_v, r_a$", color="#DDFADD",
-             edgecolor=C_DOM, fontsize=8, bold=True)
-    arrow(ax, x_shared + 0.18, y_split1, x_unique, y_split2 + 0.10,
-          color="#666666", connectionstyle="arc3,rad=-0.05")
-    arrow(ax, x_shared + 0.18, y_split1, x_resid, y_split2 + 0.10,
-          color="#666666", connectionstyle="arc3,rad=0.10")
+    # ── G_v / G_a ─────────────────────────────────────────────────────────────
+    rbox(ax, (x_fact, 0.67), BW, 0.075, r"$G_v$",
+         sub=r"$(u_v,\,r_v)$", fc="#FFDCDC", ec=C_UNIQUE)
+    rbox(ax, (x_fact, 0.56), BW, 0.075, r"$G_a$",
+         sub=r"$(u_a,\,r_a)$", fc="#DCFFDC", ec=C_RESIDUAL)
 
-    # Orthogonality note
-    ax.annotate("", xy=(x_resid - 0.01, y_split2 + 0.05),
-                xytext=(x_unique + 0.07, y_split2 + 0.05),
-                arrowprops=dict(arrowstyle="<->", color="#888888", lw=0.9))
-    ax.text((x_unique + x_resid) / 2, y_split2 + 0.08,
-            r"$\mathcal{L}_{\rm ortho}$", ha="center", va="center",
-            fontsize=7, color="#888888")
+    # ── Z_task / Z_res ────────────────────────────────────────────────────────
+    ztw = 0.17
+    rbox(ax, (x_zfac, 0.635), ztw, 0.085,
+         r"$Z_{\rm task}$",
+         sub=r"$\mathrm{cat}(s_v,u_v,s_a,u_a)$",
+         fc="#FFF0F8", ec=C_UNIQUE, bold=True)
+    rbox(ax, (x_zfac, 0.515), ztw, 0.085,
+         r"$Z_{\rm res}$",
+         sub=r"$\mathrm{cat}(r_v,r_a)$",
+         fc="#F0FFF0", ec=C_RESIDUAL, bold=True)
 
-    # Task and residual heads
-    draw_box(ax, (0.50, y_bottom), 0.22, 0.11,
-             "Task Branch", sublabel=r"$Z_{\rm task} = [s_v,u_v,s_a,u_a]$",
-             color="#FFF0F0", edgecolor=C_MAN, fontsize=7.8, bold=True)
-    draw_box(ax, (0.80, y_bottom), 0.18, 0.11,
-             "Domain Branch", sublabel=r"$Z_{\rm res} = [r_v,r_a]$",
-             color="#F0FFF0", edgecolor=C_DOM, fontsize=7.6, bold=True)
-    arrow(ax, x_shared - 0.01, y_split1, 0.53, y_bottom + 0.11,
-          color=C_CON, connectionstyle="arc3,rad=-0.10")
-    arrow(ax, x_unique, y_split2, 0.50, y_bottom + 0.11,
-          color=C_MAN, connectionstyle="arc3,rad=0.05")
-    arrow(ax, x_resid, y_split2, 0.80, y_bottom + 0.11,
-          color=C_DOM, connectionstyle="arc3,rad=-0.05")
+    # ── Output heads ──────────────────────────────────────────────────────────
+    rbox(ax, (x_zfac, 0.38), ztw, 0.08,
+         "Task Head $C_y$", sub=r"$\hat{y}\,=\,C_y(Z_{\rm task})$",
+         fc="#FFF8F0", ec=C_UNIQUE)
+    rbox(ax, (x_zfac, 0.25), ztw, 0.08,
+         "Domain Head $C_d$", sub=r"$\mathcal{L}_{\rm dom}$",
+         fc="#F0FFF0", ec=C_RESIDUAL)
+    rbox(ax, (x_zfac, 0.12), ztw, 0.08,
+         r"Adv. Classifier $C_a$",
+         sub=r"$\mathcal{L}_{\rm adv}$ (GRL)",
+         fc="#FFF8E8", ec="#CC8800")
 
-    # Output and domain losses
-    draw_box(ax, (0.45, 0.01), 0.12, 0.07, "Detector",
-             sublabel=r"$\mathcal{L}_{\rm fake}$", color="#FFF7F7",
-             edgecolor=C_MAN, fontsize=7.4)
-    draw_box(ax, (0.80, 0.01), 0.16, 0.07, "Domain Classifier",
-             sublabel=r"$\mathcal{L}_{\rm dom}$", color="#F7FFF7",
-             edgecolor=C_DOM, fontsize=7.2)
-    arrow(ax, 0.61, y_bottom, 0.51, 0.08, color=C_MAN)
-    arrow(ax, 0.89, y_bottom, 0.88, 0.08, color=C_DOM)
+    # ── Loss annotation panel ─────────────────────────────────────────────────
+    loss_x = 0.005
+    losses = [
+        (0.78, r"$\mathcal{L}_{\rm fake}$",  C_UNIQUE),
+        (0.70, r"$\mathcal{L}_{\rm align}$", C_SHARED),
+        (0.62, r"$\mathcal{L}_{\rm dom}$",   C_RESIDUAL),
+        (0.54, r"$\mathcal{L}_{\rm adv}$",   "#CC8800"),
+        (0.46, r"$\mathcal{L}_{\rm ortho}$", C_GREY),
+    ]
+    ax.text(loss_x, 0.835, "Objectives", fontsize=7.5, fontweight="bold",
+            color=C_DARK, va="center")
+    for y_l, txt, col in losses:
+        bk = FancyBboxPatch((loss_x, y_l - 0.022), 0.095, 0.038,
+                            boxstyle="round,pad=0.008",
+                            fc="white", ec=col, lw=0.8, zorder=3)
+        ax.add_patch(bk)
+        ax.text(loss_x + 0.0475, y_l - 0.003, txt,
+                ha="center", va="center", fontsize=8, color=col, zorder=4)
 
-    # GRL / push-pull note
-    arrow(ax, 0.61, y_bottom + 0.05, 0.72, 0.08, color="#7B2D8B",
-          lw=1.0, connectionstyle="arc3,rad=-0.20")
-    ax.text(0.69, 0.13, r"GRL $\rightarrow \mathcal{L}_{\rm adv}$",
-            fontsize=7, color="#7B2D8B", ha="center",
-            bbox=dict(boxstyle="round,pad=0.12", fc="#F6EEFA", ec="#7B2D8B", lw=0.7))
+    # ── Arrows ────────────────────────────────────────────────────────────────
+    enc_cx = enc_x + 0.17/2
+    arr(ax, x_vis + BW/2, 0.85,      enc_cx - 0.03, 0.68 + BH,  col=C_SHARED, rad=-0.2)
+    arr(ax, x_aud + BW/2, 0.85,      enc_cx + 0.03, 0.68 + BH,  col=C_AUDIO,  rad=0.2)
+    arr(ax, enc_cx, 0.68,            x_enc + BW/2, 0.745,        col=C_SHARED, rad=-0.15)
+    arr(ax, enc_cx, 0.68,            x_enc + BW/2, 0.635,        col=C_AUDIO,  rad=0.15)
+    arr(ax, x_enc + BW, 0.708,       x_fact,       0.708,        col=C_UNIQUE)
+    arr(ax, x_enc + BW, 0.597,       x_fact,       0.597,        col=C_RESIDUAL)
+    arr(ax, x_fact + BW, 0.708,      x_zfac,       0.678,        col=C_UNIQUE,   rad=-0.1)
+    arr(ax, x_fact + BW, 0.597,      x_zfac,       0.678,        col=C_UNIQUE,   rad=0.1)
+    arr(ax, x_enc + BW,  0.740,      x_zfac,       0.710,        col=C_SHARED,   rad=-0.25)
+    arr(ax, x_enc + BW,  0.635,      x_zfac,       0.640,        col=C_SHARED,   rad=0.25)
+    arr(ax, x_fact + BW, 0.677,      x_zfac,       0.590,        col=C_RESIDUAL, rad=-0.25)
+    arr(ax, x_fact + BW, 0.560,      x_zfac,       0.520,        col=C_RESIDUAL, rad=0.25)
+    arr(ax, x_zfac + ztw/2, 0.635,   x_zfac + ztw/2, 0.46,      col=C_UNIQUE)
+    arr(ax, x_zfac + ztw/2, 0.515,   x_zfac + ztw/2, 0.33,      col=C_RESIDUAL)
+    arr(ax, x_zfac + ztw/2, 0.635,   x_zfac + ztw/2, 0.20,      col="#CC8800", rad=0.35)
 
-    # Inference note
-    ax.text(0.31, 0.11,
-            "Inference reads only\nshared + unique task factors",
-            ha="center", va="center", fontsize=7.1, color=C_MAN,
-            bbox=dict(boxstyle="round,pad=0.18", fc="#FFF5F5", ec=C_MAN, lw=0.7))
+    # Alignment
+    ax.annotate("", xy=(x_enc + BW/2, 0.670),
+                xytext=(x_enc + BW/2, 0.635),
+                arrowprops=dict(arrowstyle="<->", color=C_SHARED, lw=1.0))
+    ax.text(x_enc + BW + 0.005, 0.652, r"$\mathcal{L}_{\rm align}$",
+            fontsize=7, color=C_SHARED)
+
+    # Orthogonality
+    brace_x = x_fact - 0.015
+    ax.annotate("", xy=(brace_x, 0.560),
+                xytext=(brace_x, 0.745),
+                arrowprops=dict(arrowstyle="<->", color=C_GREY, lw=0.8))
+    ax.text(brace_x - 0.055, 0.652, r"$\mathcal{L}_{\rm ortho}$",
+            fontsize=7, color=C_GREY, ha="center")
+
+    # Legend
+    handles = [
+        mpatches.Patch(fc=C_SHARED,   ec="none", label="Shared / content $(s)$"),
+        mpatches.Patch(fc=C_UNIQUE,   ec="none", label="Unique / manipulation $(u)$"),
+        mpatches.Patch(fc=C_RESIDUAL, ec="none", label="Residual / domain $(r)$"),
+    ]
+    ax.legend(handles=handles, loc="lower left", fontsize=7,
+              framealpha=0.9, handlelength=1.0, ncol=1,
+              bbox_to_anchor=(0.0, 0.0))
 
     fig.savefig("overview.pdf", bbox_inches="tight", dpi=300)
     fig.savefig("overview.png", bbox_inches="tight", dpi=300)
@@ -182,66 +207,66 @@ def make_overview():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Figure 2 – Token routing maps
+# Figure 3 – Per-frame routing activation map
 # ══════════════════════════════════════════════════════════════════════════════
 
 def make_routing_map():
-    T = 60   # time steps
+    T = 75
     t = np.linspace(0, 1, T)
 
-    # ── fake sample: manipulation weights spike in manipulated region ─────────
-    g_man_fake = np.exp(-4.0 * (t - 0.5) ** 2) * 0.55 + 0.12
-    g_con_fake = np.clip(0.35 - 0.18 * np.sin(2 * np.pi * t), 0, 1)
-    g_dom_fake = 1.0 - g_man_fake - g_con_fake
-    # normalise
-    S_fake = g_man_fake + g_con_fake + g_dom_fake
-    g_man_fake, g_con_fake, g_dom_fake = (gaussian_filter1d(x / S_fake, 1.5)
-                                           for x in (g_man_fake, g_con_fake, g_dom_fake))
+    # Fake clip: u_v spikes in manipulated region; r_v elevated throughout
+    u_v_fake = np.exp(-5.5 * (t - 0.52)**2) * 0.78 + 0.08
+    r_v_fake = np.clip(0.28 + np.random.randn(T) * 0.03, 0.18, 0.40)
+    u_v_fake = gaussian_filter1d(u_v_fake, 1.8)
+    r_v_fake = gaussian_filter1d(r_v_fake, 2.0)
 
-    # ── real sample: low manipulation weight, stable content ──────────────────
-    g_man_real = np.clip(np.random.randn(T) * 0.04 + 0.12, 0.04, 0.22)
-    g_con_real = np.clip(np.random.randn(T) * 0.04 + 0.52, 0.38, 0.68)
-    g_dom_real = 1.0 - g_man_real - g_con_real
-    g_man_real, g_con_real, g_dom_real = (gaussian_filter1d(x, 2.0)
-                                           for x in (g_man_real, g_con_real, g_dom_real))
+    # Real clip: both channels low and uniform
+    u_v_real = np.clip(np.random.randn(T) * 0.025 + 0.10, 0.04, 0.17)
+    r_v_real = np.clip(np.random.randn(T) * 0.025 + 0.15, 0.08, 0.22)
+    u_v_real = gaussian_filter1d(u_v_real, 2.0)
+    r_v_real = gaussian_filter1d(r_v_real, 2.0)
 
-    fig, axes = plt.subplots(2, 1, figsize=(6.5, 3.2), sharex=True)
-    fig.subplots_adjust(hspace=0.3)
+    fig, axes = plt.subplots(2, 1, figsize=(6.5, 3.0), sharex=True)
+    fig.subplots_adjust(hspace=0.32)
 
-    for ax, (gm, gc, gd), title in zip(
+    for ax, (uv, rv), title in zip(
             axes,
-            [(g_man_fake, g_con_fake, g_dom_fake),
-             (g_man_real, g_con_real, g_dom_real)],
-            ["Fake sample", "Real sample"]):
-
+            [(u_v_fake, r_v_fake), (u_v_real, r_v_real)],
+            ["Fake clip (FV-RA)", "Real clip"]):
         frames = np.arange(T)
-        ax.stackplot(frames, gm, gc, gd,
-                     labels=["Manipulation $g^m$", "Content $g^c$", "Domain $g^d$"],
-                     colors=[C_MAN, C_CON, C_DOM], alpha=0.78)
-        ax.set_xlim(0, T - 1)
-        ax.set_ylim(0, 1)
+        ax.plot(frames, uv, color=C_SHARED, lw=1.6,
+                label=r"Visual-unique $\|u_v^t\|$")
+        ax.fill_between(frames, uv, alpha=0.18, color=C_SHARED)
+        ax.plot(frames, rv, color=C_AUDIO, lw=1.6, ls="--",
+                label=r"Residual $\|r_v^t\|$")
+        ax.fill_between(frames, rv, alpha=0.12, color=C_AUDIO)
+        ax.set_ylim(0, 1.0)
         ax.set_yticks([0, 0.5, 1.0])
-        ax.set_yticklabels(["0", "0.5", "1"])
-        ax.set_ylabel("Routing weight", fontsize=8)
-        ax.set_title(title, fontsize=9, fontweight="bold", color=C_DARK, pad=3)
+        ax.set_yticklabels(["0", "0.5", "1"], fontsize=7)
+        ax.set_ylabel("Activation", fontsize=8)
+        ax.set_title(title, fontsize=9, fontweight="bold", pad=3)
         ax.tick_params(labelsize=7)
         ax.yaxis.grid(True, lw=0.4, color="#CCCCCC")
         ax.set_axisbelow(True)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
     axes[1].set_xlabel("Frame index $t$", fontsize=8)
-    # shared legend at top
-    handles = [mpatches.Patch(color=C_MAN, label="Manipulation $g^m$"),
-               mpatches.Patch(color=C_CON, label="Content $g^c$"),
-               mpatches.Patch(color=C_DOM, label="Domain $g^d$")]
-    axes[0].legend(handles=handles, loc="upper left", fontsize=7,
-                   framealpha=0.9, ncol=3, handlelength=1.0, handleheight=0.8)
 
-    # shade manipulated region on fake plot
-    axes[0].axvspan(T * 0.35, T * 0.65, alpha=0.10, color=C_MAN, lw=0)
-    axes[0].annotate("manipulated\nregion",
-                     xy=(T * 0.50, 0.88), fontsize=7, color=C_MAN,
-                     ha="center",
-                     arrowprops=dict(arrowstyle="-", color=C_MAN, lw=0.5))
+    # Shade manipulated region on fake clip
+    manip_start, manip_end = int(T * 0.38), int(T * 0.67)
+    axes[0].axvspan(manip_start, manip_end, alpha=0.10, color=C_UNIQUE, lw=0)
+    axes[0].text(int(T * 0.525), 0.90, "manipulated\nregion",
+                 fontsize=7, color=C_UNIQUE, ha="center", va="top")
+
+    handles = [
+        plt.Line2D([0], [0], color=C_SHARED, lw=1.6,
+                   label=r"Visual-unique $\|u_v^t\|$"),
+        plt.Line2D([0], [0], color=C_AUDIO, lw=1.6, ls="--",
+                   label=r"Residual $\|r_v^t\|$"),
+    ]
+    axes[0].legend(handles=handles, fontsize=7.5, framealpha=0.9,
+                   loc="upper left", ncol=2, handlelength=1.5)
 
     fig.savefig("routing_map.pdf", bbox_inches="tight", dpi=300)
     fig.savefig("routing_map.png", bbox_inches="tight", dpi=300)
@@ -250,132 +275,97 @@ def make_routing_map():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Figure 3 – t-SNE of H^m vs H^d
+# Figure 4 – t-SNE of Z_res (domain) vs Z_task (real/fake)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def make_tsne():
-    """
-    Illustrative t-SNE showing the intended behaviour of TriRoute:
-      H^d: tight domain clusters (domain-biased)
-      H^m: real/fake separable, domain-agnostic
-    """
     try:
         from sklearn.manifold import TSNE
     except ImportError:
-        print("  [SKIP] tsne.pdf  (sklearn not installed: pip install scikit-learn)")
+        print("  [SKIP] tsne.pdf  (install scikit-learn: pip install scikit-learn)")
         return
 
-    n_per = 120
-    n_domains = 3
-    domain_markers = ["o", "s", "^"]
-    domain_names = ["AV-Deepfake1M", "FakeAVCeleb", "AVLips"]
-    domain_palette = ["#E07B39", "#5B8DB8", "#6AAB69"]
-
-    # ── synthesize high-dim features ──────────────────────────────────────────
     rng = np.random.RandomState(7)
+    n_per = 100
+    n_dom = 3
+    dom_names  = ["AV-Deepfake1M", "FakeAVCeleb", "AVLips"]
+    dom_colors = ["#E07B39", "#5B8DB8", "#6AAB69"]
+    markers    = ["o", "s", "^"]
 
-    # H^d: domain-clustered, not real/fake separated
-    Hd_list = []
-    labels_domain = []
-    labels_fake = []
-    for d in range(n_domains):
-        centre = rng.randn(64) * 5
-        pts = centre + rng.randn(n_per, 64) * 1.2
-        Hd_list.append(pts)
-        labels_domain.extend([d] * n_per)
-        labels_fake.extend(rng.randint(0, 2, n_per).tolist())
-    Hd = np.vstack(Hd_list)
+    # Z_res: tight domain clusters, no real/fake structure
+    Zres_list, res_dom, res_fake = [], [], []
+    for d in range(n_dom):
+        c = rng.randn(32) * 6
+        pts = c + rng.randn(n_per, 32) * 1.0
+        Zres_list.append(pts)
+        res_dom.extend([d] * n_per)
+        res_fake.extend(rng.randint(0, 2, n_per).tolist())
+    Zres = np.vstack(Zres_list)
 
-    # H^m: real/fake separated, domain-mixed
-    Hm_list = []
-    lm_domain = []
-    lm_fake = []
-    for d in range(n_domains):
+    # Z_task: real/fake separated, domain-mixed
+    Ztask_list, task_dom, task_fake = [], [], []
+    for d in range(n_dom):
         half = n_per // 2
-        # real: loose cluster around [2, 0, ...]
-        r_centre = np.zeros(64); r_centre[0] = 2.5
-        pts_r = r_centre + rng.randn(half, 64) * 1.4
-        # fake: loose cluster around [-2, 0, ...]
-        f_centre = np.zeros(64); f_centre[0] = -2.5
-        pts_f = f_centre + rng.randn(n_per - half, 64) * 1.4
-        # add a small domain offset (small relative to real/fake separation)
-        d_offset = np.zeros(64)
-        d_offset[1] = (d - 1) * 0.6
-        pts_r += d_offset
-        pts_f += d_offset
-        Hm_list.append(np.vstack([pts_r, pts_f]))
-        lm_domain.extend([d] * n_per)
-        lm_fake.extend([0] * half + [1] * (n_per - half))
-    Hm = np.vstack(Hm_list)
+        real_c = np.zeros(32); real_c[0] = 3.0
+        fake_c = np.zeros(32); fake_c[0] = -3.0
+        d_off  = np.zeros(32); d_off[1] = (d - 1) * 0.5
+        pts_r  = real_c + d_off + rng.randn(half, 32) * 1.3
+        pts_f  = fake_c + d_off + rng.randn(n_per - half, 32) * 1.3
+        Ztask_list.append(np.vstack([pts_r, pts_f]))
+        task_dom.extend([d] * n_per)
+        task_fake.extend([0] * half + [1] * (n_per - half))
+    Ztask = np.vstack(Ztask_list)
 
-    # ── run t-SNE ─────────────────────────────────────────────────────────────
-    tsne = TSNE(n_components=2, perplexity=30, random_state=42, n_iter=800)
-    Zd = tsne.fit_transform(Hd)
-    Zm = tsne.fit_transform(Hm)
+    res_dom  = np.array(res_dom);  res_fake  = np.array(res_fake)
+    task_dom = np.array(task_dom); task_fake = np.array(task_fake)
 
-    labels_domain = np.array(labels_domain)
-    labels_fake   = np.array(labels_fake)
-    lm_domain     = np.array(lm_domain)
-    lm_fake       = np.array(lm_fake)
+    tsne = TSNE(n_components=2, perplexity=30, random_state=42, n_iter=800,
+                init="pca", learning_rate="auto")
+    Zr2 = tsne.fit_transform(Zres)
+    Zt2 = tsne.fit_transform(Ztask)
 
-    # ── plot ──────────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 2, figsize=(6.8, 3.0))
-    fig.subplots_adjust(wspace=0.35)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.8, 3.0),
+                                    gridspec_kw={"wspace": 0.38})
 
-    # --- Left: H^d coloured by domain ----------------------------------------
-    ax = axes[0]
-    for d in range(n_domains):
-        mask = labels_domain == d
-        ax.scatter(Zd[mask, 0], Zd[mask, 1], s=12, alpha=0.65,
-                   c=domain_palette[d], marker=domain_markers[d],
-                   label=domain_names[d], linewidths=0, zorder=3)
-    ax.set_title(r"Domain factor $H^d$" + "\n(colored by dataset)",
-                 fontsize=9, fontweight="bold")
-    ax.legend(fontsize=6.5, markerscale=1.2, handletextpad=0.3,
-              framealpha=0.9, loc="upper right")
-    ax.set_xlabel("t-SNE dim 1", fontsize=8)
-    ax.set_ylabel("t-SNE dim 2", fontsize=8)
-    ax.tick_params(labelsize=7)
+    # Left: Z_res coloured by domain
+    for d in range(n_dom):
+        mask = res_dom == d
+        ax1.scatter(Zr2[mask, 0], Zr2[mask, 1], s=14, alpha=0.65,
+                    c=dom_colors[d], marker=markers[d],
+                    label=dom_names[d], linewidths=0, zorder=3)
+    ax1.set_title(r"Residual factor $Z_{\rm res}$" + "\n(colored by dataset)",
+                  fontsize=9, fontweight="bold")
+    ax1.legend(fontsize=6.5, markerscale=1.1, framealpha=0.9,
+               loc="upper right", handletextpad=0.3)
+    for d in range(n_dom):
+        mask = res_dom == d
+        cx, cy = Zr2[mask, 0].mean(), Zr2[mask, 1].mean()
+        ax1.annotate(f"$\\mathcal{{D}}_{d+1}$", (cx, cy),
+                     fontsize=8, ha="center", va="center",
+                     color="white", fontweight="bold",
+                     bbox=dict(boxstyle="round,pad=0.15",
+                               fc=dom_colors[d], ec="none", alpha=0.88))
 
-    # Add "domain clusters" annotation
-    for d in range(n_domains):
-        mask = labels_domain == d
-        cx, cy = Zd[mask, 0].mean(), Zd[mask, 1].mean()
-        ax.annotate(f"$\mathcal{{D}}_{d+1}$", (cx, cy),
-                    fontsize=7, ha="center", va="center",
-                    color="white", fontweight="bold",
-                    bbox=dict(boxstyle="round,pad=0.15",
-                              fc=domain_palette[d], ec="none", alpha=0.85))
+    # Right: Z_task coloured by real/fake; marker = domain
+    fake_col = {0: C_SHARED, 1: C_UNIQUE}
+    fake_lbl = {0: "Real", 1: "Fake"}
+    for y in range(2):
+        for d in range(n_dom):
+            mask = (task_dom == d) & (task_fake == y)
+            ax2.scatter(Zt2[mask, 0], Zt2[mask, 1], s=14, alpha=0.65,
+                        c=fake_col[y], marker=markers[d],
+                        label=fake_lbl[y] if d == 0 else "_",
+                        linewidths=0, zorder=3)
+    rfh = [mpatches.Patch(color=fake_col[k], label=fake_lbl[k]) for k in (0, 1)]
+    ax2.legend(handles=rfh, fontsize=7, framealpha=0.9,
+               loc="upper right", handlelength=1.0)
+    ax2.set_title(r"Task factor $Z_{\rm task}$" + "\n(colored by real/fake)",
+                  fontsize=9, fontweight="bold")
 
-    # --- Right: H^m coloured by real/fake (marker = domain) ------------------
-    ax = axes[1]
-    fake_colors = {0: "#1F77B4", 1: "#D62728"}
-    fake_labels  = {0: "Real", 1: "Fake"}
-    plotted = set()
-    for d in range(n_domains):
-        for y in range(2):
-            mask = (lm_domain == d) & (lm_fake == y)
-            lbl = fake_labels[y] if y not in plotted else "_nolegend_"
-            plotted.add(y)
-            ax.scatter(Zm[mask, 0], Zm[mask, 1], s=12, alpha=0.65,
-                       c=fake_colors[y], marker=domain_markers[d],
-                       label=lbl if d == 0 else "_nolegend_",
-                       linewidths=0, zorder=3)
-
-    # manual legend for real/fake
-    handles = [mpatches.Patch(color=fake_colors[0], label="Real"),
-               mpatches.Patch(color=fake_colors[1], label="Fake")]
-    dom_handles = [plt.scatter([], [], marker=domain_markers[d], c="#888888",
-                               s=18, label=domain_names[d]) for d in range(n_domains)]
-    ax.legend(handles=handles + dom_handles, fontsize=6.5,
-              framealpha=0.9, loc="upper right", handletextpad=0.3)
-    ax.set_title(r"Manipulation factor $H^m$" + "\n(colored by real/fake)",
-                 fontsize=9, fontweight="bold")
-    ax.set_xlabel("t-SNE dim 1", fontsize=8)
-    ax.set_ylabel("t-SNE dim 2", fontsize=8)
-    ax.tick_params(labelsize=7)
-
-    for ax in axes:
+    for ax in (ax1, ax2):
+        ax.set_xlabel("t-SNE dim 1", fontsize=8)
+        ax.set_ylabel("t-SNE dim 2", fontsize=8)
+        ax.tick_params(labelsize=7)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
 
@@ -386,89 +376,83 @@ def make_tsne():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Figure 4 – Subspace probe bar chart + Head-ablation sensitivity
+# Figure 2 – Probe AUC + Head-ablation analysis
 # ══════════════════════════════════════════════════════════════════════════════
 
-def make_analysis_figure():
-    """Two-panel summary figure:
-    Left  – grouped bar chart: OOD probe AUC vs domain-probe AUC per subspace.
-    Right – horizontal bar chart of ΔFV-RA per model (head-ablation routing sensitivity).
-    """
-    fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.2))
-    fig.subplots_adjust(wspace=0.42)
-
-    # ── Left: subspace probe comparison ──────────────────────────────────────
-    ax = axes[0]
-    labels = [
-        "Two-way\n$Z_c$",
-        "Two-way\n$v_c$",
-        "Three-way\n$s_v$",
-        "Three-way\n$u_v$",
-        r"\textbf{Ours}" + "\n$s_v$",
-        r"\textbf{Ours}" + "\n$u_v$",
+def make_analysis():
+    # Data from paper (Tables 2 & 3)
+    probe_labels = [
+        r"$Z_c$ (2-way)",
+        r"$v_c$ (2-way)",
+        r"$s_v$ (3-way)",
+        r"$u_v$ (3-way)",
+        r"$s_v$ (ours)",
+        r"$u_v$ (ours)",
     ]
-    # plain labels for matplotlib (no LaTeX bold in tick labels by default)
-    labels_plain = [
-        "Two-way $Z_c$",
-        "Two-way $v_c$",
-        "Three-way $s_v$",
-        "Three-way $u_v$",
-        "Ours $s_v$",
-        "Ours $u_v$",
-    ]
-    ood    = [0.705, 0.891, 0.814, 0.825, 0.726, 0.924]
-    domain = [0.998, 0.994, 0.992, 0.967, 0.989, 0.976]
+    ood_auc    = [0.705, 0.891, 0.814, 0.825, 0.726, 0.924]
+    domain_auc = [0.998, 0.994, 0.992, 0.967, 0.989, 0.976]
 
-    x = np.arange(len(labels_plain))
-    w = 0.36
-    bar1 = ax.bar(x - w / 2, ood,    w, label="OOD AUC",    color="#1F77B4", alpha=0.88)
-    bar2 = ax.bar(x + w / 2, domain, w, label="Domain AUC", color="#FF7F0E", alpha=0.72)
+    abl_labels = ["Two-way\n(mask $v_c$)",
+                  "Three-way\nno push-pull",
+                  "TriRoute\n(mask $u_v$)"]
+    delta_fvra = [0.034, 0.113, 0.354]
 
-    # Annotate the peak OOD bar
-    ax.annotate("0.924\n(Ours $u_v$)",
-                xy=(x[-1] - w / 2, 0.924), xytext=(x[-1] - w / 2 - 0.9, 0.860),
-                fontsize=6.5, color="#1F77B4",
-                arrowprops=dict(arrowstyle="-|>", color="#1F77B4", lw=0.8))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.0),
+                                    gridspec_kw={"wspace": 0.45})
 
-    ax.axhline(0.705, color="#1F77B4", lw=0.8, ls="--", alpha=0.5)
-    ax.text(4.8, 0.710, "Two-way\nbaseline", fontsize=5.5, color="#1F77B4", ha="right")
+    # Left: grouped bar
+    n = len(probe_labels)
+    x = np.arange(n)
+    bw = 0.32
 
-    ax.set_ylim(0.65, 1.04)
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels_plain, fontsize=6.8, rotation=20, ha="right")
-    ax.set_ylabel("AUC", fontsize=8)
-    ax.set_title("Subspace probes: OOD vs. domain", fontsize=8.5, fontweight="bold")
-    ax.legend(fontsize=7, loc="upper left", framealpha=0.9)
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.yaxis.grid(True, lw=0.4, alpha=0.5)
-    ax.set_axisbelow(True)
+    bars1 = ax1.bar(x - bw/2, ood_auc,    bw,
+                    color=C_UNIQUE, alpha=0.85, label="OOD probe AUC",
+                    edgecolor="white", linewidth=0.4)
+    bars2 = ax1.bar(x + bw/2, domain_auc, bw,
+                    color=C_RESIDUAL, alpha=0.75, label="Domain probe AUC",
+                    edgecolor="white", linewidth=0.4)
+    bars1[-1].set_edgecolor(C_DARK)
+    bars1[-1].set_linewidth(1.5)
 
-    # ── Right: head-ablation ΔFV-RA ───────────────────────────────────────────
-    ax = axes[1]
-    models   = ["Two-way\nbaseline", "Three-way,\nno push-pull", "Ours\n(TriRoute)"]
-    deltas   = [-0.034, -0.113, -0.354]
-    colors   = ["#AEC7E8", "#FFBB78", "#D62728"]
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(probe_labels, fontsize=7, rotation=20, ha="right")
+    ax1.set_ylim(0.60, 1.05)
+    ax1.set_ylabel("AUC", fontsize=8)
+    ax1.set_title("Subspace probe AUCs", fontsize=9, fontweight="bold")
+    ax1.axhline(1.0, lw=0.6, ls="--", color="#BBBBBB")
+    ax1.yaxis.grid(True, lw=0.4, color="#DDDDDD")
+    ax1.set_axisbelow(True)
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["right"].set_visible(False)
+    ax1.legend(fontsize=7, framealpha=0.9, loc="lower right", handlelength=1.0)
+    ax1.text(x[-1] - bw/2, ood_auc[-1] + 0.006, "0.924",
+             ha="center", va="bottom", fontsize=7, color=C_UNIQUE, fontweight="bold")
 
-    bars = ax.barh(models, np.abs(deltas), color=colors, alpha=0.90, height=0.5)
-    for bar, d in zip(bars, deltas):
-        ax.text(bar.get_width() + 0.005, bar.get_y() + bar.get_height() / 2,
-                f"{d:.3f}", va="center", fontsize=8, color="#333333")
+    # Right: head-ablation bar
+    colors_abl = [C_GREY, C_SHARED, C_UNIQUE]
+    abl_bars = ax2.bar(np.arange(3), delta_fvra,
+                       color=colors_abl, alpha=0.85,
+                       edgecolor="white", linewidth=0.4)
+    abl_bars[-1].set_edgecolor(C_DARK)
+    abl_bars[-1].set_linewidth(1.5)
 
-    ax.set_xlim(0, 0.43)
-    ax.set_xlabel(r"$|\Delta\,\mathrm{FV{-}RA}|$ (head ablation drop)", fontsize=8)
-    ax.set_title("Routing dependence on $u_v$\n(larger = stronger routing)", fontsize=8.5, fontweight="bold")
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.xaxis.grid(True, lw=0.4, alpha=0.5)
-    ax.set_axisbelow(True)
-    ax.tick_params(axis="y", labelsize=8)
+    ax2.set_xticks(np.arange(3))
+    ax2.set_xticklabels(abl_labels, fontsize=7.5)
+    ax2.set_ylabel(r"$|\Delta\,\mathrm{FV{-}RA}|$ (AUC drop)", fontsize=8)
+    ax2.set_title("Head-ablation routing sensitivity", fontsize=9, fontweight="bold")
+    ax2.set_ylim(0, 0.44)
+    ax2.yaxis.grid(True, lw=0.4, color="#DDDDDD")
+    ax2.set_axisbelow(True)
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["right"].set_visible(False)
 
-    # Add annotation arrow on the last bar
-    ax.annotate("10× larger\nthan two-way",
-                xy=(0.354, 2), xytext=(0.28, 1.6),
-                fontsize=6.5, color="#D62728",
-                arrowprops=dict(arrowstyle="-|>", color="#D62728", lw=0.8))
+    for bar, val in zip(abl_bars, delta_fvra):
+        ax2.text(bar.get_x() + bar.get_width()/2, val + 0.008,
+                 f"{val:.3f}", ha="center", va="bottom", fontsize=8,
+                 color=C_DARK,
+                 fontweight="bold" if val == max(delta_fvra) else "normal")
+    ax2.text(1.0, 0.28, r"$\approx 10\times$ more", fontsize=7,
+             color=C_GREY, ha="center", style="italic")
 
     fig.savefig("analysis.pdf", bbox_inches="tight", dpi=300)
     fig.savefig("analysis.png", bbox_inches="tight", dpi=300)
@@ -653,14 +637,13 @@ def make_training_dynamics_figure():
 
 # ══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
-    import os
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
     print("Generating figures in:", script_dir)
     make_overview()
+    make_analysis()
     make_routing_map()
     make_tsne()
-    make_analysis_figure()
     make_seed_variance_figure()
     make_training_dynamics_figure()
     print("Done.")

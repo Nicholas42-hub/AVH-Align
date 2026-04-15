@@ -1,4 +1,4 @@
-\begin{thebibliography}{10}
+\begin{thebibliography}{12}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -45,6 +45,12 @@ Hasam Khalid, Shahroz Tariq, Minha Kim, and Simon~S. Woo.
 \newblock Fakeavceleb: A novel audio-video multimodal deepfake dataset.
 \newblock \emph{arXiv preprint arXiv:2108.05080}, 2021.
 
+\bibitem[Koutlis and Papadopoulos(2025)]{koutlis2025dimodif}
+Christos Koutlis and Symeon Papadopoulos.
+\newblock Dimodif: Discourse modality-information differentiation for
+  audio-visual deepfake detection and localization.
+\newblock \emph{arXiv preprint arXiv:2411.10193}, 2025.
+
 \bibitem[Liang et~al.(2024)Liang, Yu, Li, Jiang, Li, Yu, Zhang, Meng, and
   Huang]{liang2024speechforensics}
 Yachao Liang, Min Yu, Gang Li, Jianguo Jiang, Boquan Li, Feng Yu, Ning Zhang,
@@ -52,6 +58,14 @@ Yachao Liang, Min Yu, Gang Li, Jianguo Jiang, Boquan Li, Feng Yu, Ning Zhang,
 \newblock Speechforensics: Audio-visual speech representation learning for face
   forgery detection.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2024.
+
+\bibitem[Oorloff et~al.(2024)Oorloff, Koppisetti, Bonettini, Solanki, Colman,
+  Yacoob, Shahriyari, and Bharaj]{oorloff2024avff}
+Trevine Oorloff, Surya Koppisetti, Nicol{\`o} Bonettini, Divyaraj Solanki, Ben
+  Colman, Yaser Yacoob, Ali Shahriyari, and Gaurav Bharaj.
+\newblock Avff: Audio-visual feature fusion for video deepfake detection.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, pages 27102--27112, 2024.
 
 \bibitem[Shi et~al.(2022)Shi, Hsu, Lakhotia, and Mohamed]{shi2022avhubert}
 Bowen Shi, Wei-Ning Hsu, Kushal Lakhotia, and Abdelrahman Mohamed.

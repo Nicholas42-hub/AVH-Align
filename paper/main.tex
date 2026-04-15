@@ -74,6 +74,9 @@ We make three contributions.
 \paragraph{Audio-visual deepfake detection.}
 Multimodal deepfake detection leverages the fact that realistic speech, lip motion, and facial dynamics must stay mutually consistent over time. Early work explored direct audio-visual fusion and synchronization cues \citep{zhou2021jointav, chung2016syncnet}. More recent methods use self-supervised anomaly detection or speech representation learning to detect inconsistencies without relying heavily on fake samples during training \citep{feng2023avad, liang2024speechforensics, smeu2025avhalign}. These approaches are more robust than purely artifact-based detectors, but their representations may still mix semantic content with domain bias.
 
+\paragraph{Evaluation protocols.}
+Most audio-visual deepfake work still reports in-dataset or within-benchmark splits. FakeAVCeleb-based evaluation commonly uses train/test splits and leave-one-manipulation protocols \citep{feng2023avad, oorloff2024avff}, while AV-Deepfake1M and DiMoDif report official or in-dataset benchmarks on AV1M, LAV-DF, and FAVC \citep{cai2024avdeepfake1m, koutlis2025dimodif}. The closest prior cross-dataset bridges are AVH-Align, which reports supervised AV1M$\rightarrow$FAVC scores while diagnosing leading-silence shortcuts, and DiMoDif, which includes an aggregate cross-dataset matrix over FAVC, LAV-DF, and AV1M \citep{smeu2025avhalign, koutlis2025dimodif}. Our contribution is therefore not the existence of FakeAVCeleb as a target dataset, but a matched AV1M$\rightarrow$FAVC stress test with modality-category reporting and routing analyses focused on FV-RA.
+
 \paragraph{Speech-aware multimodal representations.}
 Large-scale audio-visual speech models, such as AV-HuBERT \citep{shi2022avhubert}, learn strong multimodal features that capture both local synchronization and longer-term speech structure. Such representations have proven useful beyond recognition, including forensic analysis and synchronization-based detection \citep{liang2024speechforensics, smeu2025avhalign}. Our method uses the same intuition, but adds an explicit factorization layer so that the downstream detector can discard nuisance factors instead of letting them leak into the prediction head.
 
@@ -188,7 +191,7 @@ The key design choice is that the detector does not consume the entire multimoda
 We train on AV-Deepfake1M (AV1M) \citep{cai2024avdeepfake1m}, a large-scale dataset of over one million clips spanning diverse synthesis pipelines, and evaluate on a matched FakeAVCeleb (FAVC) \citep{khalid2021fakeavceleb} test split ($N=1{,}114$). We also report directional results on AVLips \citep{como2024lips}. Our main paper benchmark is therefore a matched cross-dataset transfer protocol rather than an intra-FAVC leaderboard. To connect our results to the public split used in recent shortcut analyses of audio-visual deepfake datasets \citep{smeu2025avhalign}, we additionally evaluate the same AV1M-trained checkpoints on the full FakeAVCeleb 70/30 public test split ($N=6{,}667$). In the full domain-aware setting, auxiliary domain supervision may use real-only FAVC validation clips, but no target-domain fake labels or FAVC test clips are used during optimization. We report AUC separately for three informative categories: (i)~RealVideo-FakeAudio (RV-FA), (ii)~FakeVideo-RealAudio (FV-RA), and (iii)~FakeVideo-FakeAudio (FV-FA). FV-RA is the hardest and most informative category because audio shortcuts are uninformative, forcing the model to use genuine visual manipulation evidence.
 
 \paragraph{Protocol positioning.}
-Table~\ref{tab:protocol_matrix} summarizes how our evaluation differs from closely related audio-visual deepfake protocols. Most prior work either reports intra-dataset performance on a proposed benchmark, uses real-only self-supervised training with its own test split, or studies official AV1M localization/detection. We instead use AV1M-trained detectors to test cross-dataset transfer to FAVC, and include the public FAVC 70/30 split only as a comparable shortcut-aware test protocol rather than as an intra-FAVC leaderboard.
+Table~\ref{tab:protocol_matrix} summarizes how our evaluation differs from closely related audio-visual deepfake protocols. Prior work largely reports intra-dataset performance, leave-one-manipulation tests, real-only self-supervised detection, or official AV1M localization/detection. Some recent work does include the broad AV1M$\rightarrow$FAVC transfer direction, but as part of aggregate shortcut or cross-dataset analyses rather than as a matched, category-level FV-RA stress test. We include the public FAVC 70/30 split only as a comparable shortcut-aware test protocol rather than as an intra-FAVC leaderboard.
 
 \begin{table}[t]
     \centering
@@ -201,9 +204,10 @@ Table~\ref{tab:protocol_matrix} summarizes how our evaluation differs from close
         \midrule
         FakeAVCeleb \citep{khalid2021fakeavceleb} & Dataset benchmark with visual/audio baselines; later work commonly imposes train/test splits such as 70/30. & Provides the target dataset and modality categories, but not our AV1M$\rightarrow$FAVC transfer protocol. \\
         AVAD \citep{feng2023avad} and SpeechForensics \citep{liang2024speechforensics} & Real-only or self-supervised speech-video training; evaluation on FAVC/KoDF or FF++ cross-manipulation splits. & Closely related real-only generalization setting, but train data and FAVC split differ from our AV1M-trained models. \\
-        AVH-Align / shortcut analysis \citep{smeu2025avhalign} & FAVC 70/30 and AV1M validation/test; original vs trimmed data to expose leading-silence shortcuts; real-only AVH-Align and supervised variants. & Closest protocol bridge. We adopt full FAVC 70/30 testing and trimmed controls, but keep our AV1M$\rightarrow$FAVC factorized-transfer question. \\
+        AVFF \citep{oorloff2024avff} & FAVC 70/30 in-dataset testing, FAVC leave-one-manipulation testing, and FAVC$\rightarrow$KoDF cross-dataset testing. & Important in-domain and cross-manipulation reference for FAVC, but it does not train on AV1M and test on FAVC. \\
+        AVH-Align / shortcut analysis \citep{smeu2025avhalign} & FAVC 70/30 and AV1M validation/test; original vs trimmed data to expose leading-silence shortcuts; real-only AVH-Align and supervised variants, including supervised AV1M$\rightarrow$FAVC. & Closest protocol bridge. We adopt full FAVC 70/30 testing and trimmed controls, but our matched split and FV-RA routing analysis target a factorized-transfer question. \\
         AV-Deepfake1M \citep{cai2024avdeepfake1m} & Official AV1M train/val/test benchmark for video-level detection and temporal localization. & Defines our source dataset; official AV1M testing is an in-dataset benchmark, not our target-domain transfer test. \\
-        DiMoDif \citep{koutlis2025dimodif} & In-dataset FAVC 70/30, LAV-DF official splits, AV1M official/Codabench, plus cross-dataset generalization. & Shows FAVC 70/30 and AV1M official splits are common, but primarily trains/evaluates within each benchmark. \\
+        DiMoDif \citep{koutlis2025dimodif} & In-dataset FAVC 70/30, LAV-DF official splits, AV1M official/Codabench, plus aggregate cross-dataset generalization across FAVC/LAV-DF/AV1M. & Shows AV1M$\rightarrow$FAVC aggregate transfer has been reported, but not as a matched modality-category benchmark or routing analysis. \\
         Joint audio-visual detection \citep{zhou2021jointav} and AVLips \citep{como2024lips} & FF++/DFDC synthetic-audio or lip-sync-specific protocols; AVLips evaluates lip-sync detection and perturbation robustness. & Important related tasks and external support, but not the same datasets or cross-dataset transfer setting. \\
         \bottomrule
     \end{tabular}
@@ -227,7 +231,7 @@ Table~\ref{tab:main} compares \method\ against internal ablation baselines under
     \centering
     \caption{Cross-domain AUC on FakeAVCeleb (AV1M $\to$ FAVC). Results are mean\,$\pm$\,std over three seeds. RV-FA~=~RealVideo-FakeAudio; FV-RA~=~FakeVideo-RealAudio; FV-FA~=~FakeVideo-FakeAudio. \textdagger\,single-seed domain-adversarial control.}
     \label{tab:main}
-    \small
+    \resizebox{\linewidth}{!}{%
     \begin{tabular}{llcccc}
         \toprule
         Method & Structure & Overall AUC & RV-FA & FV-RA & FV-FA \\
@@ -237,7 +241,7 @@ Table~\ref{tab:main} compares \method\ against internal ablation baselines under
         Three-way, no domain push-pull & three-way factorization & $0.822\pm0.007$ & $0.999\pm0.002$ & $0.613\pm0.014$ & $0.996\pm0.006$ \\
         \method\ (ours) & three-way + domain push-pull & $\mathbf{0.844\pm0.036}$ & $1.000\pm0.000$ & $\mathbf{0.659\pm0.079}$ & $0.999\pm0.001$ \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}}
 \end{table}
 
 \begin{figure}[t]
@@ -293,7 +297,7 @@ Table~\ref{tab:probe} summarizes representative probe results for the main visua
     \centering
     \caption{Head-ablation analysis on FV-RA AUC using representative trained checkpoints. Each row zeros out one branch of the trained model and measures the FV-RA drop ($\Delta$FV-RA). Larger drop indicates heavier routing dependence on that branch.}
     \label{tab:ablation}
-    \small
+    \resizebox{\linewidth}{!}{%
     \begin{tabular}{llccc}
         \toprule
         Model & Ablation & Baseline FV-RA & Ablated FV-RA & $\Delta$FV-RA \\
@@ -302,7 +306,7 @@ Table~\ref{tab:probe} summarizes representative probe results for the main visua
         Three-way, no domain push-pull & mask visual branches & $0.586$ & $0.473$ & $-0.113$ \\
         \method & mask manipulation ($u_v$) & $0.721$ & $0.366$ & $\mathbf{-0.354}$ \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}}
 \end{table}
 
 \begin{figure}[t]
@@ -362,11 +366,11 @@ To test whether the same ordering appears on a second external benchmark, we als
     \small
     \begin{tabular}{lcc}
         \toprule
-        Method & Best seed & Full AUC on AVLips \\
+        Method & Full AUC on AVLips \\
         \midrule
-        Two-way baseline & 42 & $0.5677$ \\
-        Three-way, no domain push-pull & 44 & $0.5954$ \\
-        \method\ (ours) & 43 & $\mathbf{0.7340}$ \\
+        Two-way baseline &  $0.5677$ \\
+        Three-way, no domain push-pull &  $0.5954$ \\
+        \method\ (ours) & $\mathbf{0.7340}$ \\
         \bottomrule
     \end{tabular}
 \end{table}

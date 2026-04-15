@@ -17,53 +17,81 @@
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
 \citation{zhou2021jointav,chung2016syncnet}
 \citation{feng2023avad,liang2024speechforensics,smeu2025avhalign}
+\citation{feng2023avad,oorloff2024avff}
+\citation{cai2024avdeepfake1m,koutlis2025dimodif}
+\citation{smeu2025avhalign,koutlis2025dimodif}
 \citation{shi2022avhubert}
 \citation{liang2024speechforensics,smeu2025avhalign}
 \citation{ganin2016dann}
 \@writefile{toc}{\contentsline {paragraph}{Contributions.}{2}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Audio-visual deepfake detection.}{2}{section*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Speech-aware multimodal representations.}{2}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Domain generalization and disentanglement.}{2}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Evaluation protocols.}{2}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Speech-aware multimodal representations.}{2}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Domain generalization and factorized representations.}{2}{section*.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {3}Problem Setting}{2}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Method}{2}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview}{2}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Audio-conditioned Three-Way Factorization}{3}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Manipulation factor.}{3}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Content factor.}{3}{section*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Domain factor.}{3}{section*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Detection and Disentanglement Objectives}{3}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Method}{3}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview}{3}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Three-Way Factorization}{3}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Manipulation factor.}{3}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Content factor.}{3}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Domain factor.}{3}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Detection and Domain Push-Pull Objectives}{3}{subsection.4.3}\protected@file@percent }
 \citation{cai2024avdeepfake1m}
 \citation{khalid2021fakeavceleb}
 \citation{como2024lips}
-\citation{feng2023avad}
-\citation{liang2024speechforensics}
 \citation{smeu2025avhalign}
-\citation{shi2022avhubert}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textsc  {TriRoute}\ architecture. Visual and audio encoders (AV-HuBERT) extract synchronized token features $V,A\in \mathbb  {R}^{T\times C}$. An audio-conditioned router produces per-step weights $(g^m_t, g^c_t, g^d_t)$ over three expert branches: a \textbf  {manipulation} branch $H^m$ (used only at inference), a \textbf  {content} branch $H^c$ aligned to audio semantics, and a \textbf  {domain} branch $H^d$ that absorbs dataset-specific nuisance. Gradient-reversal suppresses domain information from $H^m$ and $H^c$; factor orthogonality $\mathcal  {L}_{\rm  ortho}$ encourages branch separation.}}{4}{figure.1}\protected@file@percent }
-\newlabel{fig:overview}{{1}{4}{\method \ architecture. Visual and audio encoders (AV-HuBERT) extract synchronized token features $V,A\in \mathbb {R}^{T\times C}$. An audio-conditioned router produces per-step weights $(g^m_t, g^c_t, g^d_t)$ over three expert branches: a \textbf {manipulation} branch $H^m$ (used only at inference), a \textbf {content} branch $H^c$ aligned to audio semantics, and a \textbf {domain} branch $H^d$ that absorbs dataset-specific nuisance. Gradient-reversal suppresses domain information from $H^m$ and $H^c$; factor orthogonality $\mathcal {L}_{\rm ortho}$ encourages branch separation}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Conceptual overview of \textsc  {TriRoute}. Frozen AV-HuBERT features are decomposed into shared cross-modal factors $(s_v,s_a)$, modality-unique factors $(u_v,u_a)$, and residual factors $(r_v,r_a)$. The task head reads only the task-relevant shared and unique factors, while domain push-pull discourages easy domain prediction from $Z_{\mathrm  {task}}$ and concentrates nuisance information in $Z_{\mathrm  {res}}$. We use the term ``routing'' to refer to which of these factors the final detector actually relies on at inference time.}}{4}{figure.1}\protected@file@percent }
+\newlabel{fig:overview}{{1}{4}{Conceptual overview of \method . Frozen AV-HuBERT features are decomposed into shared cross-modal factors $(s_v,s_a)$, modality-unique factors $(u_v,u_a)$, and residual factors $(r_v,r_a)$. The task head reads only the task-relevant shared and unique factors, while domain push-pull discourages easy domain prediction from $Z_{\mathrm {task}}$ and concentrates nuisance information in $Z_{\mathrm {res}}$. We use the term ``routing'' to refer to which of these factors the final detector actually relies on at inference time}{figure.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Why the Factorization Helps}{4}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental Protocol}{4}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experiments}{4}{section.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Datasets and Evaluation}{4}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Baselines}{4}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Implementation Details}{4}{subsection.5.3}\protected@file@percent }
+\citation{khalid2021fakeavceleb}
 \citation{feng2023avad}
 \citation{liang2024speechforensics}
+\citation{oorloff2024avff}
 \citation{smeu2025avhalign}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Cross-domain video-level performance. Suggested layout for the main table.}}{5}{table.1}\protected@file@percent }
-\newlabel{tab:main}{{1}{5}{Cross-domain video-level performance. Suggested layout for the main table}{table.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Ablations for the proposed factorization.}}{5}{table.2}\protected@file@percent }
-\newlabel{tab:ablation}{{2}{5}{Ablations for the proposed factorization}{table.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Draft Results and Analysis}{5}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Important note.}{5}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Limitations and Broader Impact}{5}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Limitations.}{5}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Broader impact.}{5}{section*.10}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Per-frame routing weights for a representative fake clip (top) and a real clip (bottom). For the fake sample, $g^m_t$ rises sharply within the manipulated region (shaded), while $g^c_t$ and $g^d_t$ dominate in unmanipulated segments. The real sample shows consistently low $g^m_t$, indicating the manipulation branch is not activated by authentic speech motion.}}{6}{figure.2}\protected@file@percent }
-\newlabel{fig:routing}{{2}{6}{Per-frame routing weights for a representative fake clip (top) and a real clip (bottom). For the fake sample, $g^m_t$ rises sharply within the manipulated region (shaded), while $g^c_t$ and $g^d_t$ dominate in unmanipulated segments. The real sample shows consistently low $g^m_t$, indicating the manipulation branch is not activated by authentic speech motion}{figure.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces t-SNE of the two key factors. \textbf  {Left}: the domain factor $H^d$ forms tight, dataset-specific clusters (different markers/colors per source domain), confirming it absorbs domain nuisance. \textbf  {Right}: the manipulation factor $H^m$ separates real (blue) from fake (red) samples across all domains, with no residual domain clustering, indicating successful disentanglement.}}{6}{figure.3}\protected@file@percent }
-\newlabel{fig:tsne}{{3}{6}{t-SNE of the two key factors. \textbf {Left}: the domain factor $H^d$ forms tight, dataset-specific clusters (different markers/colors per source domain), confirming it absorbs domain nuisance. \textbf {Right}: the manipulation factor $H^m$ separates real (blue) from fake (red) samples across all domains, with no residual domain clustering, indicating successful disentanglement}{figure.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{6}{section.8}\protected@file@percent }
+\citation{cai2024avdeepfake1m}
+\citation{koutlis2025dimodif}
+\citation{zhou2021jointav}
+\citation{como2024lips}
+\citation{shi2022avhubert}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Protocol comparison with closely related audio-visual deepfake benchmarks. The table clarifies that our main setting is AV1M$\rightarrow $FAVC cross-dataset transfer rather than intra-dataset FAVC evaluation.}}{5}{table.1}\protected@file@percent }
+\newlabel{tab:protocol_matrix}{{1}{5}{Protocol comparison with closely related audio-visual deepfake benchmarks. The table clarifies that our main setting is AV1M$\rightarrow $FAVC cross-dataset transfer rather than intra-dataset FAVC evaluation}{table.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Protocol positioning.}{5}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Baselines}{5}{subsection.5.2}\protected@file@percent }
+\citation{smeu2025avhalign}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Cross-domain AUC on FakeAVCeleb (AV1M $\to $ FAVC). Results are mean\,$\pm $\,std over three seeds. RV-FA\nobreakspace  {}=\nobreakspace  {}RealVideo-FakeAudio; FV-RA\nobreakspace  {}=\nobreakspace  {}FakeVideo-RealAudio; FV-FA\nobreakspace  {}=\nobreakspace  {}FakeVideo-FakeAudio. \textdagger \,single-seed domain-adversarial control.}}{6}{table.2}\protected@file@percent }
+\newlabel{tab:main}{{2}{6}{Cross-domain AUC on FakeAVCeleb (AV1M $\to $ FAVC). Results are mean\,$\pm $\,std over three seeds. RV-FA~=~RealVideo-FakeAudio; FV-RA~=~FakeVideo-RealAudio; FV-FA~=~FakeVideo-FakeAudio. \textdagger \,single-seed domain-adversarial control}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Cross-dataset AUC on the full FakeAVCeleb 70/30 public test split ($N=6{,}667$). All models are trained on AV1M and evaluated on FakeAVCeleb; this is therefore not an intra-FAVC leaderboard. Results are mean\,$\pm $\,std over seeds 43, 44, and 45.}}{6}{table.3}\protected@file@percent }
+\newlabel{tab:favc7030}{{3}{6}{Cross-dataset AUC on the full FakeAVCeleb 70/30 public test split ($N=6{,}667$). All models are trained on AV1M and evaluated on FakeAVCeleb; this is therefore not an intra-FAVC leaderboard. Results are mean\,$\pm $\,std over seeds 43, 44, and 45}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Implementation Details}{6}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results and Analysis}{6}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Cross-Domain Detection Performance}{6}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Public FakeAVCeleb 70/30 benchmark.}{6}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Subspace Evidence: Stronger Routing, Not Full Invariance}{6}{subsection.6.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Per-seed FV-RA AUC for each model variant (seeds 42, 43, 44). Boxes show the interquartile range; the diamond marks the mean; individual dots show each seed. The two-way $+$ domain-adversarial result (\textdagger ) is a single seed. Despite the variance, all three \textsc  {TriRoute}\ seeds exceed all three two-way baseline seeds, and the mean gain of $+0.159$ is not driven by a single outlier seed.}}{7}{figure.2}\protected@file@percent }
+\newlabel{fig:seed_variance}{{2}{7}{Per-seed FV-RA AUC for each model variant (seeds 42, 43, 44). Boxes show the interquartile range; the diamond marks the mean; individual dots show each seed. The two-way $+$ domain-adversarial result (\textdagger ) is a single seed. Despite the variance, all three \method \ seeds exceed all three two-way baseline seeds, and the mean gain of $+0.159$ is not driven by a single outlier seed}{figure.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Representative probe AUCs for key visual subspaces. The OOD probe is trained on AV1M and evaluated on matched FAVC; the domain probe measures dataset predictability. The visual-unique factor is the strongest OOD carrier, but it is not domain-invariant.}}{7}{table.4}\protected@file@percent }
+\newlabel{tab:probe}{{4}{7}{Representative probe AUCs for key visual subspaces. The OOD probe is trained on AV1M and evaluated on matched FAVC; the domain probe measures dataset predictability. The visual-unique factor is the strongest OOD carrier, but it is not domain-invariant}{table.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Routing Evidence: Head Ablation}{7}{subsection.6.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Head-ablation analysis on FV-RA AUC using representative trained checkpoints. Each row zeros out one branch of the trained model and measures the FV-RA drop ($\Delta $FV-RA). Larger drop indicates heavier routing dependence on that branch.}}{8}{table.5}\protected@file@percent }
+\newlabel{tab:ablation}{{5}{8}{Head-ablation analysis on FV-RA AUC using representative trained checkpoints. Each row zeros out one branch of the trained model and measures the FV-RA drop ($\Delta $FV-RA). Larger drop indicates heavier routing dependence on that branch}{table.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Left}: OOD probe AUC and domain-probe AUC for each visual subspace. The visual-unique channel of \textsc  {TriRoute}\ ($u_v$, rightmost pair) achieves the highest OOD AUC ($0.924$) while remaining strongly domain-predictive ($0.976$), supporting a routing rather than invariance explanation. \textbf  {Right}: Head-ablation routing sensitivity ($|\Delta \text  {FV-RA}|$ when the visual branch is masked). \textsc  {TriRoute}'s FV-RA decision is $10\times $ more dependent on the visual-unique manipulation factor than the two-way baseline, demonstrating that factorization changes which evidence the detector uses.}}{8}{figure.3}\protected@file@percent }
+\newlabel{fig:analysis}{{3}{8}{\textbf {Left}: OOD probe AUC and domain-probe AUC for each visual subspace. The visual-unique channel of \method \ ($u_v$, rightmost pair) achieves the highest OOD AUC ($0.924$) while remaining strongly domain-predictive ($0.976$), supporting a routing rather than invariance explanation. \textbf {Right}: Head-ablation routing sensitivity ($|\Delta \text {FV-RA}|$ when the visual branch is masked). \method 's FV-RA decision is $10\times $ more dependent on the visual-unique manipulation factor than the two-way baseline, demonstrating that factorization changes which evidence the detector uses}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Corrected Artifact Control}{8}{subsection.6.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Per-frame routing activation for a representative fake clip (top) and real clip (bottom). \textbf  {Visual-unique} ($u_v$, blue) peaks in the manipulated region of the fake clip; \textbf  {residual} ($r_v$, orange) absorbs the domain baseline throughout. For the real clip both channels remain low and uniform, consistent with the head-ablation finding that $u_v$ carries the FV-RA decision.}}{9}{figure.4}\protected@file@percent }
+\newlabel{fig:routing}{{4}{9}{Per-frame routing activation for a representative fake clip (top) and real clip (bottom). \textbf {Visual-unique} ($u_v$, blue) peaks in the manipulated region of the fake clip; \textbf {residual} ($r_v$, orange) absorbs the domain baseline throughout. For the real clip both channels remain low and uniform, consistent with the head-ablation finding that $u_v$ carries the FV-RA decision}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Training Dynamics}{9}{subsection.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Factor Geometry}{9}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Supplementary External Support on AVLips}{9}{subsection.6.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Limitations and Broader Impact}{9}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Limitations.}{9}{section*.11}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Training dynamics for \textsc  {TriRoute}\ (representative seed). As domain push-pull suppresses shortcuts in $Z_{\mathrm  {task}}$ (purple dash-dot, right axis), FV-RA AUC rises (red, left axis). The residual branch $Z_{\mathrm  {res}}$ absorbs the expelled domain information (green dotted, right axis). The two-way baseline FV-RA stays near chance (blue dashed), isolating the factorization as the enabling condition.}}{10}{figure.5}\protected@file@percent }
+\newlabel{fig:training_dynamics}{{5}{10}{Training dynamics for \method \ (representative seed). As domain push-pull suppresses shortcuts in $Z_{\mathrm {task}}$ (purple dash-dot, right axis), FV-RA AUC rises (red, left axis). The residual branch $Z_{\mathrm {res}}$ absorbs the expelled domain information (green dotted, right axis). The two-way baseline FV-RA stays near chance (blue dashed), isolating the factorization as the enabling condition}{figure.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces AVLips cross-dataset AUC using the best-performing seed among three independent runs for each model. This table is reported as supplementary external-direction evidence rather than a primary benchmark.}}{10}{table.6}\protected@file@percent }
+\newlabel{tab:avlips}{{6}{10}{AVLips cross-dataset AUC using the best-performing seed among three independent runs for each model. This table is reported as supplementary external-direction evidence rather than a primary benchmark}{table.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Broader impact.}{10}{section*.12}\protected@file@percent }
 \bibstyle{plainnat}
 \bibdata{references}
 \bibcite{cai2024avdeepfake1m}{{1}{2024}{{Cai et~al.}}{{Cai, Ghosh, Adatia, Hayat, Dhall, Gedeon, and Stefanov}}}
@@ -72,8 +100,13 @@
 \bibcite{feng2023avad}{{4}{2023}{{Feng et~al.}}{{Feng, Li, Lin, Laaksonen, and Li}}}
 \bibcite{ganin2016dann}{{5}{2016}{{Ganin et~al.}}{{Ganin, Ustinova, Ajakan, Germain, Larochelle, Laviolette, Marchand, and Lempitsky}}}
 \bibcite{khalid2021fakeavceleb}{{6}{2021}{{Khalid et~al.}}{{Khalid, Tariq, Kim, and Woo}}}
-\bibcite{liang2024speechforensics}{{7}{2024}{{Liang et~al.}}{{Liang, Yu, Li, Jiang, Li, Yu, Zhang, Meng, and Huang}}}
-\bibcite{shi2022avhubert}{{8}{2022}{{Shi et~al.}}{{Shi, Hsu, Lakhotia, and Mohamed}}}
-\bibcite{smeu2025avhalign}{{9}{2025}{{Smeu et~al.}}{{Smeu, Boldisor, Oneata, and Oneata}}}
-\bibcite{zhou2021jointav}{{10}{2021}{{Zhou and Lim}}{{}}}
-\gdef \@abspage@last{14}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces t-SNE embeddings of the two key factors from a representative \textsc  {TriRoute}\ checkpoint. \textbf  {Left}: the residual factor $Z_{\mathrm  {res}}$ forms tight, dataset-specific clusters (colors), confirming it absorbs domain nuisance. \textbf  {Right}: the task factor $Z_{\mathrm  {task}}$ separates real (blue circles) from fake (red crosses) across all source domains, with no residual domain clustering, indicating that domain push-pull successfully discourages shortcut routing into the prediction head.}}{11}{figure.6}\protected@file@percent }
+\newlabel{fig:tsne}{{6}{11}{t-SNE embeddings of the two key factors from a representative \method \ checkpoint. \textbf {Left}: the residual factor $Z_{\mathrm {res}}$ forms tight, dataset-specific clusters (colors), confirming it absorbs domain nuisance. \textbf {Right}: the task factor $Z_{\mathrm {task}}$ separates real (blue circles) from fake (red crosses) across all source domains, with no residual domain clustering, indicating that domain push-pull successfully discourages shortcut routing into the prediction head}{figure.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{11}{section.8}\protected@file@percent }
+\bibcite{koutlis2025dimodif}{{7}{2025}{{Koutlis and Papadopoulos}}{{}}}
+\bibcite{liang2024speechforensics}{{8}{2024}{{Liang et~al.}}{{Liang, Yu, Li, Jiang, Li, Yu, Zhang, Meng, and Huang}}}
+\bibcite{oorloff2024avff}{{9}{2024}{{Oorloff et~al.}}{{Oorloff, Koppisetti, Bonettini, Solanki, Colman, Yacoob, Shahriyari, and Bharaj}}}
+\bibcite{shi2022avhubert}{{10}{2022}{{Shi et~al.}}{{Shi, Hsu, Lakhotia, and Mohamed}}}
+\bibcite{smeu2025avhalign}{{11}{2025}{{Smeu et~al.}}{{Smeu, Boldisor, Oneata, and Oneata}}}
+\bibcite{zhou2021jointav}{{12}{2021}{{Zhou and Lim}}{{}}}
+\gdef \@abspage@last{20}
