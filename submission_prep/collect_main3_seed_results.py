@@ -64,14 +64,28 @@ def main() -> None:
     raw_rows = []
     summary_rows = []
     metric_keys = [
-        ("overall", "overall_auc"),
-        ("RealVideo-FakeAudio", "rv_fa_auc"),
-        ("FakeVideo-RealAudio", "fv_ra_auc"),
-        ("FakeVideo-FakeAudio", "fv_fa_auc"),
+        ("overall", "overall"),
+        ("RealVideo-FakeAudio", "rv_fa"),
+        ("FakeVideo-RealAudio", "fv_ra"),
+        ("FakeVideo-FakeAudio", "fv_fa"),
     ]
+    metric_names = ["auc", "ap"]
+    raw_fieldnames = ["model", "seed", "eval_results_path", "status"]
+    for _, label in metric_keys:
+        raw_fieldnames.extend(f"{label}_{metric}" for metric in metric_names)
+    summary_fieldnames = ["model"]
+    for _, label in metric_keys:
+        for metric in metric_names:
+            summary_fieldnames.extend(
+                [f"{label}_{metric}_mean", f"{label}_{metric}_std", f"{label}_{metric}_n"]
+            )
 
     for model in MODELS:
-        per_metric: dict[str, list[float]] = {label: [] for _, label in metric_keys}
+        per_metric: dict[str, list[float]] = {
+            f"{label}_{metric}": []
+            for _, label in metric_keys
+            for metric in metric_names
+        }
         for seed in SEEDS:
             eval_path = BASE / "avh_sup" / f"outputs_{model}_seed{seed}" / RESULT_SUBDIR / "eval_results.txt"
             parsed = parse_eval_results(eval_path)
@@ -83,35 +97,39 @@ def main() -> None:
             }
             if parsed is not None:
                 for raw_key, label in metric_keys:
-                    value = parsed.get(raw_key, {}).get("auc")
-                    row[label] = value
-                    if value is not None:
-                        per_metric[label].append(value)
+                    for metric in metric_names:
+                        value = parsed.get(raw_key, {}).get(metric)
+                        column = f"{label}_{metric}"
+                        row[column] = value
+                        if value is not None:
+                            per_metric[column].append(value)
             raw_rows.append(row)
 
         summary = {"model": model}
         for _, label in metric_keys:
-            values = per_metric[label]
-            if values:
-                mean, std = mean_std(values)
-                summary[f"{label}_mean"] = mean
-                summary[f"{label}_std"] = std
-                summary[f"{label}_n"] = len(values)
-            else:
-                summary[f"{label}_mean"] = ""
-                summary[f"{label}_std"] = ""
-                summary[f"{label}_n"] = 0
+            for metric in metric_names:
+                column = f"{label}_{metric}"
+                values = per_metric[column]
+                if values:
+                    mean, std = mean_std(values)
+                    summary[f"{column}_mean"] = mean
+                    summary[f"{column}_std"] = std
+                    summary[f"{column}_n"] = len(values)
+                else:
+                    summary[f"{column}_mean"] = ""
+                    summary[f"{column}_std"] = ""
+                    summary[f"{column}_n"] = 0
         summary_rows.append(summary)
 
     raw_path = out_dir / "main3_seed_results_raw.csv"
     with raw_path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(raw_rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=raw_fieldnames)
         writer.writeheader()
         writer.writerows(raw_rows)
 
     summary_path = out_dir / "main3_seed_results_summary.csv"
     with summary_path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(summary_rows[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=summary_fieldnames)
         writer.writeheader()
         writer.writerows(summary_rows)
 
