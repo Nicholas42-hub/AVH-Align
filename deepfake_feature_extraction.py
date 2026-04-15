@@ -142,8 +142,12 @@ def process_fakeavceleb(args, model, transform, category):
                 file_paths.add(path)
 
     for _, file_path in enumerate(tqdm(file_paths)):
-        mouth_roi_path = args.data_path + file_path[:-4] + "_roi.mp4"
-        audio_path = args.data_path + file_path[:-4] + ".wav"
+        save_path = os.path.join(args.save_path, file_path.replace(".mp4", ".npz"))
+        if os.path.exists(save_path):
+            continue
+
+        mouth_roi_path = os.path.join(args.data_path, file_path[:-4] + "_roi.mp4")
+        audio_path = os.path.join(args.data_path, file_path[:-4] + ".wav")
 
         try:
             feature_audio, feature_vid, feature_multimodal = extract_features(model, mouth_roi_path, audio_path, transform, args.trimmed)
@@ -156,7 +160,6 @@ def process_fakeavceleb(args, model, transform, category):
             "audio": feature_audio,
             "multimodal": feature_multimodal,
         }
-        save_path = os.path.join(args.save_path, file_path.replace(".mp4", ".npz"))
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         np.savez(save_path, **save_dict)

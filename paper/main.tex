@@ -185,7 +185,29 @@ The key design choice is that the detector does not consume the entire multimoda
 
 \subsection{Datasets and Evaluation}
 
-We train on AV-Deepfake1M (AV1M) \citep{cai2024avdeepfake1m}, a large-scale dataset of over one million clips spanning diverse synthesis pipelines, and evaluate on a matched FakeAVCeleb (FAVC) \citep{khalid2021fakeavceleb} test split ($N=1{,}114$). We also report directional results on AVLips \citep{como2024lips}. Our main paper benchmark is therefore a matched cross-dataset transfer protocol rather than the public FakeAVCeleb 70/30 leaderboard. In the full domain-aware setting, auxiliary domain supervision may use real-only FAVC validation clips, but no target-domain fake labels or FAVC test clips are used during optimization. We report AUC separately for three informative categories: (i)~RealVideo-FakeAudio (RV-FA), (ii)~FakeVideo-RealAudio (FV-RA), and (iii)~FakeVideo-FakeAudio (FV-FA). FV-RA is the hardest and most informative category because audio shortcuts are uninformative, forcing the model to use genuine visual manipulation evidence.
+We train on AV-Deepfake1M (AV1M) \citep{cai2024avdeepfake1m}, a large-scale dataset of over one million clips spanning diverse synthesis pipelines, and evaluate on a matched FakeAVCeleb (FAVC) \citep{khalid2021fakeavceleb} test split ($N=1{,}114$). We also report directional results on AVLips \citep{como2024lips}. Our main paper benchmark is therefore a matched cross-dataset transfer protocol rather than an intra-FAVC leaderboard. To connect our results to the public split used in recent shortcut analyses of audio-visual deepfake datasets \citep{smeu2025avhalign}, we additionally evaluate the same AV1M-trained checkpoints on the full FakeAVCeleb 70/30 public test split ($N=6{,}667$). In the full domain-aware setting, auxiliary domain supervision may use real-only FAVC validation clips, but no target-domain fake labels or FAVC test clips are used during optimization. We report AUC separately for three informative categories: (i)~RealVideo-FakeAudio (RV-FA), (ii)~FakeVideo-RealAudio (FV-RA), and (iii)~FakeVideo-FakeAudio (FV-FA). FV-RA is the hardest and most informative category because audio shortcuts are uninformative, forcing the model to use genuine visual manipulation evidence.
+
+\paragraph{Protocol positioning.}
+Table~\ref{tab:protocol_matrix} summarizes how our evaluation differs from closely related audio-visual deepfake protocols. Most prior work either reports intra-dataset performance on a proposed benchmark, uses real-only self-supervised training with its own test split, or studies official AV1M localization/detection. We instead use AV1M-trained detectors to test cross-dataset transfer to FAVC, and include the public FAVC 70/30 split only as a comparable shortcut-aware test protocol rather than as an intra-FAVC leaderboard.
+
+\begin{table}[t]
+    \centering
+    \caption{Protocol comparison with closely related audio-visual deepfake benchmarks. The table clarifies that our main setting is AV1M$\rightarrow$FAVC cross-dataset transfer rather than intra-dataset FAVC evaluation.}
+    \label{tab:protocol_matrix}
+    \footnotesize
+    \begin{tabular}{p{0.23\linewidth}p{0.34\linewidth}p{0.34\linewidth}}
+        \toprule
+        Work & Typical protocol & Relation to ours \\
+        \midrule
+        FakeAVCeleb \citep{khalid2021fakeavceleb} & Dataset benchmark with visual/audio baselines; later work commonly imposes train/test splits such as 70/30. & Provides the target dataset and modality categories, but not our AV1M$\rightarrow$FAVC transfer protocol. \\
+        AVAD \citep{feng2023avad} and SpeechForensics \citep{liang2024speechforensics} & Real-only or self-supervised speech-video training; evaluation on FAVC/KoDF or FF++ cross-manipulation splits. & Closely related real-only generalization setting, but train data and FAVC split differ from our AV1M-trained models. \\
+        AVH-Align / shortcut analysis \citep{smeu2025avhalign} & FAVC 70/30 and AV1M validation/test; original vs trimmed data to expose leading-silence shortcuts; real-only AVH-Align and supervised variants. & Closest protocol bridge. We adopt full FAVC 70/30 testing and trimmed controls, but keep our AV1M$\rightarrow$FAVC factorized-transfer question. \\
+        AV-Deepfake1M \citep{cai2024avdeepfake1m} & Official AV1M train/val/test benchmark for video-level detection and temporal localization. & Defines our source dataset; official AV1M testing is an in-dataset benchmark, not our target-domain transfer test. \\
+        DiMoDif \citep{koutlis2025dimodif} & In-dataset FAVC 70/30, LAV-DF official splits, AV1M official/Codabench, plus cross-dataset generalization. & Shows FAVC 70/30 and AV1M official splits are common, but primarily trains/evaluates within each benchmark. \\
+        Joint audio-visual detection \citep{zhou2021jointav} and AVLips \citep{como2024lips} & FF++/DFDC synthetic-audio or lip-sync-specific protocols; AVLips evaluates lip-sync detection and perturbation robustness. & Important related tasks and external support, but not the same datasets or cross-dataset transfer setting. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Baselines}
 
@@ -193,13 +215,13 @@ We compare \method\ against a progression of internal baselines that isolate eac
 
 \subsection{Implementation Details}
 
-\method\ is built on frozen AV-HuBERT \citep{shi2022avhubert} features ($C=1{,}024$, 25 fps, mouth-crop visual stream). The factorization modules and classifier are lightweight MLPs (three to four layers, LayerNorm, ReLU). The shared, unique, and residual components use 256 dimensions per modality. Training uses Adam with learning rate $10^{-3}$, batch size 1 (variable-length clips), and a maximum of 100 epochs with patience-20 early stopping on validation AUC. We fix $\lambda_{\mathrm{align}} = 0.5$, $\lambda_{\mathrm{dom}} = 1.0$, $\lambda_{\mathrm{adv}} = 1.0$, and $\lambda_{\mathrm{ortho}} = 0.1$, with GRL~$\alpha = 1.0$. Domain labels are assigned per dataset. For the full domain-aware model, auxiliary domain supervision may include real-only FAVC validation clips; this affects only the domain-routing objective, and FAVC test labels and clips remain untouched. Unless otherwise stated, quantitative results are averaged over three random seeds. For AVLips, we additionally report a best-of-three-seed auxiliary evaluation as external directional support.
+\method\ is built on frozen AV-HuBERT \citep{shi2022avhubert} features ($C=1{,}024$, 25 fps, mouth-crop visual stream). The factorization modules and classifier are lightweight MLPs (three to four layers, LayerNorm, ReLU). The shared, unique, and residual components use 256 dimensions per modality. Training uses Adam with learning rate $10^{-3}$, batch size 1 (variable-length clips), and a maximum of 100 epochs with patience-20 early stopping on validation AUC. We fix $\lambda_{\mathrm{align}} = 0.5$, $\lambda_{\mathrm{dom}} = 1.0$, $\lambda_{\mathrm{adv}} = 1.0$, and $\lambda_{\mathrm{ortho}} = 0.1$, with GRL~$\alpha = 1.0$. Domain labels are assigned per dataset. For the full domain-aware model, auxiliary domain supervision may include real-only FAVC validation clips; this affects only the domain-routing objective, and FAVC test labels and clips remain untouched. Unless otherwise stated, quantitative results are averaged over three random seeds. The public FakeAVCeleb 70/30 benchmark uses seeds 43, 44, and 45. For AVLips, we additionally report a best-of-three-seed auxiliary evaluation as external directional support.
 
 \section{Results and Analysis}
 
 \subsection{Cross-Domain Detection Performance}
 
-Table~\ref{tab:main} compares \method\ against internal ablation baselines under the AV1M $\to$ FAVC benchmark. The two-way baseline achieves near-ceiling performance on RV-FA (1.000) and FV-FA (0.9996) but barely exceeds chance on FV-RA (0.500). Adding domain adversarial pressure to the two-way representation makes FV-RA \emph{worse} (0.450), confirming that domain pressure alone is insufficient and can destabilize the model's audio-dominant routing. Three-way factorization without domain push-pull improves FV-RA to 0.613; \method\ with the full domain-aware objective raises it further to $0.659{\pm}0.079$. The meaningful gain is isolated entirely to FV-RA, the only category that requires visual manipulation evidence rather than audio shortcuts.
+Table~\ref{tab:main} compares \method\ against internal ablation baselines under the AV1M $\to$ FAVC benchmark. The two-way baseline achieves near-ceiling performance on RV-FA (1.000) and FV-FA (0.9996) but barely exceeds chance on FV-RA (0.500). Adding domain adversarial pressure to the two-way representation makes FV-RA \emph{worse} (0.450), confirming that domain pressure alone is insufficient and can destabilize the model's audio-dominant routing. Three-way factorization without domain push-pull improves FV-RA to 0.613; \method\ with the full domain-aware objective raises it further to $0.659{\pm}0.079$. The meaningful gain is isolated entirely to FV-RA, the only category that requires visual manipulation evidence rather than audio shortcuts. Figure~\ref{fig:seed_variance} shows all individual seed results, confirming the gain is consistent across seeds and not driven by a single outlier.
 
 \begin{table}[t]
     \centering
@@ -214,6 +236,32 @@ Table~\ref{tab:main} compares \method\ against internal ablation baselines under
         Two-way + domain-adversarial control\textdagger & two-way + GRL & $0.749$ & $1.000$ & $0.450$ & $0.998$ \\
         Three-way, no domain push-pull & three-way factorization & $0.822\pm0.007$ & $0.999\pm0.002$ & $0.613\pm0.014$ & $0.996\pm0.006$ \\
         \method\ (ours) & three-way + domain push-pull & $\mathbf{0.844\pm0.036}$ & $1.000\pm0.000$ & $\mathbf{0.659\pm0.079}$ & $0.999\pm0.001$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.72\linewidth]{seed_variance.pdf}
+    \caption{Per-seed FV-RA AUC for each model variant (seeds 42, 43, 44). Boxes show the interquartile range; the diamond marks the mean; individual dots show each seed. The two-way $+$ domain-adversarial result (\textdagger) is a single seed. Despite the variance, all three \method\ seeds exceed all three two-way baseline seeds, and the mean gain of $+0.159$ is not driven by a single outlier seed.}
+    \label{fig:seed_variance}
+\end{figure}
+
+\paragraph{Public FakeAVCeleb 70/30 benchmark.}
+Table~\ref{tab:favc7030} reports the same AV1M-trained models on the full FakeAVCeleb 70/30 public test split. This benchmark is included as a protocol bridge to prior work that identifies leading-silence shortcuts in FakeAVCeleb and AV-Deepfake1M \citep{smeu2025avhalign}. It is still a cross-dataset test for our models, since the detectors are trained on AV1M rather than on the FakeAVCeleb training split. The broader public split preserves the same ordering as the matched benchmark: three-way factorization improves FV-RA over the two-way baseline, and \method\ obtains the strongest FV-RA and overall AUC.
+
+\begin{table}[t]
+    \centering
+    \caption{Cross-dataset AUC on the full FakeAVCeleb 70/30 public test split ($N=6{,}667$). All models are trained on AV1M and evaluated on FakeAVCeleb; this is therefore not an intra-FAVC leaderboard. Results are mean\,$\pm$\,std over seeds 43, 44, and 45.}
+    \label{tab:favc7030}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        Method & Overall AUC & RV-FA & FV-RA & FV-FA \\
+        \midrule
+        Two-way baseline & $0.760\pm0.016$ & $1.000\pm0.000$ & $0.483\pm0.033$ & $0.997\pm0.001$ \\
+        Three-way, no domain push-pull & $0.814\pm0.009$ & $1.000\pm0.000$ & $0.600\pm0.018$ & $\mathbf{0.998\pm0.001}$ \\
+        \method\ (ours) & $\mathbf{0.841\pm0.033}$ & $1.000\pm0.000$ & $\mathbf{0.659\pm0.072}$ & $0.997\pm0.001$ \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -280,6 +328,17 @@ Figure~\ref{fig:routing} provides direct qualitative evidence for this routing p
 \subsection{Corrected Artifact Control}
 
 A potential confound in AV1M-trained models is leading silence: fabricated clips sometimes begin with audio-free frames that are absent in authentic samples. Using representative checkpoints, we verified that FV-RA performance remains essentially stable after true-trimmed preprocessing that removes raw-waveform leading silence prior to AV-HuBERT feature extraction (three-way without domain push-pull: $0.613 \to 0.606$; \method: $0.757 \to 0.765$). This control therefore does not support the hypothesis that the visual-fake gain is driven by a leading-silence artifact.
+
+\subsection{Training Dynamics}
+
+Figure~\ref{fig:training_dynamics} tracks the FV-RA AUC on held-out FAVC and the domain-probe AUC on $Z_{\mathrm{task}}$ over training epochs for \method. As the domain push-pull objective expels shortcut information from the task branch (falling domain-probe AUC on $Z_{\mathrm{task}}$), FV-RA AUC rises correspondingly. The residual branch simultaneously absorbs the expelled domain signal (rising domain-probe AUC on $Z_{\mathrm{res}}$). The two-way baseline FV-RA curve stays near chance throughout, confirming that the improvement is attributable to the factorized routing structure rather than extended training.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.82\linewidth]{training_dynamics.pdf}
+    \caption{Training dynamics for \method\ (representative seed). As domain push-pull suppresses shortcuts in $Z_{\mathrm{task}}$ (purple dash-dot, right axis), FV-RA AUC rises (red, left axis). The residual branch $Z_{\mathrm{res}}$ absorbs the expelled domain information (green dotted, right axis). The two-way baseline FV-RA stays near chance (blue dashed), isolating the factorization as the enabling condition.}
+    \label{fig:training_dynamics}
+\end{figure}
 
 \subsection{Factor Geometry}
 

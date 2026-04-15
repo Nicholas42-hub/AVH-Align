@@ -1,0 +1,5025 @@
+DiMoDif: Discourse Modality-information Differentiation for
+Audio-visual Deepfake Detection and Localization
+Christos Koutlis, Symeon Papadopoulos
+Information Technologies Institute @ CERTH
+Thessaloniki, Greece
+{ckoutlis,papadop}@iti.gr
+
+Inputs
+
+Deepfake technology has rapidly advanced and poses
+significant threats to information integrity and trust in
+online multimedia. While significant progress has been
+made in detecting deepfakes, the simultaneous manipulation of audio and visual modalities, sometimes at
+small parts or in subtle ways, presents highly challenging detection scenarios. To address these challenges, we
+present DiMoDif (fig. 1), an audio-visual deepfake detection framework that leverages the inter-modality differences in machine perception of speech, based on the
+assumption that in real samples – in contrast to deepfakes – visual and audio signals coincide in terms of information. DiMoDif leverages features from deep networks that specialize in visual and audio speech recognition to spot frame-level cross-modal incongruities,
+and in that way to temporally localize the deepfake
+forgery. To this end, we devise a hierarchical crossmodal fusion network, integrating adaptive temporal
+alignment modules and a learned discrepancy mapping
+layer to explicitly model the subtle differences between
+visual and audio representations. Then, the detection
+model is optimized through a composite loss function
+accounting for frame-level detections and fake intervals
+localization. DiMoDif outperforms the state-of-the-art
+on the Deepfake Detection task by 30.5 AUC on the
+highly challenging AV-Deepfake1M, while it performs
+exceptionally on FakeAVCeleb and LAV-DF. On the
+Temporal Forgery Localization task, it outperforms the
+state-of-the-art by 47.88 AP@0.75 on AV-Deepfake1M,
+and performs on-par on LAV-DF. Code available at
+https://github.com/mever-team/dimodif.
+
+1
+
+Visual Speech Recognition
+Is cool I am I love this part
+because I get to do crazy stuff
+
+Audio Speech Recognition
+Is a cook I hate this part
+because I get to do crazy stuff
+
+Modality-information Differentiation
+
+frame
+
+DiMoDif
+
+arXiv:2411.10193v2 [cs.CV] 11 Apr 2025
+
+Abstract
+
+Congruity
+
+Incongruity
+
+Classification/Regression heads
+
+Figure 1: Partial audio-visual manipulation leads to
+different visual and audio speech predictions. DiMoDif
+detects and localizes the fake part based on feature
+space incongruity.
+
+Deepfake detection is a growing research area [55].
+Pertinent methods focus on pixel-level (gradient [69],
+color [31], and artifact analysis [11]) and feature-based
+(facial landmarks [76], temporal coherence [28]) inconsistencies. An expanding area of study involves
+the detection and localization of deepfakes in audiovisual data, which is especially hard due to the way
+sound and visuals are intertwined. Key approaches analyze the consistency between raw visual and auditory
+cues [27, 9, 15], consider feature reconstruction learning modules [80], and follow self-supervised approaches
+learning synchronization patterns from real videos only
+[29, 19].
+Humans integrate multimodal sensory information,
+such as visual and auditory input, to extract meaningful features and perform a wide range of recognition tasks. Cognitive neuroscience research has extensively documented the interplay between video and audio [67, 68], often resulting in the alteration of perceptual content [74, 13] or even the induction of perceptual
+illusions [53, 62]. In the context of speech perception,
+the brain actively constructs content representations
+by combining visual, auditory, and contextual cues to
+predict ongoing and future utterances [12]. When visual information conflicts with auditory input, as in the
+McGurk effect [50] or in the case of deepfakes, increased
+
+Introduction
+
+Audio-visual deepfakes are AI-generated multimedia
+involving manipulations to one or both modalities,
+sometimes in small parts, with the intention to deceive
+[47]. Deepfake content can spread widely online, and
+mislead viewers, contributing to the growing issue of information disorder. A revealing feature of audio-visual
+deepfakes is the presence of incongruities between the
+visual and audio signals, which are, however, increasingly hard to detect due to the quality and realism of
+current deepfakes. This necessitates the development
+of robust AI-based deepfake detection methods.
+1
+
+visual
+stream
+
+VSR
+
+Is cool I am I love this part because I get to do crazy stuff
+
+Difference (
+
+audio
+stream
+
+ASR
+
+): 10.9%
+
+Is a cook I hate this part because I get to do crazy stuff
+
+(a) Example of differences between Visual Speech Recognition (VSR) and Audio Speech Recognition (ASR)
+outputs.
+File path: AV-Deepfake1M/val/id01003/9nmM17wsxGU/00013/fake video fake audio.mp4
+
+(b)
+
+(c)
+
+(d)
+
+Figure 2: Identifying machine perception discrepancies between visual and audio speech for deepfake detection.
+In (a), a video’s visual and audio streams are separately processed by VSR and ASR models, then the outputs’
+normalized Levenshtein distance dL is calculated. In (b,c,d) the dL distributions are illustrated for FakeAVCeleb
+[36], LAV-DF [10], and AV-Deepfake1M [8].
+To leverage machine perception discrepancies between visual and audio speech, we introduce Discourse
+Modality-information Differentiation (DiMoDif). The
+proposed architecture decomposes the input video
+into its visual and audio streams, and extracts features via the Discourse-related Feature Extraction
+(DiFE) module, which uses the pre-trained VSR and
+ASR models proposed in [46]. Subsequently, the
+Modality-information Differentiation (MiD) module,
+implemented via a Transformer encoder with local
+cross-modal attention and feature pyramids, identifies frame-level inconsistencies and utilizes them for
+deepfake detection and localization. Note that low
+difference scores dL frequently occur in partly manipulated fake videos (e.g. fig. 2a); however, DiMoDif
+manages to classify them as fake by capturing audiovisual divergence at the frame level. In addition,
+high difference scores dL occasionally occur in real
+videos; however, DiMoDif leverages alternative features, e.g., hard phonemes [6], to classify them as real
+(cf. section 5.2). A composite loss optimizes framelevel detection and fake interval prediction (overlap
+and boundaries). We evaluate DiMoDif on Deepfake
+detection (DFD) and Temporal Forgery Localization
+(TFL) tasks using three audio-visual deepfake detection benchmarks, FakeAVCeleb [36], LAV-DF [10], and
+AV-Deepfake1M [8]. DiMoDif outperforms the stateof-the-art by a considerable margin on the challenging
+AV-Deepfake1M (+30.5% AUC for DFD and +47.88%
+AP@0.75 for TFL), while it maintains top performance
+on FakeAVCeleb and LAV-DF. The main contributions
+of this paper are:
+
+prediction errors are observed, accompanied by significant changes in brain activity, which often manifest as
+higher-frequency neural oscillations and localized activation patterns, indicative of heightened cognitive effort [4].
+We illustrate how state-of-the-art AI analysis tools
+could emulate this process in fig. 2. In fig. 2a, an input
+video is decomposed into its visual and audio streams
+feeding state-of-the-art models for Visual and Audio
+Speech Recognition (VSR, ASR)1 [46]. The difference
+between the two textual outputs is quantified using
+the normalized Levenshtein distance (dL ), calculated
+by dividing the edit distance (delta)2 by the combined length of the texts, resulting in a percentage from
+0% (identical) to 100% (completely different). Figures 2b to 2d illustrate aggregate results computed on
+the evaluation sets of three popular audio-visual deepfake detection benchmarks, FakeAVCeleb [36], LAVDF [10], and AV-Deepfake1M [8]. Real videos, on
+average, showed lower difference scores dL than fake
+videos across all datasets, confirming the score’s ability to measure incongruity. However, even though
+these differences are significant on FakeAVCeleb, they
+are smaller on LAV-DF, and much smaller on AVDeepfake1M, which renders naive thresholding unsuitable for robust detection. This is due to the fact
+that FakeAVCeleb’s videos are fully manipulated, while
+LAV-DF’s samples are manipulated only in parts, and
+samples from AV-Deepfake1M are manipulated in even
+smaller parts (on average half the length of those in
+LAV-DF).
+1 Also
+
+known as lip-reading and speech-to-text, respectively.
+through Python’s difflib.
+
+2 Determined
+
+1. A novel audio-visual deepfake detection method2
+
+ology leveraging speech representations from both and AV-Deepfake1M. In contrast, our approach exmodalities to identify local cross-modal incon- tracts VSR and ASR content representations that are
+gruities, called DiMoDif.
+then processed by a Transformer-based fusion mechanism capable of identifying discriminative speech fea2. An extensive evaluation analysis of ablation, com- tures on top of speech divergence ones. Pre-trained
+parative, robustness, generalization, and in-the- VSR models have been utilized as feature extractors
+wild experiments demonstrating DiMoDif’s effec- by Haliassos et al. [30] for visual-only deepfake detiveness on deepfake detection and localization.
+tection but neither audio speech features nor crossmodal incongruities were considered. Finally, [59] sets
+3. An inherent capability for interpreting DFD out- a threshold on cross-modal feature similarity deriving
+puts through DiMoDif’s cross-modal representa- from an audio-visual speech self-supervised representation incongruity.
+tion learning model.
+
+2
+2.1
+
+Related Work
+
+2.2
+
+Deepfake Detection Approaches
+
+Deepfake Detection Datasets
+
+During the past years, several datasets have been proDeepfake detection approaches considering visual-only posed for video deepfake detection. Most of them focus
+manipulations [65, 60, 82, 40, 1, 18, 57, 66, 41], while solely on visual manipulations, thus including only the
+valuable, overlook the audio component of videos and visual modality in their samples, e.g., DF-TIMIT [37],
+its interplay with the visual content. We compare Di- FaceForensics++ [60], DeeperForensics [33], Celeb-DF
+MoDif with a representative set of these approaches [43], WildDeepfake [85], and DF-Platter [49].
+following previous practices.
+Our focus is on the detection of audio-visual deepRecent deepfake detection approaches employ multi- fakes, which require content, manipulations and annomodal techniques like fusion, contrastive learning, and tations in both modalities. Table 1 presents deepfake
+self-supervised learning to identify discrepancies be- detection datasets that provide both visual and audio
+tween visual and audio streams. While these methods streams. DFDC [21] is a seminal large-scale bencheffectively capture audio-visual inconsistencies, they mark in the field that contains approximately 128K
+neglect the speech component of videos. For instance, samples. Although it provides audio-visual content
+attention-based frameworks analyze synchronization and contains manipulations on both modalities, (i) it
+patterns [84], spatio-temporal models assess inter- does not provide separate manipulation annotations
+and intra-modal disharmonies [75], and forgery-aware per modality, (ii) fake audio parts appear in only 4%
+adaptation is applied to pre-trained ViTs [52]. Simi- of the total number of videos, while fake visual parts
+larly, [58, 32, 86, 72] propose joint representation learn- in 84%3 , and (iii) it contains videos where the depicted
+ing frameworks that consider inter- and intra-modal individual does not talk or the speaking person is not
+encoding mechanisms. UMMAFormer [80] adopts fea- depicted and the depicted one does not talk. These
+ture reconstruction and cross-reconstruction attention features render DFDC inappropriate for audio-visual
+combined with an enhanced feature pyramid network, deepfake detection. KoDF [38] is another large-scale
+while BA-TFD & BA-TFD+ [10, 9] adopt 3DCNN and benchmark containing 237K videos of Korean subjects.
+multi-scale vision Transformer backbones guided by Although it provides both the visual and audio comcontrastive, frame classification, and boundary match- ponents of its samples, it contains only visual maniping objectives. Contrastive learning approaches com- ulations, which makes it unsuitable for our problem.
+pare inter-modal representations within a video [15, 14] FakeAVCeleb [36], contains 21K manipulated and 0.5K
+or between videos [81]. [27] identifies audio-visual in- real videos with manipulations on both modalities and
+consistency by focusing on feature similarity, and [61] corresponding annotations. Due to its size it is comby comparing the video’s lip movements with audio- monly used as an evaluation benchmark; here, we conderived lip sequences. Self-supervised learning ad- sider it for training and evaluation purposes with real
+dresses the generalization issue of deepfake detection video additions from the VoxCeleb2 dataset [16]. LAVby exploiting natural audio-visual synchronization in DF [10] is a recently introduced dataset that contains
+real videos [79, 26, 29, 23, 19, 54, 77, 22]. Representa- 136K real and fake videos with manipulations and tartion learning has also been tailored to modality emo- gets on both modalities for two tasks, Deepfake Detection consistency [48] and articulatory/lip movement tion (DFD) and Temporal Forgery Localization (TFL).
+consistency [73]. Finally, works [44, 51, 64, 78, 5] deal- Finally, AV-Deepfake1M [8] is the largest audio-visual
+ing with Temporal Action Localization (TAL) are con- deepfake detection benchmark to date containing over
+1.1M real and fake videos with manipulations and tarsidered relevant by the deepfake detection literature.
+Related works are presented in [7, 42]. These rely on gets on both modalities, for both the DFD and TFL
+a simple threshold on the divergence between VSR and tasks.
+ASR model outputs. However, as shown in fig. 2 this
+3 Based on a later estimation: https://www.kaggle.com/
+simple technique is insufficient on benchmarks with
+harder samples than FakeAVCeleb, such as LAV-DF datasets/basharallabadi/dfdc-video-audio-labels.
+3
+
+content
+
+manip.
+
+target
+
+dataset
+
+size
+
+A
+
+V
+
+A
+
+V
+
+A
+
+V
+
+joint
+
+task
+
+DFDC [21]
+KoDF [38]
+FakeAVCeleb [36]
+LAV-DF [10]
+AV-Deepfake1M [8]
+
+128,154
+237,942
+21,544
+136,304
+1,146,760
+
+✓
+✓
+✓
+✓
+✓
+
+✓
+✓
+✓
+✓
+✓
+
+✓
+✗
+✓
+✓
+✓
+
+✓
+✓
+✓
+✓
+✓
+
+✗
+✗
+✓
+✓
+✓
+
+✗
+✓
+✓
+✓
+✓
+
+✓
+✗
+✗
+✗
+✗
+
+DFD
+DFD
+DFD
+DFD,TFL
+DFD,TFL
+
+Table 1: Deepfake detection datasets providing both video and audio. Size determines the number of samples,
+content specifies the provided modalities, manipulation specifies which modality has been manipulated, target
+specifies for which modality the dataset provides ground truth, while task is reported in the last column.
+
+3
+
+Methodology
+
+denoting with d0 the embedding dimension, based on
+the distinct VSR and ASR models proposed in [46].
+In this section we elaborate on the main components of Then, v and a are projected to d dimensions using a
+DiMoDif, namely Discourse-related Feature Extraction lightweight 1-D convolutional network with two ReLU(DiFE), Modality-information Differentiation (MiD), activated layers. Under ideal conditions, in real videos,
+classification & regression heads, and objective func- v and a contain the same information corresponding to
+tion. DiMoDif’s architecture is illustrated in Figure 3. the discourse, while in deepfakes that contain manipulated parts, differentiation is expected due to artifacts.
+
+3.1
+
+Problem Formulation
+
+Consider (v, y, y) ∈ D where v = {v, a} denotes a video
+of dataset D, containing the visual v ∈ Rh×w×c×f and
+the audio a ∈ Rs signal4 , with h denoting the height,
+w the width, c the number of channels, f the number
+of video frames, and s the number of audio samples.
+y ∈ {0, 1}2 denotes the Deepfake Detection (DFD) target per modality, while y = {y1v , . . . , yfv , y1a , . . . , yfa },
+m,e m
+with yϕm = (dm,s
+ϕ , dϕ , aϕ ), denotes the Temporal
+Forgery Localization (TFL) target, assigning a forgery
+ground truth am
+ϕ ∈ {0, 1} to each modality m ∈ {v, a}
+and frame ϕ, along with the corresponding distances
+m,e
+dm,s
+∈ R between frame ϕ and the onset sm
+ϕ and
+ϕ , dϕ
+m
+offset eϕ of a fake interval containing ϕ. We train deep
+networks F on the DFD task ŷ = F(v) and the TFL
+task ŷ = F(v) separately, while predictions ŷ are decoded by:
+
+3.3
+
+Modality-information
+tion (MiD)
+
+Differentia-
+
+Trainable sequence encoding Sv , Sa ∈ Rd is added
+to v and a, while a separation token s ∈ Rd is employed to encode modality information. An additional
+classification token c ∈ Rd is only employed in DFD
+experiments, and position encoding Pτ ∈ Rd , with
+τ = 1, . . . , 2 · f + e, is applied on all tokens, resulting
+in tensor t = ⊕{c, v, s, a} ∈ R(2·f +e)×d , with ⊕ denoting concatenation, being the input to the Transformer
+encoder T [70]. e depends on the task, being equal to
+2 in DFD experiments and equal to 1 in TFL experiments where c is absent. Given that short-term intermodality inconsistency detection is key to our tasks,
+multimodal local attention is preferable in contrast to
+m
+ˆm,s m
+ˆm,e
+âm
+(1) global; besides, it is computationally more efficient.
+ϕ > 0.5, ŝϕ = ϕ − dϕ , êϕ = ϕ − dϕ
+Thus, we limit the Transformer’s attention to a multiˆ· denotes prediction while its absence ground truth.
+modal local window of 2·q tokens τ ∈ [1+ϕ−⌊q/2⌋, 1+
+ϕ + ⌊q/2⌋] ∪ [f + 2 + ϕ − ⌊q/2⌋, f + 2 + ϕ + ⌊q/2⌋] for
+3.2 Discourse-related Feature Extrac- frames ϕ, while c and s attend to all tokens. Then, we
+extract d-dimensional feature pyramids corresponding
+tion (DiFE)
+to c (if applicable), v, and a tokens deriving from the
+Discourse modality-information differentiation (Di- l layers of the Transformer T , denoted by Φ ⊂ T (t, q),
+MoDif) is learned by utilizing speech features ex- with Φ ∈ R(2·f +e−1)×l×d . To do so, T processes t as:
+tracted with disjoint-only encoding of visual and audio streams. Otherwise, e.g., by utilizing Audioz̃λ = MSA(LN(zλ−1 ))
+(2)
+Visual Speech Recognition (AVSR) encoders, informazλ = MLP(LN(z̃λ )) + z̃λ
+(3)
+tion missing from one modality due to deepfake artifacts is retrieved from the other resulting in indistinguishable cross-modal differences between real and where λ = 1, . . . , l denotes the layer index, z0 = t is
+fake samples. From each video v = {v, a}, we extract the input, MSA denotes Multi-head Softmax Attenthe visual v ∈ Rf ×d0 and audio a ∈ Rf ×d0 features tion [70] with r number of heads, LN denotes Layer
+corresponding to its visual v and audio a components, Normalization [39], and MLP denotes a Multi-Layer
+Perceptron with internal dimensionality d · u. Then,
+Φ = ⊕{zλ }lλ=1 , omitting the separation token s.
+
+4 Utterances mainly comprise monophonic signals; conversion
+to single-channel is straightforward if required.
+
+4
+
+Frozen
+
+Trainable
+
+VSR
+
+Transformer
+encoder
+
+ASR
+Inputs
+
+visual
+modality
+
+audio
+modality
+
+DiFE
+
+MiD
+
+Heads
+
+Figure 3: The DiMoDif architecture.
+
+3.4
+
+Classification
+Heads
+
+and
+
+Regression the distance between predicted and actual boundaries
+
+of fake time intervals. Detailed mathematical expressions of loss function computation can be found in the
+In DFD experiments, predictions ŷ are made by a feed- supplementary material.
+forward classification head Q that takes as input the
+classification tokens of Φ, denoted by Ψ ∈ Rl×d , and
+consists of three linear layers, the first two of which
+Experimental Setup
+are followed by Layer Normalization (LN) and ReLU 4
+activation:
+4.1 Datasets
+
+Ψ̇ = ReLU LN(Ψ · W1 + b1 )
+(4)
+
+We consider FakeAVCeleb [36], LAV-DF [10], and AVΨ̈ = ReLU LN(Ψ̇ · W2 + b2 )
+(5) Deepfake1M [8] datasets for training and evaluation.
+ŷ = Ψ̈ · W3 + b3
+(6) FakeAVCeleb contains 21K fake and 500 real samples
+which we split in 70% for training and 30% for testing,
+where W1 ,W2 ∈ Rd×d , b1 ,b2 ∈ Rd , W3 ∈ Rd×2 , following [75, 54]5 , while we keep 5% of the training set
+b3 ∈ R2 are learnable parameters, and ŷ ∈ Rl×2 are the for validation. LAV-DF has been released with stanlogits for the visual and audio modalities per Trans- dard splits of 78K training, 31K validation, and 26K
+former layer. In TFL experiments, predictions ŷ are test samples. AV-Deepfake1M has 746K training, 57K
+made by two lightweight 1-D convolutional networks, validation, and 343K test samples; the metadata of the
+namely the classification Qc and regression Qr heads latter have not been released. Supplementary material
+(with input Φ omitting c), each consisting of three con- provides further details on class and split sizes.
+volutional layers, the first two of which are followed by
+Layer Normalization (LN) and ReLU activation. The
+l
+Evaluation
+classification head predicts l probabilities âm
+ϕ ∈ R for 4.2
+frame ϕ of modality m to be fake, while the regresl×2
+ˆm,e
+sion head predicts l distance pairs (dˆm,s
+, For DFD, we use accuracy (ACC), Average Precision
+ϕ , dϕ )∈ R
+(AP), and area under ROC curve (AUC). For TFL,
+respectively.
+we use Average Precision at p (AP@p), and Average
+Recall at n (AR@n). We report metrics per dataset
+3.5 Objective Function
+in accordance to previous works for comparability. On
+For the DFD task, we consider the binary cross-entropy AV-Deepfake1M we evaluate through Codabench plat6
+loss Lce [25], optimizing the real vs. fake objective. form . Competing methods are audio-visual deepfake
+&
+face
+manipulation detectors, and temporal action
+For the TFL task, we propose a composite loss as the
+localization
+models (cf. Section 2). Also for DFD the
+combination of three loss functions, namely (1) the fonaive
+thresholding
+on dL approach (cf. fig. 2).
+cal loss Lf [45] to optimize the classification objective,
+while accounting for class imbalance being prevalent in
+5 To balance classes during training only, we add real samples
+each video’s frames, (2) the DIoU loss Ld [83] to optifrom VoxCeleb2 [16] including equal number of male and female
+mize the regression objective by maximizing the over- speakers of several ethnicities talking in English. Language idenlap between predicted and ground truth fake time in- tification via https://github.com/speechbrain/speechbrain.
+6 https://deepfakes1m.github.io/evaluation
+tervals, and (3) the smooth L1 loss Ls1 [24] to minimize
+5
+
+AV-Hubert [63]
+(Ma 2022) [46]
+
+FAVC
+
+L-DF (DFD)
+
+L-DF (TFL)
+
+99.98‡ , 99.35*
+99.99‡ , 99.71*
+
+99.79‡ , 99.78*
+99.94‡ , 99.84*
+
+98.00+ , 93.00†
+95.49+ , 94.17†
+
+Table 2: Speech-related pre-trained backbone ablation
+analysis. ‡ AP, *AUC, + AP@0.5, † AR@100.
+
+4.3
+
+Implementation Details
+
+(a) AV-Deepfake1M: Window size q
+
+We train DiMoDif for 100 epochs with early stopping
+patience 10 and checkpoint based on validation metrics, AUC for DFD and the sum of AP@p and AR@n
+for TFL. Batch size is set to 64, initial learning rate to
+0.001 (reduced on plateau) with Adam optimizer, local
+attention window size q to 15, and focal loss’ hyperparameters α = 0.98 and γ = 2. We set a maximum
+sequence length f to 600 and zero-pad the smaller.
+We consider a grid for T ’s size, with (d, r, u) ∈
+{(32, 2, 1), (64, 2, 1), (64, 4, 1), (128, 4, 2), (256, 8, 2)}
+and number of layers l ∈ {1, 3, 5}. Grid search for
+AV-Deepfake1M is performed with 200K training
+samples to reduce resource requirements, but retrain
+the best configuration on the whole set. We spent
+∼3900 GPU hours for training on NVIDIA GeForce
+RTX 3090 Ti GPUs.
+
+(b) AV-Deepfake1M: Feature pyramid (FP) use
+
+(c) AV-Deepfake1M: T size; l & (d, r, d · u)
+
+5
+5.1
+
+Figure 4: Ablation and hyperparameter tuning analysis.
+
+Results
+Ablation Study
+
+5.2
+
+Other speech-related pre-trained models are equivalent
+for use as backbones in DiMoDif, e.g., AV-Hubert [63]
+(cf. section 3.2). To study their impact, we train DiMoDif on FakeAVCeleb and LAV-DF w/ AV-Hubert
+features and present the results in Table 2. This variant
+performs slightly worse on FakeAVCeleb and LAV-DF
+(DFD), better wrt AP@0.5 and worse wrt AR@100 on
+LAV-DF (TFL). Henceforth, we opt for the better performing and more intuitive speech prediction variant
+(Ma 2022) [46]. Figure 4 presents ablations on AVDeepfake1M7 . Figure 4a indicates that a small window
+size q = 15 for Transformer’s T local attention is optimal, especially in contrast to attending on all tokens
+determined by q = 0. Also, the feature pyramid scheme
+provides a small performance increase as indicated by
+Figure 4b. The size of T is important for achieving
+maximum performance as shown in Figure 4c, both in
+terms of number of layers l and layer size determined
+by input dimension d, number of attention heads r,
+and internal dimension d · u: the larger the model the
+higher its performance. Supplementary material provides further TFL task ablations on AV-Deepfake1M
+wrt hyperparameter α and learning rate scheduler, the
+same analysis on LAV-DF, and a pertinent DFD task
+ablation analysis.
+
+Deepfake Detection
+
+Tables 3 to 5, present comparative results in
+terms of video-level Deepfake Detection (DFD) on
+FakeAVCeleb [36], LAV-DF [10], and AV-Deepfake1M
+[8]. On FakeAVCeleb, DiMoDif outperforms competitive methods achieving +0.8 ACC, and +0.6
+AUC. On LAV-DF, DiMoDif performs slightly better than UMMAFormer [80], achieving 99.84 AUC.
+On AV-Deepfake1M dataset, DiMoDif outperforms
+the state-of-the-art by a significant absolute performance increase of +30.5 AUC8 . Table 6 presents crossmanipulation performance on FakeAVCeleb in which
+DiMoDif achieves 100.0 AVG-FV AP yet 66.4 AP
+on RVFA. Notably, DiMoDif presents perfect detection rate in face-swaps (100.0 AUC). Mouth in faceswaps moves occasionally unnaturally yielding inaccurate lip-reading predictions, while audio is unaffected
+yielding correct speech-to-text predictions. DiMoDif
+translates this inconsistency into a deepfake detection. The naive classifier achieves high performance
+on FakeAVCeleb but moderate performance on LAVDF and AV-Deepfake1M; however, it outperforms several methods. Finally, challenging real samples with
+dL over 0.8 (cf. section 1), are scored by DiMoDif
+with an average of 0.19, and 0.16 on LAV-DF, and
+8 Codabench does not provide ACC for the test samples, thus
+we report the validation accuracy, which, even though is not
+comparable, still provides a sense on the level of uncalibrated
+threshold performance increase.
+
+7 We report validation performance as conducting the ablations through Codabench would be impractical.
+
+6
+
+Figure 5: Fake video sample (manipulated in red).
+Avg. and std. (across layers λ) of cross-modal similarity and frame-level fake probability shown in blue
+and purple, respectively.
+
+Figure 6: Robustness to visual (Gaussian blur) and
+audio (Gaussian noise) distortions.
+
+AV-Deepfake1M, respectively, attesting to DiMoDif’s
+advantage wrt naive distance-thresholding.
+
+5.3
+
+the audio perturbations, outperforming AVFF11 [54]
+by approx. + 6.5 AUC at intensity level 5. Robustness to visual perturbations is gradually reduced to
+96.5 AUC, approx. +25.0 AUC compared to AVFF.
+Supplementary material shows that DiMoDif is also
+more robust than AVFF under saturation, contrast,
+block-wise, and JPEG compression visual perturbations, yet less robust under Gaussian noise and
+video compression. Also, DiMoDif is more robust
+than AVFF under pitch shift, reverberence, and
+audio compression audio perturbations, achieving an
+unprecedented 99.3 AUC on average at intensity level
+5 indicating the high robustness of speech prediction
+features on such distortions.
+
+Temporal Forgery Localization
+
+Tables 7 and 8 present the performance of DiMoDif in comparison to state-of-the-art, in terms
+of Temporal Forgery Localization (TFL), on LAVDF [10] and AV-Deepfake1M [8], respectively. On
+LAV-DF, DiMoDif outperforms all competitive approaches wrt AR@{100,50}, is second to best wrt
+AR@{20,10}, and performs below state-of-the-art wrt
+AP@{0.5,0.75,0.95}. MMMS-BA [34], UMMAFormer
+[80], BA-TFD+ [9] and ActionFormer [78] exhibit similar performance, while the remaining models have
+lower localization ability. On AV-Deepfake1M, DiMoDif outperforms all competitive approaches wrt
+all metrics exhibiting significant performance increase. 5.6 Generalization
+The proposed method’s AR is almost double compared
+with the second to best, while it exhibits a notable ab- This paper is the first to conduct generalization expersolute increase of +35.29% and +47.88% in AP at 0.5 iments on the considered datasets. Table 12 presents
+DiMoDif’s cross-dataset performance on DFD. The reand 0.75, respectively.
+ported performance, although high, indicates that the
+training data affect generalization due to scale, fake
+5.4 Interpretability
+part duration, and generator quality. A small pool
+DiMoDif is inherently interpretable as its frame-level of low quality easier fake data (FakeAVCeleb) makes
+cross-modal representations’ similarity reflects the level the model prone to overfitting reducing its generalof congruity between visual and audio speech. Fig- ization ability to partially manipulated data generure 5 illustrates a fake video example from LAV- ated through more complex approaches (LAV-DF, AVDF9 with one small manipulated part during which Deepfake1M). In contrast, large pools of high-quality
+cross-modal similarity is significantly reduced indicat- and harder deepfakes (LAV-DF, AV-Deepfake1M) reing audio-visual incongruity while during real parts sult in richer and more robust representations, and less
+similarity is close to 1.0. Fake frames are perfectly overfitting. Supplementary material provides further
+identified by DiMoDif with maxm (âm ) >> 0.5. More generalization evaluations.
+ϕ
+
+real and fake examples are provided in suppl. material.
+
+5.7
+5.5
+
+Robustness
+
+Real-world Analysis
+
+We also present an analysis of DiMoDif’s performance
+in the wild. Initially, we compiled a collection of 204
+Internet videos, across several languages (incl. Out-OfDistribution OOD) and varying lengths (max 46′ , median
+1′ ), with 75 of them being real and 129 of them being fake. Fakes were selected for being popular deepfakes, supporting conspiracy theories, or spreading po-
+
+Figure 6 illustrates DiMoDif’s robustness to visual
+(Gaussian blurring) and audio (Gaussian noise) distortions at 5 levels of intensity. The analysis is conducted
+on FakeAVCeleb test set, following the evaluation protocol of [54, 23, 30]10 . DiMoDif is not affected by
+9 LAV-DF/test/000010.mp4
+10 Perturbations’
+
+11 Code unavailable. Value approximations from [54]’s supplementary material.
+
+implementation directly sourced from https:
+//github.com/EndlessSora/DeeperForensics-1.0.
+
+7
+
+Method
+
+Modality
+
+ACC
+
+AUC
+
+naive
+
+AV
+
+97.7
+
+93.3
+
+Xception [60]
+LipForensics [30]
+FTCN [82]
+MDS [15]
+AVoiD-DF [75]
+ART-AVDF [73]
+AVFF [54]
+
+V
+V
+V
+AV
+AV
+AV
+AV
+
+67.9
+80.1
+64.9
+82.8
+83.7
+96.4
+98.6
+
+70.5
+82.4
+84.0
+86.5
+89.2
+98.2
+99.1
+
+DiMoDif (ours)
+
+AV
+
+99.4
+
+99.7
+
+Table 3: In-dataset perfromance on
+FakeAVCeleb [36]. Modality denotes the model’s input type with
+V being visual and A audio. Bold
+indicates best and underline second
+to best performance.
+
+Method
+
+Modality
+AV
+
+naive
+3
+
+AUC
+
+Method
+
+Modality
+
+AUC
+
+ACC
+
+77.8
+
+naive
+
+AV
+
+62.8*
+
+77.1*
+
+Video-LLaMA (13B) E5 [79]
+LipForensics [30]
+Face X-Ray [40]
+Meso4 [1]
+MesoInception4 [1]
+SBI [65]
+MDS [15]
+
+AV
+V
+V
+V
+V
+V
+AV
+
+50.7
+51.6
+61.5
+50.2
+50.1
+65.8
+56.6
+
+25.1
+68.8
+73.8
+75.0
+75.0
+69.0
+59.4
+
+DiMoDif (ours)
+
+AV
+
+96.3
+
+96.3*
+
+F -Net [57]
+MDS [15]
+EfficientViT [18]
+BA-TFD [10]
+UMMAFormer [80]
+
+V
+AV
+V
+AV
+AV
+
+52.0
+82.8
+96.5
+99.0
+99.8
+
+DiMoDif (ours)
+
+AV
+
+99.84
+
+Table 4: Deepfake detection results on LAV-DF [10]. Modality denotes the model’s input
+type with V being visual and A
+audio. Bold indicates best and
+underline second to best performance.
+
+Table 5: Deepfake detection results on
+AV-Deepfake1M [8]. Modality denotes
+the model’s input type with V being visual and A audio. Bold indicates best
+and underline second to best performance.
+*Computed on validation set.
+Category
+
+Method
+
+Modality
+
+Pre-training
+
+RVFA
+
+Supervised
+
+Unsupervised
+
+AP
+
+FVRA-WL
+
+FVFA-FS
+
+FVFA-GAN
+
+FVFA-WL
+
+AVG-FV
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+96.2
+
+naive
+
+AV
+
+-
+
+61.2
+
+65.6
+
+99.2
+
+96.7
+
+98.3
+
+95.6
+
+98.8
+
+95.7
+
+99.3
+
+96.8
+
+98.9
+
+AVBYOL [26]
+
+AV
+
+LRW [17]
+
+50.0
+
+50.0
+
+73.4
+
+61.3
+
+88.7
+
+80.8
+
+60.2
+
+33.8
+
+73.2
+
+61.0
+
+73.9
+
+59.2
+
+VQ-GAN [22]
+
+V
+
+LRS2 [2]
+
+-
+
+-
+
+50.3
+
+49.3
+
+57.5
+
+53.0
+
+49.6
+
+48.0
+
+62.4
+
+56.9
+
+55.0
+
+51.8
+
+AVAD [23]
+
+AV
+
+LRS2 [2]
+
+62.4
+
+71.6
+
+93.6
+
+93.7
+
+95.3
+
+95.8
+
+94.1
+
+94.3
+
+93.8
+
+94.1
+
+94.2
+
+94.5
+
+AVAD [23]
+
+AV
+
+LRS3 [3]
+
+70.7
+
+80.5
+
+91.1
+
+93.0
+
+91.0
+
+92.3
+
+91.6
+
+92.7
+
+91.4
+
+93.1
+
+91.3
+
+92.8
+
+Xception [60]
+LipForensics [30]
+AD DFD [84]
+FTCN [82]
+RealForensics [29]
+AVFF [54]
+
+V
+V
+AV
+V
+V
+AV
+
+ImageNet [20]
+LRW [17]
+Kinetics [35]
+LRW [17]
+LRS3 [3]
+
+74.9
+93.3
+
+73.3
+92.4
+
+88.2
+97.8
+97.0
+96.2
+88.8
+94.8
+
+88.3
+97.7
+97.4
+97.4
+93.0
+98.2
+
+92.3
+99.9
+99.6
+100.
+99.3
+100.
+
+93.5
+99.9
+99.7
+100.
+99.1
+100.
+
+67.6
+61.5
+58.4
+77.4
+99.8
+99.9
+
+68.5
+68.1
+55.4
+78.3
+99.8
+100.
+
+91.0
+98.6
+100.
+95.6
+93.4
+99.4
+
+91.0
+98.7
+100.
+96.5
+96.7
+99.8
+
+84.8
+89.4
+88.8
+92.3
+95.3
+98.5
+
+85.3
+91.1
+88.1
+93.1
+97.1
+99.5
+
+DiMoDif (ours)
+
+AV
+
+-
+
+66.4
+
+51.6
+
+100.
+
+99.8
+
+100.
+
+100.
+
+100.
+
+100.
+
+100.
+
+100.
+
+100.
+
+99.9
+
+Table 6: Cross-manipulation performance on FakeAVCeleb [36]. Modality denotes the model’s input type with
+V being visual and A audio. Bold indicates best and underline second to best performance. Supervised methods
+that use pre-training are fine-tuned on FakeAVCeleb, while unsupervised methods are not trained with labels
+and fake examples.
+litical misinformation, and real videos for containing
+discourse (e.g., news anchoring). Next, we developed
+a pre-processing pipeline to address model’s limitations. Chunking is considered for accepting any-length
+videos, while frame groups with small faces (e.g. depicting crowds or wide shots), no faces, or small duration (¡2s) are discarded. We utilize DiMoDif trained on
+AV-Deepfake1M (TFL), and evaluate the ratio of fake
+to valid video parts, c = fake/valid, as the model occasionally flags small parts of authentic videos as deepfakes. DiMoDif achieves 82.1 AP, indicating robust detection of real-world cases, with linear processing complexity O([sec]). Figure 7 illustrates the distribution of
+c for real vs. fake and decision examples. For reference,
+RealForensics [29] achieves 76.4 AP on the same set.
+Additionally, although the developed pipeline is tailored to real-world cases it excels on evaluation benchmarks, i.e., achieves 99.1 AP on FakeAVCeleb, 93.5 AP
+on LAV-DF*, and 90.6 AP on AV-Deepfake1M* (*1K
+random unseen samples). Further details are provided
+in supplementary material.
+
+Figure 7: Distribution of coverage c for in-the-wild
+real vs. fake and examples of decisions. Red parts
+are flagged as fake.
+
+6
+
+Conclusions
+
+In this work, we propose an audio-visual deepfake detection and localization framework that leverages cross-modal differences in machine perception of
+speech. It hinges on the assumption that the visual
+and audio signals of videos with real discourse coincide
+wrt information, in contrast to deepfakes that exhibit
+8
+
+Method
+
+Modality
+
+AP@0.5
+
+AP@0.75
+
+AP@0.95
+
+AR@100
+
+AR@50
+
+AR@20
+
+AR@10
+
+MDS [15]
+AGT [51]
+BMN (I3D) [44]
+AVFusion [5]
+ActionFormer [78]
+BA-TFD [10]
+BA-TFD+ [9]
+UMMAFormer [80]
+MMMS-BA [34]
+
+AV
+V
+V
+AV
+V
+AV
+AV
+AV
+AV
+
+12.8
+17.9
+10.6
+65.4
+95.3
+76.9
+96.3
+98.8
+97.5
+
+1.6
+9.4
+1.7
+23.9
+90.2
+38.5
+85.0
+95.5
+95.2
+
+0.0
+0.1
+0.0
+0.1
+23.7
+0.3
+4.4
+37.6
+39.0
+
+37.9
+43.2
+48.5
+63.0
+88.4
+66.9
+81.6
+92.4
+94.0
+
+36.7
+34.2
+44.4
+59.3
+89.6
+64.1
+80.5
+92.5
+93.4
+
+34.4
+24.6
+37.1
+54.8
+90.3
+60.8
+79.4
+92.5
+95.9
+
+32.2
+16.7
+31.6
+52.1
+90.4
+58.4
+78.8
+92.1
+89.4
+
+DiMoDif (ours)
+
+AV
+
+95.5
+
+87.9
+
+20.6
+
+94.2
+
+93.7
+
+92.7
+
+91.4
+
+Table 7: Temporal forgery localization results on LAV-DF [10]. Modality denotes the model’s input type with
+V being visual and A audio. Bold indicates best and underline second to best performance.
+Method
+
+Modality
+
+AP@0.5
+
+AP@0.75
+
+AP@0.9
+
+AP@0.95
+
+AR@50
+
+AR@30
+
+AR@20
+
+AR@10
+
+AR@5
+
+PyAnnote (Zero-Shot) [56]
+Meso4 [1]
+MesoInception4 [1]
+EfficientViT [18]
+TriDet+VideoMAEv2 [64, 71]
+ActionFormer+VideoMAEv2 [78, 71]
+BA-TFD [10]
+BA-TFD+ [9]
+UMMAFormer [80]
+MMMS-BA [34]
+
+A
+V
+V
+V
+V
+V
+AV
+AV
+AV
+AV
+
+00.03
+09.86
+08.50
+14.71
+21.67
+20.24
+37.37
+44.42
+51.64
+62.75*
+
+00.00
+06.05
+05.16
+02.42
+05.83
+05.73
+6.34
+13.64
+28.07
+35.87*
+
+00.00
+02.22
+01.89
+00.13
+00.54
+00.57
+0.19
+0.48
+7.65
+-
+
+00.00
+00.59
+00.50
+00.01
+00.06
+00.07
+0.02
+0.03
+1.58
+18.37*
+
+00.67
+38.92
+39.27
+27.04
+20.27
+19.97
+45.55
+48.86
+44.07
+57.49*
+
+00.67
+38.91
+39.22
+26.99
+20.23
+19.93
+40.37
+44.51
+43.93
+-
+
+00.67
+38.81
+39.00
+26.43
+20.12
+19.81
+35.95
+40.37
+43.45
+55.94*
+
+00.67
+36.47
+35.78
+23.90
+19.50
+19.11
+30.66
+34.67
+42.09
+54.28*
+
+00.67
+26.91
+24.59
+20.31
+18.18
+17.80
+26.82
+29.88
+40.27
+-
+
+DiMoDif (ours)
+
+AV
+
+86.93
+
+75.95
+
+28.72
+
+5.43
+
+81.57
+
+80.85
+
+80.25
+
+78.84
+
+76.64
+
+Table 8: Temporal forgery localization results on AV-Deepfake1M [8]. Modality denotes the model’s input type
+with V being visual and A audio. Bold indicates best and underline second to best performance. *Computed
+on validation set.
+applicability and extend functionality to multi-speaker
+scenarios.
+
+Test dataset
+
+Training
+dataset
+
+FakeAVCeleb
+FakeAVCeleb
+LAV-DF
+AV-Deepfake1M
+
+LAV-DF
+
+AVD1M*
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+99.99
+99.69
+99.69
+
+99.71
+90.25
+90.69
+
+93.10
+99.94
+94.98
+
+84.47
+99.84
+86.30
+
+77.91
+88.46
+99.72
+
+54.00
+70.40
+99.18
+
+7
+
+Table 9: Generalization on DFD. * Validation set.
+
+Acknowledgments
+
+This work has been partially funded by the Horizon
+Europe projects AI4Trust (GA No. 101070190) and
+vera.ai (GA No. 101070093).
+
+cross-modal incongruities. It considers a visual and
+audio speech recognition feature extraction stage, and
+a hierarchical cross-modal fusion learning stage along
+with a combination of three loss functions that optimize frame-level detection, predicted interval overlap,
+and boundaries. An extensive evaluation study indicates the effectiveness of our framework exhibiting
+state-of-the-art performance.
+Limitations: DiMoDif’s language coverage is constrained by its speech recognition backbones although
+it was found to generalize well to Korean (cf. supplementary material) and in-the-wild OOD examples, while
+performance may be degraded by modality misalignment in real-world samples. Additionally, the trained
+model assumes a single, consistently visible speaker,
+sufficient video quality for facial landmark detection,
+and the availability of both visual and audio modalities. Development for the real-world analysis has addressed in part some of these limitations through video
+pre-processing. We aim to further improve in-the-wild
+
+References
+[1] Darius Afchar, Vincent Nozick, Junichi Yamagishi, and Isao Echizen. Mesonet: a compact facial
+video forgery detection network. In 2018 IEEE
+international workshop on information forensics
+and security (WIFS), pages 1–7. IEEE, 2018.
+[2] Triantafyllos Afouras, Joon Son Chung, Andrew
+Senior, Oriol Vinyals, and Andrew Zisserman.
+Deep audio-visual speech recognition. IEEE transactions on pattern analysis and machine intelligence, 44(12):8717–8727, 2018.
+[3] Triantafyllos Afouras, Joon Son Chung, and Andrew Zisserman. Lrs3-ted: a large-scale dataset
+for visual speech recognition. arXiv preprint
+arXiv:1809.00496, 2018.
+9
+
+[4] Luc H Arnal, Valentin Wyart, and Anne-Lise Gi- [15] Komal Chugh, Parul Gupta, Abhinav Dhall, and
+raud. Transitions in neural oscillations reflect preRamanathan Subramanian. Not made for each
+diction errors generated in audiovisual speech. Naother-audio-visual dissonance-based deepfake deture neuroscience, 14(6):797–801, 2011.
+tection and localization. In Proceedings of the
+28th ACM international conference on multime[5] Anurag Bagchi, Jazib Mahmood, Dolton Fernandia, pages 439–447, 2020.
+des, and Ravi Kiran Sarvadevabhatla. Hear me
+out: Fusional approaches for audio augmented [16] J Chung, A Nagrani, and A Zisserman. Voxtemporal action localization.
+arXiv preprint
+Celeb2: Deep speaker recognition. Interspeech
+arXiv:2106.14118, 2021.
+2018, 2018.
+[6] Helen L Bear and Richard Harvey. Phoneme-to- [17] Joon Son Chung and Andrew Zisserman. Lip
+viseme mappings: the good, the bad, and the ugly.
+reading in the wild. In Computer Vision–ACCV
+Speech Communication, 95:40–67, 2017.
+2016: 13th Asian Conference on Computer Vision, Taipei, Taiwan, November 20-24, 2016, Re[7] Matyas Bohacek and Hany Farid. Lost in transvised Selected Papers, Part II 13, pages 87–103.
+lation: Lip-sync deepfake detection from audioSpringer, 2017.
+video mismatch. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern
+Recognition, pages 4315–4323, 2024.
+
+[8]
+
+[9]
+
+[10]
+
+[11]
+
+[18] Davide Alessandro Coccomini, Nicola Messina,
+Claudio Gennaro, and Fabrizio Falchi. Combining efficientnet and vision transformers for video
+Zhixi Cai, Shreya Ghosh, Aman Pankaj Adatia,
+deepfake detection. In International conference
+Munawar Hayat, Abhinav Dhall, Tom Gedeon,
+on image analysis and processing, pages 219–229.
+and Kalin Stefanov. Av-deepfake1m: A large-scale
+Springer, 2022.
+llm-driven audio-visual deepfake dataset. In Proceedings of the 32nd ACM International Confer[19] Davide Cozzolino, Alessandro Pianese, Matthias
+ence on Multimedia, pages 7414–7423, 2024.
+Nießner, and Luisa Verdoliva.
+Audio-visual
+person-of-interest deepfake detection. In ProceedZhixi Cai, Shreya Ghosh, Abhinav Dhall, Tom
+ings of the IEEE/CVF conference on computer viGedeon, Kalin Stefanov, and Munawar Hayat.
+sion and pattern recognition, pages 943–952, 2023.
+Glitch in the matrix: A large scale benchmark for
+content driven audio–visual forgery detection and
+localization. Computer Vision and Image Under- [20] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li,
+Kai Li, and Li Fei-Fei. Imagenet: A large-scale histanding, 236:103818, 2023.
+erarchical image database. In 2009 IEEE conferZhixi Cai, Kalin Stefanov, Abhinav Dhall, and
+ence on computer vision and pattern recognition,
+Munawar Hayat. Do you really mean that? conpages 248–255. Ieee, 2009.
+tent driven audio-visual deepfake dataset and multimodal method for temporal forgery localiza- [21] Brian Dolhansky, Joanna Bitton, Ben Pflaum,
+Jikuo Lu, Russ Howes, Menglin Wang, and
+tion. In 2022 International Conference on Digital
+Cristian Canton Ferrer. The deepfake detecImage Computing: Techniques and Applications
+tion challenge (dfdc) dataset. arXiv preprint
+(DICTA), pages 1–10. IEEE, 2022.
+arXiv:2006.07397, 2020.
+Junyi Cao, Chao Ma, Taiping Yao, Shen Chen,
+Shouhong Ding, and Xiaokang Yang.
+End- [22] Patrick Esser, Robin Rombach, and Bjorn Ommer. Taming transformers for high-resolution imto-end reconstruction-classification learning for
+age synthesis. In Proceedings of the IEEE/CVF
+face forgery detection. In Proceedings of the
+conference on computer vision and pattern recogIEEE/CVF Conference on Computer Vision and
+nition, pages 12873–12883, 2021.
+Pattern Recognition, pages 4113–4122, 2022.
+
+[12] C. Chandrasekaran and A. Ghazanfar. When what [23] Chao Feng, Ziyang Chen, and Andrew Owens.
+you see is not what you hear. Nature Neuroscience,
+Self-supervised video forensics by audio-visual
+14:675–676, 2011.
+anomaly detection.
+In Proceedings of the
+IEEE/CVF Conference on Computer Vision and
+[13] Lihan Chen, Xiaolin Zhou, Hermann J Müller, and
+Pattern Recognition, pages 10491–10503, 2023.
+Zhuanghua Shi. What you see depends on what
+you hear: Temporal averaging and crossmodal in- [24] Ross Girshick. Fast r-cnn. In Proceedings of the
+tegration. Journal of Experimental Psychology:
+IEEE international conference on computer viGeneral, 147(12):1851, 2018.
+sion, pages 1440–1448, 2015.
+[14] Harry Cheng, Yangyang Guo, Tianyi Wang, Qi Li, [25] Irving John Good. Rational decisions. Journal of
+Xiaojun Chang, and Liqiang Nie. Voice-face hothe Royal Statistical Society: Series B (Methodmogeneity tells deepfake. ACM Transactions on
+ological), 14(1):107–114, 1952.
+Multimedia Computing, Communications and Applications, 20(3):1–22, 2023.
+
+10
+
+[26] Jean-Bastien Grill, Florian Strub, Florent [35] Will Kay, Joao Carreira, Karen Simonyan,
+Altché, Corentin Tallec, Pierre Richemond,
+Brian Zhang, Chloe Hillier, Sudheendra VijayaElena Buchatskaya, Carl Doersch, Bernardo
+narasimhan, Fabio Viola, Tim Green, Trevor
+Avila Pires, Zhaohan Guo, Mohammad GheshBack, Paul Natsev, et al. The kinetics hulaghi Azar, et al. Bootstrap your own latent-a
+man action video dataset.
+arXiv preprint
+new approach to self-supervised learning. AdarXiv:1705.06950, 2017.
+vances in neural information processing systems,
+[36] Hasam Khalid, Shahroz Tariq, Minha Kim, and
+33:21271–21284, 2020.
+Simon S Woo. Fakeavceleb: A novel audio-video
+[27] Yewei Gu, Xianfeng Zhao, Chen Gong, and Ximultimodal deepfake dataset. In Thirty-fifth Conaowei Yi. Deepfake video detection using audioference on Neural Information Processing Systems
+visual consistency. In Digital Forensics and WaDatasets and Benchmarks Track (Round 2), 2021.
+termarking: 19th International Workshop, IWDW
+2020, Melbourne, VIC, Australia, November 25– [37] Pavel Korshunov and Sébastien Marcel. Deepfakes: a new threat to face recognition? assess27, 2020, Revised Selected Papers 19, pages 168–
+ment and detection. 2018.
+180. Springer, 2021.
+[28] Zhihao Gu, Yang Chen, Taiping Yao, Shouhong [38] Patrick Kwon, Jaeseong You, Gyuhyeon Nam,
+Sungwoo Park, and Gyeongsu Chae. Kodf: A
+Ding, Jilin Li, and Lizhuang Ma. Delving into the
+large-scale korean deepfake detection dataset. In
+local: Dynamic inconsistency learning for deepProceedings of the IEEE/CVF international confake video detection. In Proceedings of the AAAI
+ference on computer vision, pages 10744–10753,
+Conference on Artificial Intelligence, volume 36,
+2021.
+pages 744–752, 2022.
+[29] Alexandros Haliassos, Rodrigo Mira, Stavros [39] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E
+Hinton. Layer normalization. ArXiv e-prints,
+Petridis, and Maja Pantic. Leveraging real talking
+pages arXiv–1607, 2016.
+faces via self-supervision for robust forgery detection. In Proceedings of the IEEE/CVF Confer- [40] Lingzhi Li, Jianmin Bao, Ting Zhang, Hao Yang,
+ence on Computer Vision and Pattern RecogniDong Chen, Fang Wen, and Baining Guo. Face
+tion, pages 14950–14962, 2022.
+x-ray for more general face forgery detection. In
+Proceedings of the IEEE/CVF conference on com[30] Alexandros Haliassos, Konstantinos Vougioukas,
+puter vision and pattern recognition, pages 5001–
+Stavros Petridis, and Maja Pantic. Lips don’t
+5010, 2020.
+lie: A generalisable and robust approach to
+face forgery detection. In Proceedings of the
+IEEE/CVF conference on computer vision and
+pattern recognition, pages 5039–5049, 2021.
+
+[41] Maosen Li, Xurong Li, Kun Yu, Cheng Deng,
+Heng Huang, Feng Mao, Hui Xue, and Minghao
+Li. Spatio-temporal catcher: A self-supervised
+transformer for deepfake video detection. In Pro[31] Peisong He, Haoliang Li, and Hongxia Wang. Deceedings of the 31st ACM International Confertection of fake images via the ensemble of deep
+ence on Multimedia, pages 8707–8718, 2023.
+representations from multi color spaces. In 2019
+IEEE international conference on image process- [42] Xiaolou Li, Zehua Liu, Chen Chen, Lantian Li,
+ing (ICIP), pages 2299–2303. IEEE, 2019.
+Li Guo, and Dong Wang. Zero-shot fake video detection by audio-visual consistency. In Interspeech
+[32] Hafsa Ilyas, Ali Javed, and Khalid Mahmood
+2024, pages 2935–2939, 2024.
+Malik. Avfakenet: A unified end-to-end dense
+swin transformer deep learning model for audio- [43] Yuezun Li, Xin Yang, Pu Sun, Honggang Qi, and
+visual deepfakes detection. Applied Soft ComputSiwei Lyu. Celeb-df: A large-scale challenging
+ing, 136:110124, 2023.
+dataset for deepfake forensics. In Proceedings of
+the IEEE/CVF conference on computer vision and
+[33] Liming Jiang, Ren Li, Wayne Wu, Chen Qian,
+pattern recognition, pages 3207–3216, 2020.
+and Chen Change Loy. Deeperforensics-1.0: A
+large-scale dataset for real-world face forgery de- [44] Tianwei Lin, Xiao Liu, Xin Li, Errui Ding, and
+tection. In Proceedings of the IEEE/CVF conferShilei Wen. Bmn: Boundary-matching network
+ence on computer vision and pattern recognition,
+for temporal action proposal generation. In Propages 2889–2898, 2020.
+ceedings of the IEEE/CVF international conference on computer vision, pages 3889–3898, 2019.
+[34] Vinaya Sree Katamneni and Ajita Rattani. Contextual cross-modal attention for audio-visual [45] Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaimdeepfake detection and localization. In 2024
+ing He, and Piotr Dollár. Focal loss for dense
+IEEE International Joint Conference on Biometobject detection. In Proceedings of the IEEE inrics (IJCB), pages 1–11. IEEE, 2024.
+ternational conference on computer vision, pages
+2980–2988, 2017.
+
+11
+
+[46] Pingchuan Ma, Stavros Petridis, and Maja Pantic. [57] Yuyang Qian, Guojun Yin, Lu Sheng, Zixuan
+Visual speech recognition for multiple languages in
+Chen, and Jing Shao. Thinking in frequency:
+the wild. Nature Machine Intelligence, 4(11):930–
+Face forgery detection by mining frequency-aware
+939, 2022.
+clues. In European conference on computer vision,
+pages 86–103. Springer, 2020.
+[47] Momina Masood, Mariam Nawaz, Khalid Mahmood Malik, Ali Javed, Aun Irtaza, and Hafiz [58] Muhammad Anas Raza and Khalid Mahmood
+Malik. Deepfakes generation and detection: StateMalik. Multimodaltrace: Deepfake detection usof-the-art, open challenges, countermeasures, and
+ing audiovisual representation learning. In Proway forward. Applied intelligence, 53(4):3974–
+ceedings of the IEEE/CVF Conference on Com4026, 2023.
+puter Vision and Pattern Recognition, pages 993–
+1000, 2023.
+[48] Trisha Mittal, Uttaran Bhattacharya, Rohan
+Chandra, Aniket Bera, and Dinesh Manocha. [59] Tal Reiss, Bar Cavia, and Yedid Hoshen. DetectEmotions don’t lie: An audio-visual deepfake deing deepfakes without seeing any. arXiv preprint
+tection method using affective cues. In ProceedarXiv:2311.01458, 2023.
+ings of the 28th ACM international conference on
+[60] Andreas Rossler, Davide Cozzolino, Luisa Verdomultimedia, pages 2823–2832, 2020.
+liva, Christian Riess, Justus Thies, and Matthias
+[49] Kartik Narayan, Harsh Agarwal, Kartik Thakral,
+Nießner. Faceforensics++: Learning to detect
+Surbhi Mittal, Mayank Vatsa, and Richa Singh.
+manipulated facial images. In Proceedings of the
+Df-platter: Multi-face heterogeneous deepfake
+IEEE/CVF international conference on computer
+dataset. In Proceedings of the IEEE/CVF Convision, pages 1–11, 2019.
+ference on Computer Vision and Pattern Recogni[61] Sahibzada Adil Shahzad, Ammarah Hashmi, Sartion, pages 9739–9748, 2023.
+war Khan, Yan-Tsung Peng, Yu Tsao, and Hsin[50] Audrey R Nath and Michael S Beauchamp. A
+Min Wang. Lip sync matters: A novel multimodal
+neural basis for interindividual differences in the
+forgery detector. In 2022 Asia-Pacific Signal and
+mcgurk effect, a multisensory speech illusion. NeuInformation Processing Association Annual Sumroimage, 59(1):781–787, 2012.
+mit and Conference (APSIPA ASC), pages 1885–
+1892. IEEE, 2022.
+[51] Megha Nawhal and Greg Mori. Activity graph
+transformer for temporal action localization. [62] Ladan Shams, Yukiyasu Kamitani, and Shinsuke
+arXiv preprint arXiv:2101.08540, 2021.
+Shimojo. Visual illusion induced by sound. Cognitive brain research, 14(1):147–152, 2002.
+[52] Fan Nie, Jiangqun Ni, Jian Zhang, Bin Zhang,
+and Weizhe Zhang. Frade: Forgery-aware audio- [63] Bowen Shi, Wei-Ning Hsu, Kushal Lakhotia, and
+distilled multimodal learning for deepfake detecAbdelrahman Mohamed. Learning audio-visual
+tion. In Proceedings of the 32nd ACM Interspeech representation by masked multimodal clusnational Conference on Multimedia, pages 6297–
+ter prediction. In International Conference on
+6306, 2024.
+Learning Representations, 2022.
+[53] Casey O’Callaghan. Seeing what you hear: Cross- [64] Dingfeng Shi, Yujie Zhong, Qiong Cao, Lin Ma,
+modal illusions and perception. Philosophical IsJia Li, and Dacheng Tao. Tridet: Temporal acsues, 18:316–338, 2008.
+tion detection with relative boundary modeling.
+In Proceedings of the IEEE/CVF Conference on
+[54] Trevine Oorloff, Surya Koppisetti, Nicolò BonetComputer Vision and Pattern Recognition, pages
+tini, Divyaraj Solanki, Ben Colman, Yaser Ya18857–18866, 2023.
+coob, Ali Shahriyari, and Gaurav Bharaj. Avff:
+Audio-visual feature fusion for video deepfake de- [65] Kaede Shiohara and Toshihiko Yamasaki. Detection. In Proceedings of the IEEE/CVF Contecting deepfakes with self-blended images. In
+ference on Computer Vision and Pattern RecogniProceedings of the IEEE/CVF Conference on
+tion, pages 27102–27112, 2024.
+Computer Vision and Pattern Recognition, pages
+18720–18729, 2022.
+[55] Gan Pei, Jiangning Zhang, Menghan Hu, Guangtao Zhai, Chengjie Wang, Zhenyu Zhang, Jian [66] Chao Shuai, Jieming Zhong, Shuang Wu, Feng
+Yang, Chunhua Shen, and Dacheng Tao. DeepLin, Zhibo Wang, Zhongjie Ba, Zhenguang Liu,
+fake generation and detection: A benchmark and
+Lorenzo Cavallaro, and Kui Ren. Locate and versurvey. arXiv preprint arXiv:2403.17881, 2024.
+ify: A two-stream network for improved deepfake
+detection. In Proceedings of the 31st ACM Inter[56] Alexis Plaquet and Hervé Bredin. Powerset multinational Conference on Multimedia, pages 7131–
+class cross entropy loss for neural speaker diariza7142, 2023.
+tion. arXiv preprint arXiv:2310.13025, 2023.
+
+12
+
+[67] Paula C Stacey, Pádraig T Kitterick, Saffron D
+Morris, and Christian J Sumner. The contribution
+of visual information to the perception of speech
+in noise with and without informative temporal
+fine structure. Hearing research, 336:17–28, 2016.
+[68] William H Sumby and Irwin Pollack. Visual
+contribution to speech intelligibility in noise.
+The journal of the acoustical society of america,
+26(2):212–215, 1954.
+
+predictive visual-audio alignment self-supervision
+for multimodal deepfake detection. IEEE Transactions on Circuits and Systems for Video Technology, 2023.
+[78] Chen-Lin Zhang, Jianxin Wu, and Yin Li. Actionformer: Localizing moments of actions with
+transformers. In European Conference on Computer Vision, pages 492–510. Springer, 2022.
+
+[79]
+[69] Chuangchuang Tan, Yao Zhao, Shikui Wei,
+Guanghua Gu, and Yunchao Wei. Learning on
+gradients: Generalized artifacts representation for
+gan-generated images detection. In Proceedings
+of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 12105–12114,
+[80]
+2023.
+[70] A Vaswani. Attention is all you need. Advances
+in Neural Information Processing Systems, 2017.
+
+Hang Zhang, Xin Li, and Lidong Bing. Videollama: An instruction-tuned audio-visual language model for video understanding. In Proceedings of the 2023 Conference on Empirical Methods
+in Natural Language Processing: System Demonstrations, pages 543–553, 2023.
+Rui Zhang, Hongxia Wang, Mingshan Du, Hanqing Liu, Yang Zhou, and Qiang Zeng. Ummaformer:
+A universal multimodal-adaptive
+transformer framework for temporal forgery localization. In Proceedings of the 31st ACM International Conference on Multimedia, pages 8749–
+8759, 2023.
+
+[71] Limin Wang, Bingkun Huang, Zhiyu Zhao, Zhan
+Tong, Yinan He, Yi Wang, Yali Wang, and
+Yu Qiao. Videomae v2: Scaling video masked
+autoencoders with dual masking. In Proceedings [81] Yibo Zhang, Weiguo Lin, and Junfeng Xu. Joint
+of the IEEE/CVF Conference on Computer Viaudio-visual attention with contrastive learning
+sion and Pattern Recognition, pages 14549–14560,
+for more general deepfake detection. ACM Trans2023.
+actions on Multimedia Computing, Communications and Applications, 20(5):1–23, 2024.
+[72] Yifan Wang, Xuecheng Wu, Jia Zhang, Mohan
+Jing, Keda Lu, Jun Yu, Wen Su, Fang Gao, [82] Yinglin Zheng, Jianmin Bao, Dong Chen, Ming
+Qingsong Liu, Jianqing Sun, et al. Building
+Zeng, and Fang Wen. Exploring temporal corobust video-level deepfake detection via audioherence for more general video face forgery devisual local-global interactions. In Proceedings of
+tection. In Proceedings of the IEEE/CVF inthe 32nd ACM International Conference on Multernational conference on computer vision, pages
+timedia, pages 11370–11376, 2024.
+15044–15054, 2021.
+[73] Yujia Wang and Hua Huang. Audio-visual deep- [83] Zhaohui Zheng, Ping Wang, Wei Liu, Jinze Li,
+fake detection using articulatory representation
+Rongguang Ye, and Dongwei Ren. Distance-iou
+learning. Computer Vision and Image Underloss: Faster and better learning for bounding box
+standing, page 104133, 2024.
+regression. In Proceedings of the AAAI conference
+on artificial intelligence, volume 34, pages 12993–
+[74] Jamal R Williams, Yuri A Markov, Natalia A Tiu13000, 2020.
+rina, and Viola S Störmer. What you see is what
+you hear: sounds alter the contents of visual per- [84] Yipin Zhou and Ser-Nam Lim. Joint audioception. Psychological science, 33(12):2109–2122,
+visual deepfake detection. In Proceedings of the
+2022.
+IEEE/CVF International Conference on Computer Vision, pages 14800–14809, 2021.
+[75] Wenyuan Yang, Xiaoyu Zhou, Zhikai Chen, Bofei
+Guo, Zhongjie Ba, Zhihua Xia, Xiaochun Cao, and [85] Bojia Zi, Minghao Chang, Jingjing Chen, Xingjun
+Kui Ren. Avoid-df: Audio-visual joint learning
+Ma, and Yu-Gang Jiang. Wilddeepfake: A chalfor detecting deepfake. IEEE Transactions on Inlenging real-world dataset for deepfake detection.
+formation Forensics and Security, 18:2015–2029,
+In Proceedings of the 28th ACM international con2023.
+ference on multimedia, pages 2382–2390, 2020.
+[76] Xin Yang, Yuezun Li, and Siwei Lyu. Expos- [86] Heqing Zou, Meng Shen, Yuchen Hu, Chen Chen,
+ing deep fakes using inconsistent head poses. In
+Eng Siong Chng, and Deepu Rajan. CrossICASSP 2019-2019 IEEE International Confermodality and within-modality regularization for
+ence on Acoustics, Speech and Signal Processing
+audio-visual deepfake detection. In ICASSP 2024(ICASSP), pages 8261–8265. IEEE, 2019.
+2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP),
+[77] Yang Yu, Xiaolong Liu, Rongrong Ni, Siyuan
+pages 4900–4904. IEEE, 2024.
+Yang, Yao Zhao, and Alex C Kot. Pvass-mdd:
+
+13
+
+A
+
+Objective function details
+
+in which 1m,ϕ is an indicator function that denotes
+if frame ϕ of modality m is fake, and h is defined
+as:
+(
+0.5x2
+if |x| < 1
+h(x) =
+(13)
+|x| − 0.5 otherwise
+
+For the DFD task, we consider the binary cross-entropy
+loss [25], directly optimizing the real vs. fake objective:
+LDF D = Lce = −
+
+1
+2l
+
+X
+
+l
+X
+
+y[m]logŷ[λ, m]+
+
+We combine the three loss functions with addition divided by the
+of fake visual and audio
+P total number
+Pf
+(1 − y[m]) · log(1 − ŷ[λ, m]) (7)
+frames p = m∈{v,a} ϕ=1 1m,ϕ :
+where λ is layer index, m is modality index, and x[·] is
+
+used to denote vector or matrix element access operaLT F L = Lf + Ld + Ls1 /p
+(14)
+tion (array indexing).
+For the TFL task, we consider a combination of three We finally average both LDF D and LT F L across batch
+loss functions. For clarity we omit to also include the samples during training.
+symbols for the averaging across l layers, which however takes place as well. Specifically, we use:
+m∈{v,a} λ=1
+
+B
+
+Dataset class and split sizes
+
+C
+
+Further Ablations
+
+1. The focal loss [45] to optimize the classification objective, while accounting for class imbalance being Table 10 provides details on dataset class and split
+prevalent among each video’s frames:
+sizes. Although, FakeAVCeleb paper [36] reports
+10,000 FVFA and 9,000 FVRA samples, the downf
+X X
+m,ϕ
+m,ϕ γ
+m,ϕ
+Lf =
+−αt (1 − pt ) log(pt ) (8) load from the corresponding homepage https://
+sites.google.com/view/fakeavcelebdash-lab conm∈{v,a} ϕ=1
+tains 10,835 and 9,709 respectively, resulting in 21.5K
+in which:
+(
+total number of samples (incl. 500 RVFA & 500 RVRA)
+α
+if yϕm = 1
+instead of the commonly reported 20,000 size for this
+m,ϕ
+αt =
+(9)
+dataset. Documentation therein aslo claims “Since
+1 − α otherwise
+we apply the manual screening process on synthesized
+(
+ŷϕm
+if yϕm = 1
+videos, the final video count is more than 20,000.”.
+m,ϕ
+pt =
+(10)
+m
+Test metadata of AV-Deepfake1M have not been re1 − ŷϕ otherwise
+leased but evaluation is enabled through Codabench.
+while α and γ are hyperparameters.
+2. The DIoU loss [83] to optimize the regression objective by maximizing the overlap between predicted and ground truth fake time intervals:
+Ld =
+
+X
+
+f
+X
+
+m
+1.0 − IoU(b̂m
+ϕ , bϕ )+
+
+m∈{v,a} ϕ=1
+m
+ρ2 (b̂m
+ϕ , bϕ )
+κ2
+
+!
+· 1m,ϕ
+
+(11)
+
+where ϕ is frame index, m is modality index, IoU
+m m
+denotes intersection over union, bm
+ϕ = [sϕ , eϕ ] dem
+m
+m
+notes a time interval, bϕ = 0.5 · (eϕ + sϕ ) denotes
+the interval’s center, ρ denotes the Euclidean distance, κ denotes the length of the smallest enclosing interval covering both predicted and ground
+truth intervals, and 1m,ϕ is an indicator function
+that denotes if frame ϕ of modality m is fake.
+3. The smooth L1 loss [24] to minimize the distance
+between predicted and actual boundaries of fake
+time intervals:
+
+f
+X X
+1
+m
+Ls1 =
+h(sm
+ϕ − ŝϕ )+
+2
+m∈{v,a} ϕ=1
+
+m
+m
+h(eϕ − êϕ ) · 1m,ϕ (12)
+
+14
+
+Figure 8 presents the ablations on LAV-DF (TFL)
+corresponding to the ablations presented in the main
+manuscript on AV-Deepfake1M, namely for window
+size q, feature pyramid use, and Transformer T size.
+The conclusions drawn from these ablations on both
+datasets agree. Figure 9 then presents further TFL
+task ablations on both LAV-DF and AV-Deepfake1M.
+Specifically, Figures 9a and 9b indicate little to no
+sensitivity to the focal loss’ hyperparameter α. Figures 9c and 9d indicate that the use of a learning rate
+scheduler is beneficial however the type of scheduler is
+not significantly affecting the results. Next, Figure 10
+presents ablations on FakeAVCeleb, LAV-DF, and AVDeepfake1M wrt the DFD task. The results indicate
+that on DFD a window size of q = 15 is optimal, but
+performance is not increased with feature pyramids nor
+with different learning rate schedules. Also, mediumsized models achieve maximum performance.
+
+D
+
+Interpretability
+
+Figures 11 and 12 present further interpretability plots
+for 8 real and 8 fake video samples from LAV-DF.
+Cosine similarity at the frame-level reveals DiMoDif’s
+decision reasoning in these cases. However, there are
+some rare cases in which DiMoDif correctly identified
+the modified parts although cross-modal similarity is
+high, such as in the example presented in Figure 13.
+In such cases DiMoDif is forced to successfully identify alternative manipulation features sacrificing interpretability.
+
+E
+
+Robustness
+
+Robustness to visual distortions: Figure 14 illustrates the performance of DiMoDif under unseen visual perturbations (our model has been trained without
+any visual augmentations) commonly present in realworld scenarios. We follow the evaluation protocol of
+[54, 23, 30] which consider the FakeAVCeleb test set
+and directly source the implementations of visual perturbations from https://github.com/EndlessSora/
+DeeperForensics-1.0. Specifically, videos are subject to saturation, contrast, block-wise, Gaussian
+noise, Gaussian blur, JPEG compression, and
+video compression, while we also compute the average robustness across perturbations. DiMoDif clearly
+outperforms RealForensics [29] under all perturbation
+scenarios except video compression at intensity levels 4 and 5. Also, our method outperforms AVFF [54]
+under saturation, contrast, block-wise, Gaussian
+blur, and JPEG compression at all levels of intensity, and is outperformed by AVFF under Gaussian
+noise and video compression at all levels of intensity. Wrt average AUC DiMoDif slightly outperforms
+AVFF and is much more robust than RealForensics.
+Notably, DiMoDif exhibits exceptional robustness wrt
+AP on average achieving 99.7 at intensity level 5, indicating near-perfect detection of positive samples despite significant visual distortions. In approximately
+0.06% of cases, high-intensity Gaussian noise (level
+5) prevented landmark detection, making lip-reading
+impossible and thus precluding the application of our
+method.
+Robustness to audio distortions: Figure 15 illustrates the performance of DiMoDif under unseen audio
+perturbations (our model has been trained without any
+audio augmentations) commonly present in real-world
+scenarios. We follow the evaluation protocol of [54]
+that considers the FakeAVCeleb test set and implement
+the audio perturbations using torchaudio, pysndfx, and
+pydub Python libraries as indicated therein. Specifically, the videos are subject to Gaussian noise, pitch
+shift, reverberence, and audio compression at 5
+levels of intensity. DiMoDif achieves unprecedented
+levels of robustness to audio perturbations with 99.3
+average AUC across all perturbations at intensity level
+5. This fact indicates that audio speech recognition is
+not affected by such perturbations and the correspond-
+
+15
+
+ing features are effective under any perturbation level
+scenario. In addition, DiMoDif outperforms AVFF under all perturbation scenarios and at all intensity levels.
+Why is DiMoDif highly robust to unseen content distortions? Table 11 demonstrates the resilience of DiMoDif’s text prediction backbones to
+various content distortions. Notably, transcripts remained largely unaffected across most distortion-level
+combinations. Video distortions, specifically highintensity video compression, JPEG compression,
+and Gaussian noise, had the most significant impact
+on text prediction, mirroring the performance declines
+observed in Figure 14. Similarly, only high-intensity
+pitch shift audio distortions reduced performance,
+consistent with the trends in Figure 15. This association underscores the critical role of the video and audio
+speech recognition representations in DiMoDif’s overall
+robustness.
+
+F
+
+Generalization
+
+We evaluate DiMoDif (trained on FakeAVCeleb, LAVDF, and AV-Deepfake1M) on the test set of DFDC [21]
+and a randomly selected 6K-sized sample from KoDF
+[38] proportionally spanning all synthesis methods and
+real samples.
+Table 12 presents the corresponding results. Training on FakeAV-Celeb [36] leads to poor performance
+on DFDC but to high performance on KoDF with
+98.8 AP. Training on LAV-DF [10] leads to almost
+random performance on DFDC but high performance
+on KoDF with 97.9 AP. Training on AV-Deepfake1M
+[8] dataset leads to random performance on DFDC
+but high performance on KoDF with 98.9 AP. In general, very high generalization performance is observed
+on KoDF, although Korean are not recognized by the
+(Ma 2022) backbones, indicating the learning of crosslanguage features by DiMoDif. Also, low generalization is observed on DFDC, which can be partly explained by the discussion in Section 2.2. Our models
+focus on cross-modal speech-related information differences, while many DFDC videos contain multiple
+talking persons12 , moving persons13 or wide shots14
+rendering lip-reading hard, do not contain talking15 or
+the talking person is different from the depicted one16 ;
+thus, visual-only face manipulation detectors lead to
+better generalization in this dataset.
+Table 13 presents cross-dataset performance on TFL
+wrt all AP@{0.5, 0.75, 0.90, 0.95} and AR@{100, 50,
+30, 20, 10, 5} metrics. Cross-dataset performance on
+TFL is shown to be much more challenging than on
+DFD. Also, the results are even worse when training
+on LAV-DF in contrast to AV-Deepfake1M which contains half-sized fake parts, thus presenting a more challenging objective, while also being much larger.
+12 E.g.,
+
+DFDC/test/aalyqplqns.mp4
+DFDC/test/chyfcacfjr.mp4
+14 E.g., DFDC/test/ljnjhvpnhq.mp4"
+15 E.g., DFDC/test/aarpyivfys.mp4
+16 E.g., DFDC/test/mfjljhqhca.mp4
+13 E.g.,
+
+Table 14 provides a more detailed generalization
+evaluation on the FakeAVCeleb dataset with scores
+per forgery type, indicating the effectiveness of training on AV-Deepfake1M reaching 99.2 AP & 95.5 AUC
+(AVG-FV) and 93.9 AP & 95.5 AUC (RVFA). Training
+on LAV-DF also results in good generalization reaching 98.5 AP & 91.2 AUC (AVG-FV) and 81.3 AP
+& 76.8 AUC (RVFA). Note, that this is not a crossmanipulation analysis as the models trained on LAVDF and AV-Deepfake1M datasets have seen all manipulation types (RVRA, RVFA, FVFA, FVRA). Thus,
+metrics of the 2nd and 3rd rows are comparable but
+the 1st row (showing cross-manipulation performance)
+is only provided for reference and is not comparable
+with the other two.
+
+G
+
+Real-world analysis
+
+Table 15 provides further information on the set of
+videos used for the real-world analysis. Specifically,
+
+16
+
+we provide the public URL (if exists), the spoken language, the duration of the video, the processing (by
+DiMoDif) time, and the Coverage score c. Language
+has been automatically retrieved through https://
+speechbrain.github.io/. Finally, 16 of the videos
+do not have public URLs.
+
+H
+
+Error analysis
+
+Figure 16 presents two examples of DiMoDif’s misclassifications. Specifically, in the real video shown
+in fig. 16a, a non-verbal vocalization (panting imitation) between 6.3s and 7.3s is incorrectly interpreted
+as inconsistency, leading DiMoDif to assign a high fake
+probability to those frames. In contrast, fig. 16b features a visual-only manipulated segment from 0.3s to
+0.78s; here, despite a slight reduction in cross-modal inconsistency, the high fidelity of the utterance deceives
+the model.
+
+FakeAVCeleb
+FVFA
+FVRA
+RVFA
+RVRA
+total
+
+LAV-DF
+
+AV-Deepfake1M
+
+train
+
+val
+
+test
+
+total
+
+train
+
+val
+
+test
+
+total
+
+train
+
+val
+
+test
+
+total
+
+6,996
+6,363
+326
+13,689
+27,374
+
+561
+470
+24
+22
+1,077
+
+3,278
+2,876
+150
+160
+6,464
+
+10,835
+9,709
+500
+13,871
+34,915
+
+19,090
+19,271
+19,088
+21,254
+78,703
+
+7,701
+7,820
+7,709
+8,271
+31,501
+
+6,369
+6,452
+6,373
+6,906
+26,100
+
+33,160
+33,543
+33,170
+36,431
+136,304
+
+186,344
+186,597
+186,573
+186,666
+746,180
+
+14,515
+14,304
+14,286
+14,235
+57,340
+
+343,240
+
+1,146,760
+
+Table 10: Dataset class and split sizes. F: fake, R: real, V: video, A: audio.
+
+(a) LAV-DF: Window size q
+
+(b) LAV-DF: Feature Pyramid (FP) use
+
+(c) LAV-DF: T ’s size; l & (d, r, d · u)
+
+Figure 8: Ablation and hyperparameter tuning analysis on LAV-DF (TFL).
+
+(a) LAV-DF: Focal loss hyperparmeter α
+
+(b) AV-Deepfake1M: Focal loss hyperparmeter α
+
+(c) LAV-DF: Learning rate scheduler
+
+(d) AV-Deepfake1M: Learning rate scheduler
+
+Figure 9: Ablation and hyperparameter tuning analysis on LAV-DF and AV-Deepfake1M (TFL).
+
+17
+
+(a) FakeAVCeleb: Window size q
+
+(b) LAV-DF: Window size q
+
+(c) AV-Deepfake1M: Window size q
+
+(e) LAV-DF: Feature Pyramid (FP)
+use
+
+(f) AV-Deepfake1M: Feature Pyramid
+(FP) use
+
+(g) FakeAVCeleb: T ’s size; l & (d, r, d ·
+u)
+
+(h) LAV-DF: T ’s size; l & (d, r, d · u)
+
+(i) AV-Deepfake1M: T ’s size; l &
+(d, r, d · u)
+
+(j) FakeAVCeleb: Learning rate scheduler
+
+(k) LAV-DF: Learning rate scheduler
+
+(l) AV-Deepfake1M: Learning rate
+scheduler
+
+(d) FakeAVCeleb:
+(FP) use
+
+Feature Pyramid
+
+Figure 10: Ablation and hyperparameter tuning analysis on FakeAVCeleb, LAV-DF, and AV-Deepfake1M
+(DFD).
+
+18
+
+(a) Real #1: LAV-DF/test/000000.mp4
+
+(b) Real #2: LAV-DF/test/000001.mp4
+
+(c) Real #3: LAV-DF/test/000005.mp4
+
+(d) Real #4: LAV-DF/test/000012.mp4
+
+(e) Real #5: LAV-DF/test/000016.mp4
+
+(f) Real #6: LAV-DF/test/000032.mp4
+
+(g) Real #7: LAV-DF/test/000036.mp4
+
+(h) Real #8: LAV-DF/test/000040.mp4
+
+Figure 11: Cross-modal cosine similarity on DiMoDif’s representations of 8 real examples.
+
+19
+
+(a) Fake #1: LAV-DF/test/000003.mp4
+
+(b) Fake #2: LAV-DF/test/000008.mp4
+
+(c) Fake #3: LAV-DF/test/000011.mp4
+
+(d) Fake #4: LAV-DF/test/000014.mp4
+
+(e) Fake #5: LAV-DF/test/000015.mp4
+
+(f) Fake #6: LAV-DF/test/000018.mp4
+
+(g) Fake #7: LAV-DF/test/000019.mp4
+
+(h) Fake #8: LAV-DF/test/000030.mp4
+
+Figure 12: Cross-modal cosine similarity on DiMoDif’s representations of 8 fake examples.
+
+20
+
+Figure 13: Non-interpretable fake example (LAV-DF/test/000017.mp4).
+
+Figure 14: Robustness to unseen visual perturbations. AVFF and RealForensics performance taken from [54]’s
+supplementary material.
+
+21
+
+Figure 15: Robustness to unseen audio perturbations. AVFF performance taken from [54]’s supplementary
+material.
+
+22
+
+Table 11: Text prediction robustness of DiMoDif’s feature extraction backbones (Ma 2022) [46], to visual and audio distortions for the real video sample: FakeAVCeleb/RealVideo-RealAudio/Caucasian
+(European)/men/id00055/00120.mp4. First row presents predictions on the original video while the next
+ones use versions of it with visual or audio distortions as input. V: transcript from visual input, A: transcript
+from audio input.
+
+Gauss. noise
+
+Video compr.
+
+JPEG compr.
+
+Gauss. blur
+
+Gauss. noise Block-wise
+
+Contrast
+
+Saturation
+
+Dist. Lev. Transcript
+V: you know i played with growing up and always had great ability great talent from a young age
+A: know i played with growing up and he always had great ability great talent from a young age
+Visual distortions
+1
+V: you know i played with growing up and always had great ability great talent from a young age
+2
+V: how i played with growing up and always had great ability great talent from a young age
+3
+V: you know i played with growing up and always had great ability great talent from a young age
+4
+V: yeah i played with growing up and always had great ability great talent from a young age
+5
+V: yeah i played with growing up and always had great ability great talent from a young age
+1
+V: yeah i played with growing up and always had a great ability great talent from a young age
+2
+V: how i played with growing up and always had great ability great talent from a young age
+3
+V: played with growing up and always had great ability great talent from a young age
+4
+V: you know i played with growing up and always had great ability great talent from a young age
+5
+V: yeah i played with harold growing up and he always had great ability great talent from a young
+age
+1
+V: yeah i played with growing up and always had great ability great talent from a young age
+2
+V: yeah i played with growing up and always had great ability great talent from a young age
+3
+V: yeah i played with growing up and always had great ability great talent from a young age
+4
+V: yeah i played with growing up and always had great ability great talent from a young age
+5
+V: yeah i played with growing up and always had great ability great talent from a young age
+1
+V: i played with carol growing up and he always had a great ability great talent from a young age
+2
+V: i played with her growing up and it was a great ability great talent from a young age
+3
+V: everybody was scared of growing up with this great ability great talent from a young age
+4
+V: our plan was to start growing up and you can see how i beat the grass down from the high
+5
+V: 1
+V: i played with growing up and always had great ability great talent from a young age
+2
+V: how i played with carol growing up and he always had a great ability great talent from a young
+age
+3
+V: how i played with carol growing up and he always has a great ability great talent from a young
+age
+4
+V: how i played with carol growing up he always has great ability great talent from a young age
+5
+V: now i played with carol growing up he always had great ability great talent from a young age
+1
+V: you know i played with growing up and always had great ability great talent from a young age
+2
+V: i played with growing up and always had great ability great talent from a young age
+3
+V: now i’m here with the care of growing up and i always like to see the great ability to raise hands
+for without hands
+4
+V: i will play with you the character i’ll be happy once i turn to you i’ll play you as i grew up in
+high
+5
+V: there were pictures of his car flipped up so he said to the red bricks at the right angle that’s
+1
+V: yeah i played with growing up and always had great ability great talent from a young age
+2
+V: how i played with how i’ve grown up and always had the right ability the right talent from a
+young age
+3
+V: a little bit we’ve now grown up and we’re starting to create building a great town from a young
+age
+4
+V: now i’ll be able to fire from the camera you know adjust it to the front but the right hand will
+be high
+5
+V: i’ll make sure it’s just a narrow volume count it will take you to the right place and the right
+hand will be high
+Audio distortions
+1
+A: know i played with growing up and he always had great ability great talent from a young age
+2
+A: know i played with growing up and he always had great ability great talent from a young age
+3
+A: know i played with growing up and he always had great ability great talent from a young age
+4
+A: know i played with growing up and he always had great ability great talent from a young age
+5
+A: know i played with growing up and he always had great ability great talent from a young age
+
+23
+
+Audio compr. Reverberence Pitch shift
+
+1
+2
+3
+4
+5
+1
+2
+3
+4
+5
+1
+2
+3
+4
+5
+
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+A:
+
+know i played with growing up and he always had great ability great talent from a young age
+yeah i played with growing up and he always had great ability great talent from a young age
+you know papers cars growing up and it was a great time for the young age
+yeah played of gaff growing up and he was a great and it’s a great kind of for a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+know i played with growing up and he always had great ability great talent from a young age
+
+24
+
+Training
+dataset
+
+Test dataset
+
+FakeAVCeleb [36]
+LAV-DF [10]
+AV-Deepfake1M [8]
+
+DFDC [21]
+
+KoDF [38]
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+60.8
+52.9
+50.5
+
+58.9
+54.5
+49.8
+
+98.8
+97.9
+98.9
+
+69.9
+56.7
+72.8
+
+Table 12: Generalization on Deepfake detection task.
+
+AP@0.5
+
+AP@0.75
+
+AP@0.9
+
+AP@0.95
+
+LAV-DF [10]
+AV-Deepfake1M [8]
+
+95.5
+59.8
+
+87.9
+26.2
+
+54.6
+2.3
+
+20.6
+0.2
+
+LAV-DF [10]
+AV-Deepfake1M [8]
+
+16.8
+96.0
+
+4.6
+86.2
+
+0.3
+34.5
+
+0.0
+6.9
+
+AR@100
+
+AR@50
+
+AR@30
+
+AR@20
+
+AR@10
+
+AR@5
+
+93.2
+69.7
+
+92.7
+67.3
+
+91.4
+62.5
+
+89.2
+56.2
+
+27.0
+87.7
+
+23.6
+86.4
+
+19.9
+84.3
+
+Training dataset
+
+Test dataset: LAV-DF
+94.2
+75.3
+
+93.7
+72.3
+
+Test dataset: AV-Deepfake1M
+31.9
+89.2
+
+30.1
+88.7
+
+28.6
+88.2
+
+Table 13: Generalization performance on Temporal Forgery Localization task.
+
+Category
+Training dataset
+FakeAVCeleb [36]
+LAV-DF [10]
+AV-Deepfake1M [8]
+
+RVFA
+
+FVRA-WL
+
+FVFA-WL
+
+FVFA-FS
+
+FVFA-GAN
+
+AVG-FV
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+AP
+
+AUC
+
+66.4
+81.3
+93.9
+
+51.6
+76.8
+95.5
+
+100.
+98.8
+98.2
+
+99.8
+90.8
+88.6
+
+100.
+98.8
+99.7
+
+100.
+91.6
+98.1
+
+100.
+98.2
+99.4
+
+100.
+91.8
+97.8
+
+100.
+98.3
+99.4
+
+100.
+90.4
+97.5
+
+100.
+98.5
+99.2
+
+99.9
+91.2
+95.5
+
+Table 14: Detailed generalization performance for each forgery type of the FakeAVCeleb dataset.
+
+25
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+real #1
+
+https://www.youtube.com/watch?v=
+bej61P8YaXo
+https://www.youtube.com/watch?v=
+wgx5neIx6qc
+https://www.youtube.com/watch?v=
+_4PKe8WGCPg
+https://www.youtube.com/watch?v=
+MBFnZhUq-Es
+https://www.instagram.com/zelenskyy_
+official/p/CaaFzibgLES/
+https://www.youtube.com/watch?v=
+NrDtNOiP65U
+https://www.instagram.com/zelenskyy_
+official/p/CZKXF33KqEl/
+https://www.youtube.com/watch?v=
+Cz2mFOJLaRI
+https://www.youtube.com/watch?v=
+CInwveNLUmA
+https://www.instagram.com/zelenskyy_
+official/p/CaBw7eNIDKp/
+https://www.youtube.com/watch?v=
+GdxofSvTYUI
+https://www.youtube.com/watch?v=
+4WpjgtK2ryo
+https://www.youtube.com/watch?v=
+qPVVAy9df_Y
+https://www.youtube.com/watch?v=
+s9s-4b5hYpw
+https://www.youtube.com/watch?v=
+xVwU-YMgHvo
+https://www.youtube.com/watch?v=
+rWi3T9okyvA
+https://www.instagram.com/zelenskyy_
+official/p/CVvedjElHwX/
+https://www.youtube.com/watch?v=
+hHV4DEvattM
+https://www.youtube.com/watch?v=
+HU2wY17Umzg
+https://www.youtube.com/watch?v=
+taykmAyaw-Q
+https://www.youtube.com/watch?v=
+Qc5hwRAXVXs
+https://www.youtube.com/watch?v=
+zdH0FhnBWwY
+https://www.instagram.com/zelenskyy_
+official/p/CakB_4yAUsa/
+https://www.youtube.com/watch?v=
+75g7cA-_SEI
+https://www.youtube.com/watch?v=
+Hl9Sp5xJxwk
+
+Russian
+
+00:00:47
+
+0:01:31
+
+0.198
+
+Russian
+
+00:01:16
+
+0:01:03
+
+0.059
+
+Russian
+English
+
+00:02:00
+00:14:27
+
+0:01:36
+0:22:50
+
+0.177
+0.105
+
+Ukrainian
+
+00:01:04
+
+0:00:44
+
+0.119
+
+Russian
+
+00:00:32
+
+0:00:27
+
+0.063
+
+Russian
+
+00:01:08
+
+0:00:57
+
+0.081
+
+Ukrainian
+
+00:04:05
+
+0:03:18
+
+0.041
+
+Russian
+
+00:01:34
+
+0:03:10
+
+0.118
+
+English
+
+00:01:34
+
+0:02:53
+
+0.073
+
+Ukrainian
+
+00:01:07
+
+0:00:55
+
+0.028
+
+English
+
+00:03:05
+
+0:05:40
+
+0.031
+
+Russian
+
+00:01:00
+
+0:01:51
+
+0.051
+
+Italian
+Russian
+
+00:01:03
+00:11:13
+
+0:00:51
+0:09:27
+
+0.295
+0.415
+
+Russian
+
+00:01:06
+
+0:00:59
+
+0.094
+
+Italian
+English
+
+00:01:13
+00:07:01
+
+0:00:59
+0:10:50
+
+0.061
+0.197
+
+Russian
+
+00:02:19
+
+0:02:23
+
+0.053
+
+Russian
+
+00:08:29
+
+0:07:00
+
+0.159
+
+Russian
+
+00:00:56
+
+0:01:00
+
+0.156
+
+English
+
+00:01:03
+
+0:02:49
+
+0.204
+
+Italian
+Russian
+
+00:02:00
+00:02:19
+
+0:01:24
+0:01:35
+
+0.025
+0.165
+
+Russian
+
+00:03:54
+
+0:04:03
+
+0.1
+
+Russian
+Russian
+
+00:02:30
+00:00:51
+
+0:01:42
+0:01:43
+
+0.343
+0.0
+
+Ukrainian
+
+00:06:33
+
+0:05:21
+
+0.611
+
+Russian
+
+00:02:12
+
+0:04:47
+
+0.095
+
+German
+
+00:03:34
+
+0:02:30
+
+0.163
+
+real #2
+real #3
+real #4
+real #5
+real #6
+real #7
+real #8
+real #9
+real #10
+real #11
+real #12
+real #13
+real #14
+real #15
+real #16
+real #17
+real #18
+real #19
+real #20
+real #21
+real #22
+real #23
+real #24
+real #25
+real #26
+real #27
+real #28
+real #29
+real #30
+
+Continued on next page
+26
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+real #31
+
+https://www.youtube.com/watch?v=
+caxMBk1__-Y
+https://www.youtube.com/watch?v=
+hQ58Yv6kP44
+https://www.youtube.com/watch?v=
+nDzX13RHTXI
+https://www.instagram.com/zelenskyy_
+official/p/CUHvAc9AFoX/
+https://www.youtube.com/watch?v=
+7WUyEPkGnAc
+https://www.youtube.com/watch?v=
+ujCFOPfqJbQ
+https://www.youtube.com/watch?v=
+BEh1Fr-BaN8
+https://www.instagram.com/zelenskyy_
+official/p/CaklNXjAYz3/
+https://www.youtube.com/watch?v=_g_
+AP4hhGQM
+https://www.youtube.com/watch?v=
+DPIR4EmaDDE
+https://www.instagram.com/zelenskyy_
+official/p/CaokxUWARj7/
+https://www.youtube.com/watch?v=
+rZ2J4b-dkUs
+https://www.instagram.com/zelenskyy_
+official/p/CaorkbdgSv4/
+https://www.instagram.com/zelenskyy_
+official/p/Cab8euXgtyF/
+https://www.youtube.com/watch?v=
+2Vmx47wsOBQ
+https://www.instagram.com/zelenskyy_
+official/p/CaUvEpaAKWj/
+https://www.youtube.com/watch?v=
+cxKn2sv2cgQ
+https://www.youtube.com/watch?v=
+zHdj1HW4cQw
+https://www.youtube.com/watch?v=36_
+Vj3N3oIk
+https://www.youtube.com/watch?v=
+prfaWHQoxVg
+https://www.youtube.com/watch?v=
+M0iV5vIABX0
+https://www.instagram.com/zelenskyy_
+official/p/CWh0pPuFOTA/
+https://www.youtube.com/watch?v=
+hLCGKRF3YAI
+https://www.youtube.com/watch?v=
+1CnyqLogH0Y
+
+English
+
+00:03:41
+
+0:02:52
+
+0.105
+
+Italian
+Russian
+
+00:02:00
+00:30:46
+
+0:01:26
+0:37:10
+
+0.0
+0.391
+
+Arabic
+
+00:46:26
+
+0:53:14
+
+0.094
+
+Ukrainian
+
+00:01:42
+
+0:01:20
+
+0.13
+
+Russian
+
+00:00:37
+
+0:00:38
+
+0.104
+
+Russian
+
+00:08:13
+
+0:08:51
+
+0.116
+
+English
+
+00:01:46
+
+0:01:17
+
+0.031
+
+Russian
+
+00:14:02
+
+0:12:36
+
+0.085
+
+Russian
+
+00:02:04
+
+0:02:08
+
+0.025
+
+Russian
+
+00:01:16
+
+0:01:00
+
+0.033
+
+Ukrainian
+
+00:08:25
+
+0:13:16
+
+0.066
+
+English
+
+00:00:29
+
+0:00:58
+
+0.535
+
+Ukrainian
+
+00:07:04
+
+0:11:44
+
+0.05
+
+Russian
+
+00:05:16
+
+0:04:22
+
+0.046
+
+Russian
+
+00:00:53
+
+0:00:36
+
+0.034
+
+Italian
+Italian
+Ukrainian
+
+00:02:00
+00:02:00
+00:00:41
+
+0:01:28
+0:01:34
+0:01:11
+
+0.024
+0.107
+0.026
+
+Ukrainian
+
+00:05:34
+
+0:10:49
+
+0.048
+
+Russian
+
+00:02:06
+
+0:04:59
+
+0.17
+
+Russian
+Ukrainian
+
+00:02:30
+00:06:02
+
+0:01:42
+0:13:33
+
+0.268
+0.035
+
+Russian
+
+00:01:25
+
+0:01:17
+
+0.037
+
+English
+
+00:01:36
+
+0:01:20
+
+0.076
+
+Ukrainian
+
+00:07:10
+
+0:13:56
+
+0.09
+
+Russian
+
+00:01:47
+
+0:01:45
+
+0.162
+
+Russian
+Italian
+Russian
+
+00:02:24
+00:01:00
+00:01:40
+
+0:04:14
+0:00:51
+0:01:29
+
+0.349
+0.378
+0.127
+
+real #32
+real #33
+real #34
+real #35
+real #36
+real #37
+real #38
+real #39
+real #40
+real #41
+real #42
+real #43
+real #44
+real #45
+real #46
+real #47
+real #48
+real #49
+real #50
+real #51
+real #52
+real #53
+real #54
+real #55
+real #56
+real #57
+real #58
+real #59
+real #60
+
+Continued on next page
+
+27
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+real #61
+
+https://www.youtube.com/watch?v=
+WhqVwPYOY7M
+https://www.youtube.com/watch?v=
+TFl2nfPoxVk
+https://www.instagram.com/zelenskyy_
+official/p/CZEnvm0KdQv/
+https://www.youtube.com/watch?v=
+2ze4gImZADM
+https://www.youtube.com/watch?v=
+TccwMWVtmj0
+https://www.youtube.com/watch?v=
+J55cSx8Rz_g
+https://www.instagram.com/zelenskyy_
+official/p/Cal8YaIFOqM/
+https://www.instagram.com/zelenskyy_
+official/p/CYmeFavK7wC/
+https://www.instagram.com/zelenskyy_
+official/p/CaKjFkXAhts/
+https://www.youtube.com/watch?v=
+ndNyE7f0NVs
+https://www.youtube.com/watch?v=
+iCOwqJ8kLCM
+https://www.youtube.com/watch?v=
+NdUkaFnunKw
+https://twitter.com/i/status/
+1174316798700924929
+https://www.threads.net/@cj_wirenut/
+post/C8atfbOtQ4U
+https://www.dropbox.com/s/
+o7ndovcsycfchl3/HaoLi-UNIDIR3.mp4
+https://twitter.com/reface_app/
+status/1352274324040908801
+https://twitter.com/kaikertv/status/
+1284053913516179457
+https://twitter.com/PhilEhr/status/
+1311667726742560769
+https://twitter.com/facemagic_app/
+status/1404091187728896000
+https://twitter.com/ThiudaDeepfakes/
+status/1429455322389827592
+https://www.instagram.com/p/C3z9bv_
+u2KH/
+https://www.dropbox.com/s/
+ej7swf300aynlsz/HaoLi-UNIDIR7.mp4
+https://twitter.com/dw_sports/
+status/1405602671525040142
+https://twitter.com/facemagic_app/
+status/1426257244728004611
+https://twitter.com/larrykim/status/
+1228979054579073024
+https://twitter.com/EddiePozos_
+/status/1365420001327337474
+
+Ukrainian
+
+00:03:45
+
+0:03:00
+
+0.14
+
+Russian
+Russian
+
+00:02:27
+00:00:41
+
+0:04:28
+0:00:35
+
+0.056
+0.049
+
+Russian
+
+00:01:06
+
+0:00:55
+
+0.025
+
+Russian
+
+00:01:46
+
+0:01:36
+
+0.03
+
+English
+
+00:08:02
+
+0:07:17
+
+0.03
+
+Russian
+
+00:00:34
+
+0:01:17
+
+0.144
+
+Ukrainian
+
+00:08:04
+
+0:06:47
+
+0.048
+
+Russian
+Russian
+English
+
+00:01:18
+00:02:09
+00:02:14
+
+0:02:16
+0:01:26
+0:04:04
+
+0.286
+0.155
+0.032
+
+Ukrainian
+
+00:19:01
+
+0:15:29
+
+0.336
+
+Russian
+
+00:02:28
+
+0:01:42
+
+0.0
+
+Russian
+
+00:00:58
+
+0:00:47
+
+0.051
+
+Russian
+
+00:01:23
+
+0:01:08
+
+0.04
+
+English
+
+00:02:07
+
+0:01:58
+
+0.339
+
+English
+
+00:00:23
+
+0:00:19
+
+0.342
+
+English
+
+00:00:59
+
+0:00:47
+
+0.415
+
+French
+
+00:00:15
+
+0:00:11
+
+0.0
+
+French
+
+00:00:32
+
+0:00:31
+
+0.0
+
+English
+
+00:00:59
+
+0:00:49
+
+0.119
+
+HakhaChin
+Breton
+
+00:00:23
+
+0:00:18
+
+0.0
+
+00:00:13
+
+0:00:18
+
+0.849
+
+English
+
+00:02:17
+
+0:01:52
+
+0.336
+
+English
+
+00:00:59
+
+0:00:48
+
+0.426
+
+French
+
+00:00:44
+
+0:00:57
+
+0.0
+
+English
+
+00:00:21
+
+0:00:18
+
+0.0
+
+French
+
+00:01:26
+
+0:01:12
+
+0.22
+
+Persian
+
+00:00:11
+
+0:00:10
+
+0.603
+
+real #62
+real #63
+real #64
+real #65
+real #66
+real #67
+real #68
+real #69
+real #70
+real #71
+real #72
+real #73
+real #74
+real #75
+fake #1
+fake #2
+fake #3
+fake #4
+fake #5
+fake #6
+fake #7
+fake #8
+fake #9
+fake #10
+fake #11
+fake #12
+fake #13
+fake #14
+
+Continued on next page
+28
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+fake #15
+
+https://twitter.com/sumitsaurabh/
+Tamil
+status/1324424493717049344
+https://twitter.com/CestCanteloup/
+French
+status/1315576171803938817
+https://twitter.com/welcomeai/
+Esperanto
+status/1090256517666885632
+https://www.facebook.com/plugins/
+English
+video.php?height=476&href=
+https%3A%2F%2Fwww.facebook.
+com%2F61551008896469%2Fvideos%
+2F878366723849002%2F&show_text=true&
+width=476&t=0
+https://www.youtube.com/watch?v=
+English
+9ccd3LMNMl8
+https://twitter.com/facemagic_app/
+Persian
+status/1419311479065518083
+https://fb.watch/vEHrmibPaG/
+English
+https://twitter.com/facemagic_app/
+English
+status/1431270277506166796
+https://packaged-media.redd.it/
+English
+e4bntb4wn74a1/pb/m2-res_720p.mp4?m=
+DASHPlaylist.mpd&v=1&e=1743004800&s=
+c47b62e83cdf59e76e9a1e26a302a02091577c5c
+https://twitter.com/facemagic_app/
+Persian
+status/1408439846474072064
+https://twitter.com/facemagic_app/
+Spanish
+status/1421485812609323011
+https://twitter.com/facemagic_app/
+Hakhastatus/1430545513955221508
+Chin
+English
+https://www.facebook.com/plugins/
+video.php?height=476&href=
+https%3A%2F%2Fwww.facebook.
+com%2F61552447227376%2Fvideos%
+2F870526964468908%2F&show_text=
+false&width=476&t=0
+https://twitter.com/hytel/status/
+English
+1425631238208081924
+https://twitter.com/Happy_Finish/
+English
+status/1091007206944919559
+https://twitter.com/FutureAdvocacy/
+Welsh
+status/1194148111121354752
+https://twitter.com/facemagic_app/
+English
+status/1404453586382188550
+https://twitter.com/facemagic_app/
+Persian
+status/1426559247043674112
+https://twitter.com/facemagic_app/
+Breton
+status/1428371186468098064
+https://twitter.com/brianmonarch/
+English
+status/1307037446056677382
+https://www.bitchute.com/video/
+English
+8ZGoBmGmKtgi
+https://twitter.com/facemagic_app/
+French
+status/1424384912723824641
+https://www.bitchute.com/video/
+English
+ChybNNbjEEOd
+
+fake #16
+fake #17
+fake #18
+
+fake #19
+fake #20
+fake #21
+fake #22
+fake #23
+
+fake #24
+fake #25
+fake #26
+fake #27
+
+fake #28
+fake #29
+fake #30
+fake #31
+fake #32
+fake #33
+fake #34
+fake #35
+fake #36
+fake #37
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+00:00:09
+
+0:00:09
+
+0.643
+
+00:00:41
+
+0:00:35
+
+0.041
+
+00:00:55
+
+0:00:38
+
+0.4
+
+00:01:49
+
+0:01:36
+
+0.279
+
+00:33:15
+
+0:24:34
+
+0.21
+
+00:00:10
+
+0:00:10
+
+0.19
+
+00:01:18
+00:00:11
+
+0:01:08
+0:00:11
+
+0.306
+0.233
+
+00:00:16
+
+0:00:16
+
+0.546
+
+00:00:12
+
+0:00:11
+
+0.0
+
+00:00:12
+
+0:00:12
+
+0.223
+
+00:00:11
+
+0:00:12
+
+0.463
+
+00:01:42
+
+0:01:30
+
+0.159
+
+00:00:43
+
+0:00:38
+
+0.275
+
+00:01:16
+
+0:01:08
+
+0.264
+
+00:01:11
+
+0:00:59
+
+0.045
+
+00:00:14
+
+0:00:14
+
+0.0
+
+00:00:15
+
+0:00:13
+
+0.0
+
+00:00:44
+
+0:00:36
+
+0.427
+
+00:00:59
+
+0:00:54
+
+0.446
+
+00:00:37
+
+0:00:32
+
+0.369
+
+00:00:17
+
+0:00:14
+
+0.0
+
+00:02:16
+
+0:01:55
+
+0.114
+
+Continued on next page
+29
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+fake #38
+
+https://twitter.com/CestCanteloup/
+status/1277896113618669569
+https://www.dropbox.com/s/
+5ll22su3gzc4qyn/HaoLi-UNIDIR4.mp4
+https://twitter.com/facemagic_app/
+status/1406627903249518596
+https://www.dropbox.com/s/
+b9o21z834kwi59s/HaoLi-UNIDIR1.mp4
+https://twitter.com/insanedio/
+status/1308620241732157440
+https://www.youtube.com/watch?v=
+J7WqjrtJHkk
+https://www.facebook.com/
+100092555835479/posts/
+1389999691891907/
+https://twitter.com/facemagic_app/
+status/1410251795348271126
+https://www.facebook.com/
+100095605808597/posts/
+3495941347387764/
+https://twitter.com/stephaniemain2/
+status/1315238754148212736
+https://twitter.com/Seekthetruth101/
+status/1308135272706695169
+https://twitter.com/facemagic_app/
+status/1416774762441830406
+https://twitter.com/facemagic_app/
+status/1426921628462567424
+https://twitter.com/EvanKirstel/
+status/1268984667153276928
+https://twitter.com/drfakenstein/
+status/1259838123468632065
+https://twitter.com/facemagic_app/
+status/1429095960093790210
+https://www.bitchute.com/video/
+sq78wmU60uHY
+https://twitter.com/KRMTRoySuryo2/
+status/1327286419857915910
+https://media2.ellinikahoaxes.
+gr/uploads/2024/10/
+video-isxurismou-deepfake.mp4
+https://www.facebook.com/
+EtzrodtJaimeeShuler/posts/
+7939864682747869/
+https://twitter.com/sp_a/status/
+998089909369016325
+https://twitter.com/drfakenstein/
+status/1171638420822736897
+https://twitter.com/facemagic_app/
+status/1420761028468649985
+
+French
+
+00:00:51
+
+0:00:39
+
+0.153
+
+English
+
+00:00:59
+
+0:00:47
+
+0.201
+
+English
+
+00:00:23
+
+0:00:18
+
+0.683
+
+English
+
+00:00:59
+
+0:00:46
+
+0.504
+
+Spanish
+
+00:00:44
+
+0:00:35
+
+0.391
+
+Welsh
+
+00:00:50
+
+0:00:42
+
+0.07
+
+Romanian
+
+00:00:15
+
+0:00:14
+
+0.115
+
+English
+
+00:00:19
+
+0:00:16
+
+0.058
+
+Romanian
+
+00:01:04
+
+0:00:45
+
+0.79
+
+Esperanto
+
+00:00:15
+
+0:00:10
+
+0.322
+
+English
+
+00:02:09
+
+0:01:48
+
+0.174
+
+English
+
+00:00:16
+
+0:00:13
+
+0.594
+
+Dhivehi
+
+00:00:13
+
+0:00:13
+
+0.752
+
+English
+
+00:01:01
+
+0:00:51
+
+0.174
+
+English
+
+00:00:57
+
+0:00:47
+
+0.431
+
+English
+
+00:00:24
+
+0:00:20
+
+0.259
+
+German
+
+00:00:44
+
+0:01:08
+
+0.365
+
+Spanish
+
+00:00:50
+
+0:00:37
+
+0.801
+
+English
+
+00:00:09
+
+0:00:09
+
+0.04
+
+English
+
+00:02:03
+
+0:01:55
+
+0.322
+
+English
+
+00:00:54
+
+0:00:39
+
+0.269
+
+ChineseTaiwan
+English
+
+00:00:59
+
+0:00:49
+
+0.017
+
+00:00:16
+
+0:00:15
+
+0.032
+
+fake #39
+fake #40
+fake #41
+fake #42
+fake #43
+fake #44
+
+fake #45
+fake #46
+
+fake #47
+fake #48
+fake #49
+fake #50
+fake #51
+fake #52
+fake #53
+fake #54
+fake #55
+fake #56
+
+fake #57
+
+fake #58
+fake #59
+fake #60
+
+Continued on next page
+
+30
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+fake #61
+
+https://www.facebook.com/plugins/
+English
+00:01:40
+0:01:27
+video.php?height=476&href=
+https%3A%2F%2Fwww.facebook.com%
+2F100089533433509%2Fvideos%
+2F897022265405097%2F&show_text=
+false&width=476&t=0
+https://twitter.com/hwingo/status/
+English
+00:01:35
+0:01:09
+1090809957342154752
+https://twitter.com/facemagic_app/
+Chinese00:00:22
+0:00:17
+status/1426196858418843655
+Taiwan
+https://www.facebook.com/plugins/
+English
+00:01:40
+0:01:26
+video.php?height=476&href=
+https%3A%2F%2Fwww.facebook.
+com%2F61550777281885%2Fvideos%
+2F1992291657812664%2F&show_text=
+false&width=476&t=0
+https://web.archive.org/web/
+Czech
+00:01:03
+0:00:50
+20240816152954if_/https:
+//video.xx.fbcdn.net/v/t42.
+1790-2/453528538_3676577589299215_
+6162862663998579296_n.mp4?_nc_
+cat=106&ccb=1-7&_nc_sid=55d0d3&efg=
+eyJ2ZW5jb2RlX3RhZyI6InN2ZV9zZCIsInZpZGVvX2lkIjo1MDc0Nzc3NTQ5OTkxNjF9&
+_nc_ohc=fI8yJJw2qCkQ7kNvgG5DX0W&
+_nc_ht=scontent.fprg1-1.fna&oh=00_
+AYD-yhNK-2jlWPV8DVBgUL2KpMUOMiMbue1ss52pCISILg&
+oe=66C548DA
+https://twitter.com/facemagic_app/
+English
+00:00:25
+0:00:20
+status/1401916866038169601
+Russian
+00:00:19
+0:00:17
+https://video.twimg.com/ext_tw_
+video/1407579338531291138/pu/vid/
+320x568/nNPZ0rn3C9kFsr_P.mp4
+https://twitter.com/facemagic_app/
+English
+00:00:16
+0:00:15
+status/1409889406404726784
+https://twitter.com/adrlenard/
+English
+00:00:21
+0:00:18
+status/1172567432239751168
+https://twitter.com/facemagic_app/
+Esperanto
+00:00:27
+0:00:19
+status/1428008798317387777
+https://twitter.com/i/status/
+French
+00:00:16
+0:00:14
+1095597694712799232
+https://twitter.com/PapillonFlacko/
+Kabyle
+00:02:18
+0:01:40
+status/1282885977518809089
+https://twitter.com/facemagic_app/
+French
+00:00:10
+0:00:11
+status/1417861927808606212
+https://twitter.com/facemagic_app/
+Hakha00:00:19
+0:00:16
+status/1406265519234224132
+Chin
+https://www.bitchute.com/video/
+English
+00:00:26
+0:00:23
+bvJsG8fyeCTt
+English
+00:00:27
+0:00:22
+https://www.tiktok.com/@jbviet/
+French
+00:00:18
+0:00:16
+video/6994005244309032197
+https://twitter.com/facemagic_app/
+Romansh00:00:18
+0:00:14
+status/1424747301277364229
+Sursilvan
+https://www.facebook.com/Jmvgames/
+English
+00:01:16
+0:01:05
+videos/821549489686229
+
+fake #62
+fake #63
+fake #64
+
+fake #65
+
+fake #66
+fake #67
+
+fake #68
+fake #69
+fake #70
+fake #71
+fake #72
+fake #73
+fake #74
+fake #75
+fake #76
+fake #77
+fake #78
+fake #79
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+0.292
+
+0.089
+0.253
+0.323
+
+0.661
+
+0.809
+0.242
+
+0.0
+0.264
+0.0
+0.0
+0.326
+0.72
+0.424
+0.192
+0.355
+0.136
+0.613
+0.447
+
+Continued on next page
+31
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+fake #80
+
+https://twitter.com/facemagic_app/
+status/1430183118808387585
+https://twitter.com/CestCanteloup/
+status/1276794899355049984
+https://twitter.com/Nosetwittears/
+status/1425532656532475919
+https://x.com/TheBabylonBee/status/
+1836518555648692570
+https://twitter.com/GACrewFans/
+status/1308559503462297600
+https://www.facebook.com/plugins/
+video.php?height=476&href=
+https%3A%2F%2Fwww.facebook.com%
+2FNwadshairnnails%2Fvideos%
+2F203824829410862%2F&show_text=
+false&width=476&t=0
+https://twitter.com/RT_com/status/
+1308410711027089411
+https://twitter.com/Knuckle_HeadTV/
+status/1426780954056658947
+https://twitter.com/GeorgeTakei/
+status/1269459672714694661
+https://www.dropbox.com/s/
+d0qfadmo05ckdoj/HaoLi-UNIDIR8.mp4
+https://twitter.com/nuweverse/
+status/1320405519438405634
+https://twitter.com/NuritBen/status/
+1284084875897778177
+https://media2.ellinikahoaxes.
+gr/uploads/2024/06/447088377_
+986072086506420_2750102588021047120_
+n.mp4
+https://twitter.com/simerazzi/
+status/1333843243516223488
+https://twitter.com/facemagic_app/
+status/1411701337981661192
+https://twitter.com/facemagic_app/
+status/1427284018979090433
+https://twitter.com/callmeuschi/
+status/1377599278252707845?s=21
+https://twitter.com/facemagic_app/
+status/1427646404344700928
+https://twitter.com/facemagic_app/
+status/1411338949977591812
+https://twitter.com/facemagic_app/
+status/1430183114337361931
+https://www.dailymotion.com/video/
+x7mf9hf
+https://www.dropbox.com/s/
+6v58miw1o7c015z/HaoLi-UNIDIR2.mp4
+https://www.facebook.com/
+100001934236498/videos/
+594209412579621/
+
+Welsh
+
+00:00:11
+
+0:00:12
+
+0.038
+
+French
+
+00:00:46
+
+0:00:37
+
+0.107
+
+English
+
+00:00:17
+
+0:00:14
+
+0.055
+
+English
+
+00:01:55
+
+0:01:36
+
+0.151
+
+English
+
+00:00:14
+
+0:00:11
+
+0.0
+
+English
+
+00:01:42
+
+0:01:27
+
+0.303
+
+Dhivehi
+
+00:02:02
+
+0:01:42
+
+0.191
+
+RomanshSursilvan
+English
+
+00:01:00
+
+0:00:50
+
+0.216
+
+00:01:22
+
+0:02:02
+
+0.025
+
+English
+
+00:00:59
+
+0:00:50
+
+0.508
+
+English
+
+00:00:10
+
+0:00:10
+
+0.35
+
+Welsh
+
+00:01:09
+
+0:01:02
+
+0.107
+
+Greek
+
+00:03:57
+
+0:03:08
+
+0.671
+
+Kabyle
+
+00:00:15
+
+0:00:12
+
+0.907
+
+HakhaChin
+English
+
+00:00:08
+
+0:00:09
+
+0.236
+
+00:00:33
+
+0:00:26
+
+0.436
+
+English
+
+00:00:17
+
+0:00:14
+
+0.231
+
+English
+
+00:00:16
+
+0:00:15
+
+0.033
+
+English
+
+00:00:18
+
+0:00:15
+
+0.303
+
+English
+
+00:00:28
+
+0:00:21
+
+0.131
+
+English
+English
+
+00:00:28
+00:03:02
+
+0:00:26
+0:02:11
+
+0.079
+0.122
+
+English
+
+00:00:59
+
+0:00:49
+
+0.491
+
+English
+
+00:01:39
+
+0:01:23
+
+0.252
+
+fake #81
+fake #82
+fake #83
+fake #84
+fake #85
+
+fake #86
+fake #87
+fake #88
+fake #89
+fake #90
+fake #91
+fake #92
+
+fake #93
+fake #94
+fake #95
+fake #96
+fake #97
+fake #98
+fake #99
+fake #100
+fake #101
+fake #102
+fake #103
+
+Continued on next page
+
+32
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+fake #104
+
+https://www.dropbox.com/s/
+English
+00:00:59
+0:00:47
+0.444
+8n7o5ajkllw4wgm/HaoLi-UNIDIR6.mp4
+https://web.archive.org/web/
+Czech
+00:00:53
+0:00:46
+0.242
+20240821053915if_/https:
+//video-lga3-2.xx.fbcdn.
+net/o1/v/t2/f2/m69/
+An862HN9EEl8l00qEY6Y09SfPqP08f9VqMtlf4F9ZkQ8cY4H5jrsoEyvCLx4MDKQy0EqvFeuKwZ_
+1zS4s4fmXTNa.mp4?efg=
+eyJ2ZW5jb2RlX3RhZyI6Im9lcF9oZCJ9&
+_nc_ht=video-lga3-2.xx.fbcdn.
+net&_nc_cat=111&strext=1&
+vs=fb8e3bd95d6a8122&_nc_vs=
+HBksFQIYOnBhc3N0aHJvdWdoX2V2ZXJzdG9yZS9HQzgtTHh2U1c0aTF5UkVEQUxrWm1xc25HWEV6Ym1kakFBQUYVAAL
+3D&ccb=9-4&oh=00_
+AYByVnpiEhIPvm2WhRSvuqB-gWs_
+wYumgmOnAvtFGL4NfA&oe=66C748CE&_nc_
+sid=1d576d&_nc_rid=779600729108004&
+_nc_store_type=
+https://media2.ellinikahoaxes.
+Greek
+00:03:58
+0:03:15
+0.673
+gr/uploads/2024/06/
+447071239_3323218401145262_
+6755718274625284919_n.mp4
+https://twitter.com/facemagic_app/
+English
+00:00:12
+0:00:12
+0.542
+status/1415325224468369413
+https://twitter.com/facemagic_app/
+Hakha00:00:12
+0:00:13
+0.0
+status/1431995054181208066
+Chin
+https://twitter.com/DBTagsen_Ofc/
+English
+00:00:16
+0:00:16
+0.0
+status/1312217715050979328
+https://twitter.com/facemagic_app/
+English
+00:00:10
+0:00:11
+0.894
+status/1430907889305194496
+https://twitter.com/SuperHeroAcade/
+English
+00:00:14
+0:00:14
+0.329
+status/1308803743421468677
+https://twitter.com/DrDMemes1/
+English
+00:01:44
+0:01:37
+0.186
+status/1306246535160754177
+https://twitter.com/facemagic_app/
+Dhivehi
+00:00:15
+0:00:14
+0.0
+status/1406990302083272704
+https://www.tiktok.com/@jbviet/
+Chinese00:00:11
+0:00:11
+0.12
+video/6995159085595331846
+China
+https://twitter.com/AllanXia/status/
+Persian
+00:00:26
+0:00:35
+0.373
+1168521996168097793
+https://twitter.com/facemagic_app/
+English
+00:00:21
+0:00:16
+0.247
+status/1414600441049010182
+https://twitter.com/wanmafiq/status/
+Spanish
+00:00:09
+0:00:08
+0.0
+1330742746869420032
+https://twitter.com/versl9/status/
+Russian
+00:00:42
+0:00:36
+0.446
+1281132787089711104
+https://twitter.com/firejapan/
+Breton
+00:00:07
+0:00:08
+0.542
+status/1305133253225922560
+https://twitter.com/stephaniemain2/
+Chinese00:00:11
+0:00:10
+0.542
+status/1326246214078238720
+Taiwan
+https://twitter.com/drfakenstein/
+English
+00:00:27
+0:00:25
+0.602
+status/1171182601563820038
+https://twitter.com/rschu/status/
+English
+00:02:19
+0:02:08
+0.218
+1182372560236888065
+
+fake #105
+
+fake #106
+
+fake #107
+fake #108
+fake #109
+fake #110
+fake #111
+fake #112
+fake #113
+fake #114
+fake #115
+fake #116
+fake #117
+fake #118
+fake #119
+fake #120
+fake #121
+fake #122
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+Continued on next page
+
+33
+
+Table 15: Real world analysis dataset details.
+Class
+
+URL
+
+Language
+
+VideoDuration
+
+ProcessingTime
+
+Coverage c
+
+fake #123
+
+https://www.facebook.com/
+MISTERKOCTWO/videos/949168468846018/
+https://twitter.com/facemagic_app/
+status/1432357446450749446
+https://twitter.com/facemagic_app/
+status/1421848193671712770
+https://twitter.com/CestCanteloup/
+status/1275394966022471685
+https://twitter.com/lachoseparis/
+status/1181168724629475328
+https://twitter.com/Startup_Nerd/
+status/1283695456992862208
+https://twitter.com/MikaelThalen/
+status/1311696656061009920
+
+French
+
+00:01:00
+
+0:00:39
+
+0.0
+
+Spanish
+
+00:00:12
+
+0:00:12
+
+0.0
+
+English
+
+00:00:13
+
+0:00:12
+
+0.087
+
+French
+
+00:00:37
+
+0:00:33
+
+0.0
+
+English
+
+00:00:32
+
+0:00:24
+
+0.054
+
+English
+
+00:00:49
+
+0:00:38
+
+0.094
+
+English
+
+00:00:49
+
+0:00:37
+
+0.166
+
+fake #124
+fake #125
+fake #126
+fake #127
+fake #128
+fake #129
+
+34
+
+(a) Real predicted as fake: LAV-DF/test/000020.mp4
+
+(b) Fake predicted as real: LAV-DF/test/000038.mp4
+
+Figure 16: Example videos that DiMoDif has misclassified.
+
+35
+
+
