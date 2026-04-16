@@ -18,13 +18,18 @@ Batch format (5-tuple):
    paths)
 
 Losses:
-  L_task      — CE on causal_head([s_v, u_v, s_a, u_a])   (AV1M only)
-  L_MI        — CE proxy MI(unique; label)                  (AV1M only)
-  L_SDA       — Sinkhorn synergistic alignment              (AV1M only)
-  L_Dis       — modality discrimination on redundant        (AV1M only)
-  L_orth      — u ⊥ r orthogonality penalty                (AV1M only)
-  L_dadv      — CE(domain_head_c(GRL(Z_c_pool)), domain)   (all clips)
-  L_ddis      — CE(domain_head_s(Z_s_pool),      domain)   (all clips)
+  L_task      — CE on causal_head([s_v, u_v, u_Δ, s_a, u_a])  (AV1M only)
+  L_MI        — CE proxy MI(unique; label) for u_v, u_a, u_Δ    (AV1M only)
+  L_SDA       — Sinkhorn synergistic alignment                   (AV1M only)
+  L_Dis       — modality discrimination on redundant             (AV1M only)
+  L_orth      — u ⊥ r orthogonality penalty (incl. u_Δ)         (AV1M only)
+  L_dadv      — CE(domain_head_c(GRL(Z_c_pool)), domain)        (all clips)
+  L_ddis      — CE(domain_head_s(Z_s_pool),      domain)        (all clips)
+
+Four-way causal factorisation:
+  s_v, s_a  — cross-modal shared (redundant) information
+  u_v, u_a  — modality-unique manipulation evidence
+  u_Δ       — cross-modal inconsistency: CrossAttn(z_v,z_a) − CrossAttn(z_a,z_v)
 
 Overall:
   L = L_task + λ_mi·L_MI + λ_sda·L_SDA + λ_dis·L_Dis + λ_orth·L_orth
@@ -86,16 +91,52 @@ def _make_domain_head(input_dim: int) -> nn.Sequential:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  Cross-modal inconsistency factor
+# ─────────────────────────────────────────────────────────────────────────────
+
+class CrossModalInconsistency(nn.Module):
+    """
+    Computes u_Δ = CrossAttn(z_v, z_a) − CrossAttn(z_a, z_v) and projects
+    the asymmetric difference to incon_dim dimensions.
+
+    For genuine clips the two attention maps are symmetric and u_Δ ≈ 0.
+    For FV-RA fakes the visual stream attends differently to audio than
+    audio attends to video, producing a non-zero directional residual that
+    directly encodes audio-visual temporal misalignment.
+    """
+
+    def __init__(self, feat_dim: int, incon_dim: int, num_heads: int = 4):
+        super().__init__()
+        self.cross_v2a = nn.MultiheadAttention(feat_dim, num_heads, batch_first=True)
+        self.cross_a2v = nn.MultiheadAttention(feat_dim, num_heads, batch_first=True)
+        self.proj = nn.Sequential(
+            nn.Linear(feat_dim, incon_dim),
+            nn.LayerNorm(incon_dim),
+            nn.ReLU(),
+        )
+
+    def forward(self, z_v: torch.Tensor, z_a: torch.Tensor) -> torch.Tensor:
+        # z_v, z_a: [B, T, feat_dim]
+        # CrossAttn(z_v, z_a): query=z_v, key/value=z_a
+        c_v2a, _ = self.cross_v2a(z_v, z_a, z_a)  # [B, T, feat_dim]
+        # CrossAttn(z_a, z_v): query=z_a, key/value=z_v
+        c_a2v, _ = self.cross_a2v(z_a, z_v, z_v)  # [B, T, feat_dim]
+        u_delta = c_v2a - c_a2v                    # [B, T, feat_dim]
+        return self.proj(u_delta)                  # [B, T, incon_dim]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  A6 Lightning module: AVH_FCD_A6
 # ─────────────────────────────────────────────────────────────────────────────
 
 class AVH_FCD_A6(L.LightningModule):
     """
-    A6 — FCD + explicit domain adversarial disentanglement.
+    A6 — FCD + cross-modal inconsistency factor + domain adversarial disentanglement.
 
     Key additions over A5:
-      domain_head_c  + GRL  : adversarial, forces Z_c to NOT predict domain
-      domain_head_s         : discriminative, pulls domain signal into Z_s
+      cross_incon    + incon_head : fourth causal factor u_Δ encoding AV asymmetry
+      domain_head_c  + GRL        : adversarial, forces Z_c to NOT predict domain
+      domain_head_s               : discriminative, pulls domain signal into Z_s
 
     Batch format:
       (video_feats, audio_feats, cls_labels, domain_labels, paths)
@@ -109,14 +150,15 @@ class AVH_FCD_A6(L.LightningModule):
 
         hp = config.get("model_hparams", {})
 
-        feat_dim = int(hp.get("feat_dim",  1024))
-        syn_dim  = int(hp.get("syn_dim",    256))
-        spec_dim = int(hp.get("spec_dim",   256))
-        sda_dim  = int(hp.get("sda_dim",    128))
-        mi_dim   = int(hp.get("mi_dim",     128))
+        feat_dim  = int(hp.get("feat_dim",   1024))
+        syn_dim   = int(hp.get("syn_dim",     256))
+        spec_dim  = int(hp.get("spec_dim",    256))
+        sda_dim   = int(hp.get("sda_dim",     128))
+        mi_dim    = int(hp.get("mi_dim",      128))
+        incon_dim = int(hp.get("incon_dim",   256))
 
-        causal_dim   = (syn_dim + spec_dim) * 2   # 1024
-        spurious_dim = spec_dim * 2               # 512
+        causal_dim   = (syn_dim + spec_dim) * 2 + incon_dim  # 1280
+        spurious_dim = spec_dim * 2                          # 512
 
         # ── A5 components (identical) ─────────────────────────────────────────
         self.ccd_v = CCD(feat_dim, syn_dim, spec_dim)
@@ -138,6 +180,13 @@ class AVH_FCD_A6(L.LightningModule):
         )
         self.causal_head    = _make_mlp(causal_dim)
         self.redundant_head = _make_mlp(spurious_dim)
+
+        # ── A6 additions: cross-modal inconsistency factor ────────────────────
+        self.cross_incon = CrossModalInconsistency(feat_dim, incon_dim)
+        self.incon_head  = nn.Sequential(
+            nn.Linear(incon_dim, mi_dim), nn.LayerNorm(mi_dim), nn.ReLU(),
+            nn.Linear(mi_dim, 1),
+        )
 
         # ── A6 additions: domain heads ────────────────────────────────────────
         # domain_head_c operates on GRL(Z_c_pool) → adversarial on causal branch
@@ -168,11 +217,14 @@ class AVH_FCD_A6(L.LightningModule):
         s_a, h_a = self.ccd_a(audio_feats)
         u_v, r_v = self.urd_v(h_v)
         u_a, r_a = self.urd_a(h_a)
-        causal_repr   = torch.cat([s_v, u_v, s_a, u_a], dim=-1)
-        spurious_repr = torch.cat([r_v, r_a],            dim=-1)
+        # Fourth factor: cross-modal inconsistency u_Δ
+        u_delta = self.cross_incon(video_feats, audio_feats)  # [B, T, incon_dim]
+        causal_repr   = torch.cat([s_v, u_v, u_delta, s_a, u_a], dim=-1)
+        spurious_repr = torch.cat([r_v, r_a],                     dim=-1)
         return causal_repr, spurious_repr, {
             "s_v": s_v, "u_v": u_v, "r_v": r_v,
             "s_a": s_a, "u_a": u_a, "r_a": r_a,
+            "u_delta": u_delta,
         }
 
     @staticmethod
@@ -215,6 +267,7 @@ class AVH_FCD_A6(L.LightningModule):
         causal_repr, spurious_repr, comp = self._encode(video_feats, audio_feats)
         s_v, u_v, r_v = comp["s_v"], comp["u_v"], comp["r_v"]
         s_a, u_a, r_a = comp["s_a"], comp["u_a"], comp["r_a"]
+        u_delta = comp["u_delta"]
 
         # Pool over time for domain heads
         Z_c_pool = causal_repr.mean(1)    # [B, causal_dim]
@@ -239,13 +292,19 @@ class AVH_FCD_A6(L.LightningModule):
             lbl_av1m    = cls_labels[av1m_mask]
             s_v_a, u_v_a, r_v_a = s_v[av1m_mask], u_v[av1m_mask], r_v[av1m_mask]
             s_a_a, u_a_a, r_a_a = s_a[av1m_mask], u_a[av1m_mask], r_a[av1m_mask]
+            u_delta_a = u_delta[av1m_mask]
 
             score_task = self._cls_score(self.causal_head, c_repr_av1m)
             loss_task  = self._ce_loss(score_task, lbl_av1m)
 
-            score_uv = self._cls_score(self.unique_head_v, u_v_a)
-            score_ua = self._cls_score(self.unique_head_a, u_a_a)
-            loss_mi  = self._ce_loss(score_uv, lbl_av1m) + self._ce_loss(score_ua, lbl_av1m)
+            score_uv    = self._cls_score(self.unique_head_v, u_v_a)
+            score_ua    = self._cls_score(self.unique_head_a, u_a_a)
+            score_udelta = self._cls_score(self.incon_head,   u_delta_a)
+            loss_mi  = (
+                self._ce_loss(score_uv,    lbl_av1m)
+                + self._ce_loss(score_ua,    lbl_av1m)
+                + self._ce_loss(score_udelta, lbl_av1m)
+            )
 
             s_v_proj = self.sda(s_v_a.mean(1))
             s_a_proj = self.sda(s_a_a.mean(1))
@@ -262,7 +321,11 @@ class AVH_FCD_A6(L.LightningModule):
             ])
             loss_dis = F.binary_cross_entropy_with_logits(mod_score, mod_labels)
 
-            loss_orth = 0.5 * (self._orth_loss(u_v_a, r_v_a) + self._orth_loss(u_a_a, r_a_a))
+            loss_orth = (1 / 3) * (
+                self._orth_loss(u_v_a,    r_v_a)
+                + self._orth_loss(u_a_a,    r_a_a)
+                + 0.5 * (self._orth_loss(u_delta_a, r_v_a) + self._orth_loss(u_delta_a, r_a_a))
+            )
 
             score_spu = self._cls_score(self.redundant_head, s_repr_av1m.detach())
             loss_spu_probe = self._ce_loss(score_spu, lbl_av1m)

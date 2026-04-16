@@ -31,7 +31,7 @@ python eval_leading_silence_robustness.py \
     --ckpt      outputs_A6_seed43/ckpts/model-epoch=15.ckpt \
     --model     fcd_a6 \
     --features_path   /data/projects/punim2637/nnliang/AVH-Align/data/favc_features_trimmed \
-    --csv_root_path   csv_metadata/favc_npz_matched \
+    --csv_root_path   csv_metadata/favc \
     --split     test \
     --trim_frames 0 \
     --output_dir outputs_A6_seed43/results_silence_rob_trimmed

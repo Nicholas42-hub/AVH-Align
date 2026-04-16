@@ -24,7 +24,7 @@ SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}
 BASE=/data/projects/punim2637/nnliang/AVH-Align
 OUTPUT_DIR="$BASE/avh_sup/outputs_${MODEL}_seed${SEED}"
 RESULTS_DIR="$OUTPUT_DIR/results_favc_matched"
-CSV_ROOT="$BASE/avh_sup/csv_metadata/favc_npz_matched"
+CSV_ROOT="$BASE/avh_sup/csv_metadata/favc"
 FEATURES="$BASE/data/favc_features"
 
 echo "============================================================"

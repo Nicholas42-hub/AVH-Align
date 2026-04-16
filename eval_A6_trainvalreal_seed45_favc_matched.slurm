@@ -13,7 +13,7 @@
 BASE=/data/projects/punim2637/nnliang/AVH-Align
 OUTPUT_DIR="$BASE/avh_sup/outputs_A6_trainvalreal_seed45"
 RESULTS_DIR="$OUTPUT_DIR/results_favc_matched"
-CSV_ROOT="$BASE/avh_sup/csv_metadata/favc_npz_matched"
+CSV_ROOT="$BASE/avh_sup/csv_metadata/favc"
 FEATURES="$BASE/data/favc_features"
 
 echo "============================================================"
