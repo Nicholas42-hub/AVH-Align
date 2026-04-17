@@ -199,9 +199,10 @@ class AVH_FCD_A6(L.LightningModule):
         self.lambda_sda  = float(hp.get("lambda_sda",  0.5))
         self.lambda_dis  = float(hp.get("lambda_dis",  1.0))
         self.lambda_orth = float(hp.get("lambda_orth", 0.1))
-        self.lambda_dadv = float(hp.get("lambda_dadv", 1.0))  # domain-adv on Z_c
-        self.lambda_ddis = float(hp.get("lambda_ddis", 1.0))  # domain-dis on Z_s
-        self.grl_alpha   = float(hp.get("grl_alpha",   1.0))  # GRL reversal strength
+        self.lambda_dadv         = float(hp.get("lambda_dadv",         1.0))  # domain-adv on Z_c
+        self.lambda_ddis         = float(hp.get("lambda_ddis",         1.0))  # domain-dis on Z_s
+        self.grl_alpha           = float(hp.get("grl_alpha",           1.0))  # GRL reversal strength
+        self.lambda_incon_sparse = float(hp.get("lambda_incon_sparse", 0.0))  # ||u_Δ||² on real clips
         self.sda_eps     = float(hp.get("sda_eps",     0.05))
         self.sda_n_iter  = int  (hp.get("sda_n_iter",  5))
         self.lr          = float(hp.get("lr",          1e-3))
@@ -327,11 +328,20 @@ class AVH_FCD_A6(L.LightningModule):
                 + 0.5 * (self._orth_loss(u_delta_a, r_v_a) + self._orth_loss(u_delta_a, r_a_a))
             )
 
+            # Real-clip sparsity: penalise ||u_Δ||² on genuine AV1M clips so
+            # that u_Δ is only active when audio-visual streams actually mismatch.
+            real_mask_av1m = (lbl_av1m == 0)
+            if real_mask_av1m.any() and self.lambda_incon_sparse > 0.0:
+                loss_incon_sparse = (u_delta_a[real_mask_av1m] ** 2).mean()
+            else:
+                loss_incon_sparse = torch.tensor(0.0, device=video_feats.device)
+
             score_spu = self._cls_score(self.redundant_head, s_repr_av1m.detach())
             loss_spu_probe = self._ce_loss(score_spu, lbl_av1m)
         else:
             loss_task = loss_mi = loss_sda = loss_dis = loss_orth = loss_spu_probe = \
                 torch.tensor(0.0, device=video_feats.device, requires_grad=True)
+            loss_incon_sparse = torch.tensor(0.0, device=video_feats.device)
 
         # SVD regularisation every 50 steps
         if self.global_step % 50 == 0:
@@ -340,12 +350,13 @@ class AVH_FCD_A6(L.LightningModule):
 
         loss = (
             loss_task
-            + self.lambda_mi   * loss_mi
-            + self.lambda_sda  * loss_sda
-            + self.lambda_dis  * loss_dis
-            + self.lambda_orth * loss_orth
-            + self.lambda_dadv * loss_dadv
-            + self.lambda_ddis * loss_ddis
+            + self.lambda_mi           * loss_mi
+            + self.lambda_sda          * loss_sda
+            + self.lambda_dis          * loss_dis
+            + self.lambda_orth         * loss_orth
+            + self.lambda_dadv         * loss_dadv
+            + self.lambda_ddis         * loss_ddis
+            + self.lambda_incon_sparse * loss_incon_sparse
         )
 
         log_kw = dict(on_step=False, on_epoch=True)
@@ -355,9 +366,10 @@ class AVH_FCD_A6(L.LightningModule):
         self.log("train_loss_sda",       loss_sda,       **log_kw)
         self.log("train_loss_dis",       loss_dis,       **log_kw)
         self.log("train_loss_orth",      loss_orth,      **log_kw)
-        self.log("train_loss_dadv",      loss_dadv,      **log_kw)
-        self.log("train_loss_ddis",      loss_ddis,      **log_kw)
-        self.log("train_loss_spu_probe", loss_spu_probe, **log_kw)
+        self.log("train_loss_dadv",         loss_dadv,         **log_kw)
+        self.log("train_loss_ddis",         loss_ddis,         **log_kw)
+        self.log("train_loss_incon_sparse", loss_incon_sparse, **log_kw)
+        self.log("train_loss_spu_probe",    loss_spu_probe,    **log_kw)
         return loss
 
     # ── Validation (AV1M val — same as A5) ───────────────────────────────────

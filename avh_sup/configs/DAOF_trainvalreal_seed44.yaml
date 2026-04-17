@@ -1,0 +1,72 @@
+# ============================================================
+#  DAOF_trainvalreal_seed44
+#
+#  Dual-Axis Orthogonal Factorization
+#  Two-level decomposition:
+#    Level 1 (modality): s_v, u_v, u_Δ, s_a, u_a, r_v, r_a  (same as A6_udelta)
+#    Level 2 (axis):     Z_task_raw → [Z_ct (causal transferable),
+#                                       Z_cs (causal shortcut)]
+#
+#  Task head reads only Z_ct.
+#  Z_cs is trained to predict domain GIVEN label (conditional domain head).
+#  Z_ct is adversarially trained NOT to predict domain.
+#  Z_res absorbs unconditional domain signal.
+# ============================================================
+
+ablation_id: "DAOF_trainvalreal_seed44"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_npz_matched"
+  split: "trainval"
+  real_only: true
+  apply_l2: true
+
+model_hparams:
+  feat_dim: 1024
+  syn_dim: 256
+  spec_dim: 256
+  sda_dim: 128
+  mi_dim: 128
+  incon_dim: 256
+  ct_dim: 512        # causal transferable subspace dimension
+  cs_dim: 512        # causal shortcut subspace dimension
+  label_emb_dim: 32  # Y embedding for conditional domain head
+
+  lambda_mi: 1.0
+  lambda_sda: 0.5
+  lambda_dis: 1.0
+  lambda_orth_ur: 0.1
+  lambda_ct_dadv: 1.0       # adversarial on Z_ct (GRL)
+  lambda_cs_cond_dis: 1.0   # conditional discriminative on Z_cs
+  lambda_res_dis: 1.0       # unconditional discriminative on Z_res
+  lambda_ct_cs_orth: 0.5    # Z_ct ⊥ Z_cs orthogonality
+  grl_alpha: 1.0
+  lambda_incon_sparse: 0.0
+
+  sda_eps: 0.05
+  sda_n_iter: 5
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_DAOF_trainvalreal_seed44/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_DAOF_trainvalreal_seed44/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 44
+
+early_stopping:
+  metric: "val_auc_causal"
+  mode: "max"
+  patience: 20

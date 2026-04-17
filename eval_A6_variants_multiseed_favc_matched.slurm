@@ -16,7 +16,7 @@
 # ============================================================
 
 VARIANTS=(A6_lite_trainreal A6_lite_trainreal A6_lite_trainreal A6_sharedonly_trainreal A6_sharedonly_trainreal A6_sharedonly_trainreal)
-SEEDS=(42 43 44 42 43 44)
+SEEDS=(43 44 45 43 44 45)
 
 VARIANT=${VARIANTS[$SLURM_ARRAY_TASK_ID]}
 SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}

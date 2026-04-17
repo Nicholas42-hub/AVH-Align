@@ -13,12 +13,12 @@
 
 # ============================================================
 #  Eval A2 / A5 / A6 on FakeAVCeleb 70-30 public split
-#  Array: 9 = 3 models x 3 seeds (42,43,44)
+#  Array: 9 = 3 models x 3 seeds (43,44,45)
 # ============================================================
 
 MODELS=(A2 A2 A2 A5 A5 A5 A6 A6 A6)
 MODEL_TYPES=(ablation ablation ablation fcd fcd fcd fcd_a6 fcd_a6 fcd_a6)
-SEEDS=(42 43 44 42 43 44 42 43 44)
+SEEDS=(43 44 45 43 44 45 43 44 45)
 
 MODEL=${MODELS[$SLURM_ARRAY_TASK_ID]}
 MODEL_TYPE=${MODEL_TYPES[$SLURM_ARRAY_TASK_ID]}

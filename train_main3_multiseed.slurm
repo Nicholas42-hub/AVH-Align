@@ -12,11 +12,11 @@
 #SBATCH --error=logs/main3_ms_%A_%a.err
 
 # ============================================================
-#  Main frozen-model seed sweep: A2 / A5 / A6 × seeds 42,43,44
+#  Main frozen-model seed sweep: A2 / A5 / A6 × seeds 43,44,45
 # ============================================================
 
 MODELS=(A2 A2 A2 A5 A5 A5 A6 A6 A6)
-SEEDS=(42 43 44 42 43 44 42 43 44)
+SEEDS=(43 44 45 43 44 45 43 44 45)
 
 MODEL=${MODELS[$SLURM_ARRAY_TASK_ID]}
 SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}

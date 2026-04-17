@@ -11,7 +11,7 @@
 #SBATCH --error=logs/eval_avlips_A2_%j.err
 
 echo "============================================================"
-echo "  A2 Evaluation — AVLips (seeds 42, 43, 44)"
+echo "  A2 Evaluation — AVLips (seeds 43, 44, 45)"
 echo "  Job ID : $SLURM_JOB_ID"
 echo "  Node   : $SLURM_NODELIST"
 echo "  Start  : $(date)"
@@ -40,7 +40,7 @@ mkdir -p "$BASE/logs"
 
 cd avh_sup
 
-for SEED in 42 43 44; do
+for SEED in 43 44 45; do
     CKPT=$(ls outputs_A2_seed${SEED}/ckpts/*.ckpt 2>/dev/null | grep -v last | sort | tail -1)
     CKPT="${CKPT:-$(ls outputs_A2_seed${SEED}/ckpts/last.ckpt 2>/dev/null)}"
 
@@ -72,7 +72,7 @@ echo "  A2 AVLips eval complete: $(date)"
 echo "============================================================"
 
 # Print summary
-for SEED in 42 43 44; do
+for SEED in 43 44 45; do
     echo ""
     echo "--- A2 seed${SEED} ---"
     cat "outputs_A2_seed${SEED}/results_avlips/eval_results.txt" 2>/dev/null || echo "(no results)"

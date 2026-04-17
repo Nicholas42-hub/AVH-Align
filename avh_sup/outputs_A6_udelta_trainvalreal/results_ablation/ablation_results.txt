@@ -1,0 +1,37 @@
+A6 u_Δ Head Ablation — FakeAVCeleb
+Ckpt    : outputs_A6_udelta_trainvalreal/ckpts/model-epoch=07.ckpt
+Features: /data/projects/punim2637/nnliang/AVH-Align/data/favc_features
+Split   : test
+======================================================================
+
+  ── BASELINE ──
+  overall                           AUC=0.9083  AP=0.9976  N=1114
+  RealVideo-FakeAudio               AUC=1.0000  AP=1.0000  N=52
+  FakeVideo-RealAudio               AUC=0.7992  AP=0.9869  N=522
+  FakeVideo-FakeAudio               AUC=0.9997  AP=1.0000  N=592
+
+  ── MASK_UDELTA ──
+  overall                           AUC=0.9331  AP=0.9981  N=1114
+  RealVideo-FakeAudio               AUC=0.9749  AP=0.9630  N=52
+  FakeVideo-RealAudio               AUC=0.8679  AP=0.9903  N=522
+  FakeVideo-FakeAudio               AUC=0.9882  AP=0.9994  N=592
+
+  ── MASK_UV ──
+  overall                           AUC=0.6959  AP=0.9913  N=1114
+  RealVideo-FakeAudio               AUC=1.0000  AP=1.0000  N=52
+  FakeVideo-RealAudio               AUC=0.3343  AP=0.9333  N=522
+  FakeVideo-FakeAudio               AUC=0.9988  AP=0.9999  N=592
+
+  ── MASK_UA ──
+  overall                           AUC=0.9129  AP=0.9978  N=1114
+  RealVideo-FakeAudio               AUC=1.0000  AP=1.0000  N=52
+  FakeVideo-RealAudio               AUC=0.8117  AP=0.9882  N=522
+  FakeVideo-FakeAudio               AUC=0.9976  AP=0.9999  N=592
+
+======================================================================
+  FV-RA AUC DELTA (vs baseline):
+  baseline              FV-RA AUC=0.7992
+  mask_udelta           FV-RA AUC=0.8679  Δ=+0.0688
+  mask_uv               FV-RA AUC=0.3343  Δ=-0.4649
+  mask_ua               FV-RA AUC=0.8117  Δ=+0.0126
+======================================================================
