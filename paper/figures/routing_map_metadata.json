@@ -1,0 +1,26 @@
+{
+  "checkpoint": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_trainvalreal_seed43/ckpts/model-epoch=32.ckpt",
+  "csv_path": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_npz_matched/test_split.csv",
+  "feature_root": "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features",
+  "selection_rule": "fake: correctly classified FV-RA clip maximizing score + 0.25*u_v_peakiness; real: correctly classified RealVideo-RealAudio clip minimizing score + 0.25*u_v_peakiness",
+  "fake": {
+    "path": "FakeAVCeleb/FakeVideo-RealAudio/African/men/id01392/00167_id00391_TjJgUZaenWI.mp4",
+    "score": 7.321301460266113,
+    "uv_mean": 6.7550153732299805,
+    "uv_max": 54.91779327392578,
+    "uv_peakiness": 8.590868517085449,
+    "rv_mean": 13.537851333618164,
+    "rv_max": 57.33953857421875,
+    "rv_peakiness": 7.919433325174694
+  },
+  "real": {
+    "path": "FakeAVCeleb/RealVideo-RealAudio/African/women/id03713/00249.mp4",
+    "score": -22.872119903564453,
+    "uv_mean": 6.056391716003418,
+    "uv_max": 7.622402191162109,
+    "uv_peakiness": 2.933857668051983,
+    "rv_mean": 16.34889030456543,
+    "rv_max": 25.222434997558594,
+    "rv_peakiness": 2.8681836745148153
+  }
+}

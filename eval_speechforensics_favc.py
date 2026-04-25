@@ -149,16 +149,21 @@ def extract_visual_feature(model, task, video_path, max_length, device):
 
 def extract_audio_feature(model, wav_path, max_length, tmp_dir, device):
     wav, sr = sf.read(wav_path)
+    # Convert stereo to mono
+    if wav.ndim == 2:
+        wav = wav.mean(axis=1)
+    # Resample to 16kHz if needed
+    if sr != 16_000:
+        from math import gcd
+        from scipy.signal import resample_poly
+        g = gcd(16_000, sr)
+        wav = resample_poly(wav, 16_000 // g, sr // g)
+        sr = 16_000
     if len(wav) > sr * max_length:
-        tmp_wav = os.path.join(tmp_dir, 'audio.wav')
-        if os.path.exists(tmp_wav):
-            os.remove(tmp_wav)
-        sf.write(tmp_wav, wav[:sr * max_length], sr)
-        wav_path = tmp_wav
-
-    sample_rate, wav_data = wavfile.read(wav_path)
-    assert sample_rate == 16_000 and wav_data.ndim == 1, \
-        f"Expected 16kHz mono, got {sample_rate}Hz shape={wav_data.shape}"
+        wav = wav[:sr * max_length]
+    # Normalise to int16 range for logfbank
+    wav_data = (wav * 32768).clip(-32768, 32767).astype(np.int16)
+    sample_rate = sr
     audio_feats = logfbank(wav_data, samplerate=sample_rate).astype(np.float32)
     audio_feats = stacker(audio_feats, 4)
     audio_t = torch.FloatTensor(audio_feats).to(device)
@@ -258,6 +263,31 @@ def main():
 
     tmp_dir = tempfile.mkdtemp()
 
+    # Ethnicity name normalisation: CSV uses underscore convention but on-disk
+    # directories use "Name (Qualifier)" convention for multi-word ethnicities.
+    ETHNICITY_REMAP = {
+        'Caucasian_American':  'Caucasian (American)',
+        'Caucasian_European':  'Caucasian (European)',
+        'Asian_South':         'Asian (South)',
+        'Asian_East':          'Asian (East)',
+    }
+
+    def resolve_paths(preprocessed_dir, subdir, stem):
+        """Try original subdir, then remap ethnicity component and retry."""
+        parts = subdir.replace('\\', '/').split('/')
+        candidates = [subdir]
+        # parts[1] is the ethnicity component (index 0 = category, 1 = ethnicity)
+        if len(parts) > 1 and parts[1] in ETHNICITY_REMAP:
+            parts2 = parts[:]
+            parts2[1] = ETHNICITY_REMAP[parts[1]]
+            candidates.append('/'.join(parts2))
+        for sd in candidates:
+            roi = os.path.join(preprocessed_dir, sd, stem + '_roi.mp4')
+            wav = os.path.join(preprocessed_dir, sd, stem + '.wav')
+            if os.path.exists(roi) and os.path.exists(wav):
+                return roi, wav
+        return None, None
+
     all_scores, all_labels, all_cats, all_paths = [], [], [], []
 
     for row in tqdm(rows, desc='Scoring'):
@@ -268,11 +298,9 @@ def main():
         stem = os.path.splitext(os.path.basename(rel))[0]
         subdir = os.path.dirname(rel)
 
-        roi_path = os.path.join(args.preprocessed_dir, subdir, stem + '_roi.mp4')
-        wav_path = os.path.join(args.preprocessed_dir, subdir, stem + '.wav')
+        roi_path, wav_path = resolve_paths(args.preprocessed_dir, subdir, stem)
 
-        if not os.path.exists(roi_path) or not os.path.exists(wav_path):
-            # Try trimmed suffix variants (won't change real names)
+        if roi_path is None:
             continue
 
         try:

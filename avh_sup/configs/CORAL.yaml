@@ -1,0 +1,53 @@
+# ============================================================
+#  CORAL-UDA Baseline
+#
+#  Correlation Alignment (Sun & Saenko 2016) applied directly to
+#  frozen AV-HuBERT features — no factorization.
+#  Features are mean-pooled over T → projected to coral_dim for
+#  covariance alignment between source and target domains.
+#
+#  Training data:
+#    Domain 0 = AV1M train/val  (task-labelled)
+#    Domain 1 = FAVC val-real   (no task label, domain signal only)
+#
+#  Note: batch_size=16 gives 8 source + 8 target per batch on average,
+#  sufficient for non-degenerate covariance estimation in coral_dim=256.
+# ============================================================
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+model_hparams:
+  feat_dim:      1024
+  coral_dim:     256     # project to 256 before CORAL (avoids rank degeneracy)
+  lambda_coral:  1.0     # weight on CORAL loss
+  lr:            1.0e-3
+
+batch_size: 16           # mean-pooled clips → fixed size, standard batching
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_CORAL/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_CORAL/ckpts"
+    metric: "val_auc"
+    mode: "max"
+
+epochs: 20
+seed: 43
+
+early_stopping:
+  metric:   "val_auc"
+  mode:     "max"
+  patience: 20

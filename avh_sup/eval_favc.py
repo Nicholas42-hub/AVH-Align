@@ -132,7 +132,7 @@ def print_and_write(text, fh):
 def main():
     parser = argparse.ArgumentParser(description="Cross-dataset eval on FakeAVCeleb")
     parser.add_argument("--ckpt",           required=True, help="Path to .ckpt checkpoint")
-    parser.add_argument("--model",          choices=["baseline", "causal", "ablation", "modal", "fcd", "fcd_a6", "fcd_a6_lite", "fcd_a6_sharedonly", "fcd_a7", "sad_a8", "sad_a9", "causal_mi", "causal_a42", "causal_a43", "causal_a44", "daof"], default="baseline")
+    parser.add_argument("--model",          choices=["baseline", "causal", "ablation", "modal", "fcd", "fcd_a6", "fcd_a6_lite", "fcd_a6_sharedonly", "fcd_a7", "sad_a8", "sad_a9", "causal_mi", "causal_a42", "causal_a43", "causal_a44", "daof", "dann", "coral"], default="baseline")
     parser.add_argument("--features_path",  required=True, help="Root of favc_features/ dir")
     parser.add_argument("--csv_root_path",  default="csv_metadata/favc",
                         help="Dir with {split}_split.csv files")
@@ -209,6 +209,12 @@ def main():
     elif args.model == "daof":
         from mlp_fcd_daof import AVH_FCD_DAOF
         model = AVH_FCD_DAOF.load_from_checkpoint(args.ckpt)
+    elif args.model == "dann":
+        from mlp_dann import DANN_UDA
+        model = DANN_UDA.load_from_checkpoint(args.ckpt)
+    elif args.model == "coral":
+        from mlp_coral import CORAL_UDA
+        model = CORAL_UDA.load_from_checkpoint(args.ckpt)
     else:  # ablation
         # Use shape-filtered loading: the A2 checkpoint was saved with a
         # full_head input dim that may differ from the current model definition
@@ -254,7 +260,7 @@ def main():
         )
         print_and_write(header, fh)
 
-        if args.model == "baseline":
+        if args.model in ("baseline", "dann", "coral"):
             paths, scores, labels = run_baseline(model, loader, device)
 
             # Save raw predictions

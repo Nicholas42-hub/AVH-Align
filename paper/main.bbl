@@ -45,12 +45,6 @@ Hasam Khalid, Shahroz Tariq, Minha Kim, and Simon~S. Woo.
 \newblock Fakeavceleb: A novel audio-video multimodal deepfake dataset.
 \newblock \emph{arXiv preprint arXiv:2108.05080}, 2021.
 
-\bibitem[Koutlis and Papadopoulos(2025)]{koutlis2025dimodif}
-Christos Koutlis and Symeon Papadopoulos.
-\newblock Dimodif: Discourse modality-information differentiation for
-  audio-visual deepfake detection and localization.
-\newblock \emph{arXiv preprint arXiv:2411.10193}, 2025.
-
 \bibitem[Liang et~al.(2024)Liang, Yu, Li, Jiang, Li, Yu, Zhang, Meng, and
   Huang]{liang2024speechforensics}
 Yachao Liang, Min Yu, Gang Li, Jianguo Jiang, Boquan Li, Feng Yu, Ning Zhang,

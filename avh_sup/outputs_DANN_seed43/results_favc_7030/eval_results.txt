@@ -1,0 +1,12 @@
+FakeAVCeleb Cross-Dataset Evaluation
+Model   : dann
+Ckpt    : outputs_DANN_seed43/ckpts/model-epoch=06.ckpt
+Features: ../data/favc_features
+Split   : test
+============================================================
+  overall                         AUC=0.7734  AP=0.9937  N=1114
+  RealVideo-FakeAudio             AUC=1.0000  AP=1.0000  N=52
+  FakeVideo-RealAudio             AUC=0.5033  AP=0.9544  N=522
+  FakeVideo-FakeAudio             AUC=0.9997  AP=1.0000  N=592
+============================================================
+Results saved to: outputs_DANN_seed43/results_favc_7030

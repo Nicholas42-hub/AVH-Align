@@ -50,7 +50,7 @@ callbacks:
     metric: "val_auc_causal"
     mode: "max"
 
-epochs: 100
+epochs: 20
 seed: 43
 
 early_stopping:
