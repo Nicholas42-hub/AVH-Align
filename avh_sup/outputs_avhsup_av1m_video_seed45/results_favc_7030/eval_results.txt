@@ -1,0 +1,12 @@
+FakeAVCeleb Cross-Dataset Evaluation
+Model   : baseline
+Ckpt    : /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_avhsup_av1m_video_seed45/ckpts/model-epoch=21.ckpt
+Features: ../data/favc_features
+Split   : test
+============================================================
+  overall                         AUC=0.8891  AP=0.9963  N=1114
+  RealVideo-FakeAudio             AUC=0.5828  AP=0.5781  N=52
+  FakeVideo-RealAudio             AUC=0.8975  AP=0.9923  N=522
+  FakeVideo-FakeAudio             AUC=0.8959  AP=0.9933  N=592
+============================================================
+Results saved to: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_avhsup_av1m_video_seed45/results_favc_7030

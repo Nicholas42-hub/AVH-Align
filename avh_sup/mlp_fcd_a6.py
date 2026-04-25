@@ -156,9 +156,18 @@ class AVH_FCD_A6(L.LightningModule):
         sda_dim   = int(hp.get("sda_dim",     128))
         mi_dim    = int(hp.get("mi_dim",      128))
         incon_dim = int(hp.get("incon_dim",   256))
+        self._incon_dim = incon_dim
 
-        causal_dim   = (syn_dim + spec_dim) * 2 + incon_dim  # 1280
-        spurious_dim = spec_dim * 2                          # 512
+        causal_dim   = (syn_dim + spec_dim) * 2 + incon_dim
+        spurious_dim = spec_dim * 2
+        self.expose_residual_to_task_head = bool(
+            hp.get("expose_residual_to_task_head", False)
+        )
+        task_head_dim = (
+            causal_dim + spurious_dim
+            if self.expose_residual_to_task_head
+            else causal_dim
+        )
 
         # ── A5 components (identical) ─────────────────────────────────────────
         self.ccd_v = CCD(feat_dim, syn_dim, spec_dim)
@@ -178,15 +187,16 @@ class AVH_FCD_A6(L.LightningModule):
         self.modality_head = nn.Sequential(
             nn.Linear(spec_dim, 64), nn.ReLU(), nn.Linear(64, 1),
         )
-        self.causal_head    = _make_mlp(causal_dim)
+        self.causal_head    = _make_mlp(task_head_dim)
         self.redundant_head = _make_mlp(spurious_dim)
 
         # ── A6 additions: cross-modal inconsistency factor ────────────────────
-        self.cross_incon = CrossModalInconsistency(feat_dim, incon_dim)
-        self.incon_head  = nn.Sequential(
-            nn.Linear(incon_dim, mi_dim), nn.LayerNorm(mi_dim), nn.ReLU(),
-            nn.Linear(mi_dim, 1),
-        )
+        if incon_dim > 0:
+            self.cross_incon = CrossModalInconsistency(feat_dim, incon_dim)
+            self.incon_head  = nn.Sequential(
+                nn.Linear(incon_dim, mi_dim), nn.LayerNorm(mi_dim), nn.ReLU(),
+                nn.Linear(mi_dim, 1),
+            )
 
         # ── A6 additions: domain heads ────────────────────────────────────────
         # domain_head_c operates on GRL(Z_c_pool) → adversarial on causal branch
@@ -218,15 +228,24 @@ class AVH_FCD_A6(L.LightningModule):
         s_a, h_a = self.ccd_a(audio_feats)
         u_v, r_v = self.urd_v(h_v)
         u_a, r_a = self.urd_a(h_a)
-        # Fourth factor: cross-modal inconsistency u_Δ
-        u_delta = self.cross_incon(video_feats, audio_feats)  # [B, T, incon_dim]
-        causal_repr   = torch.cat([s_v, u_v, u_delta, s_a, u_a], dim=-1)
+        # Fourth factor: cross-modal inconsistency u_Δ (only if incon_dim > 0)
+        if self._incon_dim > 0:
+            u_delta = self.cross_incon(video_feats, audio_feats)  # [B, T, incon_dim]
+            causal_repr = torch.cat([s_v, u_v, u_delta, s_a, u_a], dim=-1)
+        else:
+            u_delta = None
+            causal_repr = torch.cat([s_v, u_v, s_a, u_a], dim=-1)
         spurious_repr = torch.cat([r_v, r_a],                     dim=-1)
         return causal_repr, spurious_repr, {
             "s_v": s_v, "u_v": u_v, "r_v": r_v,
             "s_a": s_a, "u_a": u_a, "r_a": r_a,
-            "u_delta": u_delta,
+            "u_delta": u_delta,  # None when incon_dim=0
         }
+
+    def _task_repr(self, causal_repr, spurious_repr):
+        if self.expose_residual_to_task_head:
+            return torch.cat([causal_repr, spurious_repr], dim=-1)
+        return causal_repr
 
     @staticmethod
     def _cls_score(head, repr_):
@@ -249,7 +268,8 @@ class AVH_FCD_A6(L.LightningModule):
     def forward(self, video_feats, audio_feats, mode: str = "causal"):
         causal_repr, spurious_repr, _ = self._encode(video_feats, audio_feats)
         if mode in ("causal", "full"):
-            return self._cls_score(self.causal_head, causal_repr)
+            task_repr = self._task_repr(causal_repr, spurious_repr)
+            return self._cls_score(self.causal_head, task_repr)
         elif mode == "spurious":
             return self._cls_score(self.redundant_head, spurious_repr.detach())
         else:
@@ -266,6 +286,7 @@ class AVH_FCD_A6(L.LightningModule):
         domain_labels = domain_labels.float()                      # [B], 0/1
 
         causal_repr, spurious_repr, comp = self._encode(video_feats, audio_feats)
+        task_repr = self._task_repr(causal_repr, spurious_repr)
         s_v, u_v, r_v = comp["s_v"], comp["u_v"], comp["r_v"]
         s_a, u_a, r_a = comp["s_a"], comp["u_a"], comp["r_a"]
         u_delta = comp["u_delta"]
@@ -274,38 +295,51 @@ class AVH_FCD_A6(L.LightningModule):
         Z_c_pool = causal_repr.mean(1)    # [B, causal_dim]
         Z_s_pool = spurious_repr.mean(1)  # [B, spurious_dim]
 
-        # ── Domain losses (all clips — both AV1M and FAVC) ───────────────────
-        # Adversarial: GRL reverses gradient so encoder learns to NOT encode domain
-        Z_c_rev  = grad_reverse(Z_c_pool, self.grl_alpha)
-        d_score_c = self.domain_head_c(Z_c_rev).squeeze(-1)   # [B]
-        loss_dadv = F.binary_cross_entropy_with_logits(d_score_c, domain_labels)
-
-        # Discriminative: Z_s should predict domain (consistent push-pull)
-        d_score_s = self.domain_head_s(Z_s_pool).squeeze(-1)  # [B]
-        loss_ddis = F.binary_cross_entropy_with_logits(d_score_s, domain_labels)
+        # ── Domain losses (only clips with valid domain_label >= 0) ──────────
+        # domain_label == -1 signals "no domain supervision" (e.g. fake FAVC clips
+        # when using real-only domain labeling). Backward-compatible: existing
+        # training runs set domain_label=0/1 for all clips, so mask = all-True.
+        Z_c_rev   = grad_reverse(Z_c_pool, self.grl_alpha)
+        domain_mask = (domain_labels >= 0)
+        if domain_mask.any():
+            d_score_c = self.domain_head_c(Z_c_rev[domain_mask]).squeeze(-1)
+            loss_dadv = F.binary_cross_entropy_with_logits(
+                d_score_c, domain_labels[domain_mask])
+            d_score_s = self.domain_head_s(Z_s_pool[domain_mask]).squeeze(-1)
+            loss_ddis = F.binary_cross_entropy_with_logits(
+                d_score_s, domain_labels[domain_mask])
+        else:
+            loss_dadv = torch.tensor(0.0, device=video_feats.device, requires_grad=True)
+            loss_ddis = torch.tensor(0.0, device=video_feats.device, requires_grad=True)
 
         # ── Task losses (AV1M clips only, cls_label >= 0) ────────────────────
         av1m_mask = (cls_labels >= 0)
 
         if av1m_mask.any():
-            c_repr_av1m = causal_repr[av1m_mask]
+            c_repr_av1m = task_repr[av1m_mask]
             s_repr_av1m = spurious_repr[av1m_mask]
             lbl_av1m    = cls_labels[av1m_mask]
             s_v_a, u_v_a, r_v_a = s_v[av1m_mask], u_v[av1m_mask], r_v[av1m_mask]
             s_a_a, u_a_a, r_a_a = s_a[av1m_mask], u_a[av1m_mask], r_a[av1m_mask]
-            u_delta_a = u_delta[av1m_mask]
+            u_delta_a = u_delta[av1m_mask] if u_delta is not None else None
 
             score_task = self._cls_score(self.causal_head, c_repr_av1m)
             loss_task  = self._ce_loss(score_task, lbl_av1m)
 
-            score_uv    = self._cls_score(self.unique_head_v, u_v_a)
-            score_ua    = self._cls_score(self.unique_head_a, u_a_a)
-            score_udelta = self._cls_score(self.incon_head,   u_delta_a)
-            loss_mi  = (
-                self._ce_loss(score_uv,    lbl_av1m)
-                + self._ce_loss(score_ua,    lbl_av1m)
-                + self._ce_loss(score_udelta, lbl_av1m)
-            )
+            score_uv = self._cls_score(self.unique_head_v, u_v_a)
+            score_ua = self._cls_score(self.unique_head_a, u_a_a)
+            if u_delta_a is not None:
+                score_udelta = self._cls_score(self.incon_head, u_delta_a)
+                loss_mi = (
+                    self._ce_loss(score_uv,    lbl_av1m)
+                    + self._ce_loss(score_ua,    lbl_av1m)
+                    + self._ce_loss(score_udelta, lbl_av1m)
+                )
+            else:
+                loss_mi = (
+                    self._ce_loss(score_uv, lbl_av1m)
+                    + self._ce_loss(score_ua, lbl_av1m)
+                )
 
             s_v_proj = self.sda(s_v_a.mean(1))
             s_a_proj = self.sda(s_a_a.mean(1))
@@ -322,16 +356,23 @@ class AVH_FCD_A6(L.LightningModule):
             ])
             loss_dis = F.binary_cross_entropy_with_logits(mod_score, mod_labels)
 
-            loss_orth = (1 / 3) * (
-                self._orth_loss(u_v_a,    r_v_a)
-                + self._orth_loss(u_a_a,    r_a_a)
-                + 0.5 * (self._orth_loss(u_delta_a, r_v_a) + self._orth_loss(u_delta_a, r_a_a))
+            loss_orth_base = (1 / 2) * (
+                self._orth_loss(u_v_a, r_v_a)
+                + self._orth_loss(u_a_a, r_a_a)
             )
+            if u_delta_a is not None:
+                loss_orth = (1 / 3) * (
+                    self._orth_loss(u_v_a,    r_v_a)
+                    + self._orth_loss(u_a_a,    r_a_a)
+                    + 0.5 * (self._orth_loss(u_delta_a, r_v_a) + self._orth_loss(u_delta_a, r_a_a))
+                )
+            else:
+                loss_orth = loss_orth_base
 
             # Real-clip sparsity: penalise ||u_Δ||² on genuine AV1M clips so
             # that u_Δ is only active when audio-visual streams actually mismatch.
             real_mask_av1m = (lbl_av1m == 0)
-            if real_mask_av1m.any() and self.lambda_incon_sparse > 0.0:
+            if u_delta_a is not None and real_mask_av1m.any() and self.lambda_incon_sparse > 0.0:
                 loss_incon_sparse = (u_delta_a[real_mask_av1m] ** 2).mean()
             else:
                 loss_incon_sparse = torch.tensor(0.0, device=video_feats.device)

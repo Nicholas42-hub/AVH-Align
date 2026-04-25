@@ -1,0 +1,38 @@
+ablation_id: "A5_favc_seed42"
+
+data_info:
+  name: "FAVC"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  apply_l2: true
+
+model_hparams:
+  feat_dim:  1024
+  syn_dim:   256
+  spec_dim:  256
+  sda_dim:   128
+  mi_dim:    128
+  lambda_mi:    1.0
+  lambda_sda:   0.5
+  lambda_dis:   1.0
+  lambda_orth:  0.1
+  sda_eps:     0.05
+  sda_n_iter:  5
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5_favc_seed42/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5_favc_seed42/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 50
+seed: 42
+
+early_stopping:
+  metric: "val_auc_causal"
+  mode:   "max"
+  patience: 20

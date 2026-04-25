@@ -1,0 +1,21 @@
+AV1M In-Domain Evaluation
+Model   : ablation
+Ckpt    : /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_favc_seed44/ckpts/model-epoch=08-v1.ckpt
+Features: /data/projects/punim2637/nnliang/AVH-Align/data/avh_features
+Split   : val
+============================================================
+
+[FULL] N=2000 (real=519, fake=1481)
+  AUC : 0.6380
+  AP  : 0.7976
+
+[CAUSAL] N=2000 (real=519, fake=1481)
+  AUC : 0.6380
+  AP  : 0.7976
+
+[SPURIOUS] N=2000 (real=519, fake=1481)
+  AUC : 0.4898
+  AP  : 0.7424
+
+============================================================
+Results saved to: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_favc_seed44/results_av1m_val_crossdomain/eval_results.txt

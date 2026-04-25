@@ -466,24 +466,23 @@ def make_analysis():
 
 def make_seed_variance_figure():
     """Per-seed strip plot over box for FV-RA AUC across all model variants.
-    Makes variance transparent and shows the gain is consistent across seeds.
+    Makes the seed policy transparent by plotting every completed full-split seed.
     """
-    # Actual seed results for FV-RA AUC (seeds 42, 43, 44)
-    # Two-way baseline: mean=0.500, std=0.047
-    # Three-way no push-pull: mean=0.613, std=0.014
-    # TriRoute: mean=0.659, std=0.079
-    # Two-way+DAT: single seed = 0.450
+    # Actual seed results for FV-RA AUC (FAVC 70/30 test, N=6,667)
+    # Rows with completed sweeps use seeds 43, 44, 45. Table values are means,
+    # not best-seed values. Two-way+DAT (A3) currently has one full-split run.
     seed_data = {
-        "Two-way\nbaseline":       [0.530, 0.500, 0.470],
-        "Two-way\n+ domain-adv\u2020": [0.450],           # single seed, dagger
-        "Three-way,\nno push-pull":[0.604, 0.615, 0.620],
-        r"$\bf{TriRoute}$" + "\n(ours)": [0.700, 0.659, 0.618],
+        "Two-way\nbaseline":                 [0.442, 0.483, 0.522],
+        "Two-way\n+ domain-adv\u2020":       [0.441],
+        "Three-way,\nno push-pull":          [0.586, 0.589, 0.626],
+        r"$\bf{TriRoute}$" + "\n(no target)": [0.561, 0.586, 0.731],
+        r"$\bf{TriRoute}$" + "\n+ UDA":       [0.757, 0.632, 0.589],
     }
 
-    fig, ax = plt.subplots(figsize=(5.5, 3.4))
+    fig, ax = plt.subplots(figsize=(6.4, 3.4))
 
     model_names = list(seed_data.keys())
-    colors = ["#AEC7E8", "#CFCFCF", "#FFBB78", "#D62728"]
+    colors = ["#AEC7E8", "#CFCFCF", "#FFBB78", "#E15759", "#D62728"]
     x_pos  = np.arange(len(model_names))
 
     for i, (name, vals) in enumerate(seed_data.items()):
@@ -515,13 +514,13 @@ def make_seed_variance_figure():
 
     # Chance line
     ax.axhline(0.5, color="#999999", lw=0.9, ls="--", alpha=0.7)
-    ax.text(3.55, 0.503, "chance", fontsize=6.5, color="#999999", va="bottom", ha="right")
+    ax.text(4.55, 0.503, "chance", fontsize=6.5, color="#999999", va="bottom", ha="right")
 
-    # Highlight TriRoute gain arrow
-    ax.annotate("", xy=(3, 0.659), xytext=(0, 0.500),
+    # Highlight mean gain (two-way mean≈0.483 → TriRoute+UDA mean≈0.659)
+    ax.annotate("", xy=(4, 0.659), xytext=(0, 0.483),
                 arrowprops=dict(arrowstyle="-|>", color="#D62728",
                                 lw=1.1, connectionstyle="arc3,rad=-0.25"))
-    ax.text(1.7, 0.535, "+0.159 FV-RA gain", fontsize=7, color="#D62728",
+    ax.text(2.15, 0.525, "+0.176 FV-RA mean gain", fontsize=7, color="#D62728",
             rotation=-8, ha="center")
 
     ax.set_xticks(x_pos)
@@ -531,7 +530,7 @@ def make_seed_variance_figure():
                  r"(◆ = mean, dots = individual seeds)",
                  fontsize=9, fontweight="bold")
     ax.set_ylim(0.36, 0.84)
-    ax.set_xlim(-0.55, 3.75)
+    ax.set_xlim(-0.55, 4.75)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.yaxis.grid(True, lw=0.4, alpha=0.5)

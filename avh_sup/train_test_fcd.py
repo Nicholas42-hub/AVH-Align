@@ -25,7 +25,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from torch.utils.data import DataLoader
 import lightning as L
 
-from datasets import AV1M_trainval_dataset
+from datasets import AV1M_trainval_dataset, FakeAVCeleb_NPZ_Dataset
 from mlp_fcd import AVH_FCD
 
 
@@ -45,8 +45,12 @@ def set_seed(seed: int):
 
 def load_data(config: dict):
     data_cfg   = config["data_info"]
-    train_ds   = AV1M_trainval_dataset(data_cfg, split="train")
-    val_ds     = AV1M_trainval_dataset(data_cfg, split="val")
+    if data_cfg.get("name") == "FAVC":
+        train_ds = FakeAVCeleb_NPZ_Dataset(data_cfg, split="train")
+        val_ds   = FakeAVCeleb_NPZ_Dataset(data_cfg, split="val")
+    else:
+        train_ds   = AV1M_trainval_dataset(data_cfg, split="train")
+        val_ds     = AV1M_trainval_dataset(data_cfg, split="val")
     train_dl   = DataLoader(train_ds, shuffle=True,  batch_size=1)
     val_dl     = DataLoader(val_ds,   shuffle=False, batch_size=1)
     print(f"Train: {len(train_ds)} clips   Val: {len(val_ds)} clips", flush=True)

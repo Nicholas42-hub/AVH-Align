@@ -38,6 +38,7 @@ model_hparams:
   spec_dim:    256
   sda_dim:     128
   mi_dim:      128
+  incon_dim:   0    # checkpoint was trained without CrossModalInconsistency
 
   # Loss weights (same as frozen A6)
   lambda_mi:    1.0

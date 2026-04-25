@@ -1,0 +1,56 @@
+# ============================================================
+#  A6-AV1M-PseudoDomain-v2 (seed 43)
+#
+#  Fixed ablation: domain push-pull using AV1M speaker-group labels.
+#  Includes ALL AV1M clips (real + fake) so task head trains on both classes.
+#  Domain labels = hash(speaker_id) % 2 on all clips.
+#
+#  v1 bug: only real clips were included → task head never saw fake samples.
+#  v2 fix: all clips included, domain label from speaker hash for all clips.
+#
+#  Expected: ≤ A5, because speaker nuisance is intra-source.
+# ============================================================
+
+ablation_id: "A6_av1m_pseudodomain_v2"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim: 1024
+  syn_dim: 256
+  spec_dim: 256
+  sda_dim: 128
+  mi_dim: 128
+
+  lambda_mi: 1.0
+  lambda_sda: 0.5
+  lambda_dis: 1.0
+  lambda_orth: 0.1
+  lambda_dadv: 1.0
+  lambda_ddis: 1.0
+  grl_alpha: 1.0
+
+  sda_eps: 0.05
+  sda_n_iter: 5
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_av1m_pseudodomain_v2_seed43/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_av1m_pseudodomain_v2_seed43/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 20
+seed: 43
+
+early_stopping:
+  metric: "val_auc_causal"
+  mode: "max"
+  patience: 20

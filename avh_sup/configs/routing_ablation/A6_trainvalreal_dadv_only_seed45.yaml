@@ -1,0 +1,43 @@
+ablation_id: A6_trainvalreal_dadv_only_seed45
+data_info:
+  name: AV1M
+  root_path: /data/gpfs/projects/punim2637/nnliang/AVH-Align/data/avh_features
+  csv_root_path: /data/gpfs/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m
+  apply_l2: true
+favc_domain_info:
+  root_path: /data/gpfs/projects/punim2637/nnliang/AVH-Align/data/favc_features
+  csv_root_path: /data/gpfs/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_npz_matched
+  split: trainval
+  real_only: true
+  apply_l2: true
+model_hparams:
+  feat_dim: 1024
+  syn_dim: 256
+  spec_dim: 256
+  sda_dim: 128
+  mi_dim: 128
+  incon_dim: 0
+  lambda_mi: 1.0
+  lambda_sda: 0.5
+  lambda_dis: 1.0
+  lambda_orth: 0.1
+  lambda_dadv: 1.0
+  lambda_ddis: 0.0
+  grl_alpha: 1.0
+  sda_eps: 0.05
+  sda_n_iter: 5
+  lr: 0.001
+callbacks:
+  logger:
+    log_path: /data/gpfs/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_trainvalreal_dadv_only_seed45/logs
+    name: csv
+  ckpt_args:
+    ckpt_dir: /data/gpfs/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_trainvalreal_dadv_only_seed45/ckpts
+    metric: val_auc_causal
+    mode: max
+epochs: 20
+seed: 45
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 20

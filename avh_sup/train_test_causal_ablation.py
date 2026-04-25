@@ -112,9 +112,13 @@ def load_data_for_ablation(config: dict, use_domain: bool):
         val_ds   = av1m_val_dom
 
     else:
-        # A1 / A2: plain AV1M, no domain label
-        train_ds = AV1M_trainval_dataset(data_cfg, split="train")
-        val_ds   = AV1M_trainval_dataset(data_cfg, split="val")
+        # A1 / A2: plain training, no domain label
+        if data_cfg.get("name") == "FAVC":
+            train_ds = FakeAVCeleb_NPZ_Dataset(data_cfg, split="train")
+            val_ds   = FakeAVCeleb_NPZ_Dataset(data_cfg, split="val")
+        else:
+            train_ds = AV1M_trainval_dataset(data_cfg, split="train")
+            val_ds   = AV1M_trainval_dataset(data_cfg, split="val")
 
     train_dl = DataLoader(train_ds, shuffle=True,  batch_size=1)
     val_dl   = DataLoader(val_ds,   shuffle=False, batch_size=1)

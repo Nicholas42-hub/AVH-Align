@@ -1,0 +1,13 @@
+AV1M In-Domain Evaluation
+Model   : baseline
+Ckpt    : /data/projects/punim2637/nnliang/AVH-Align/checkpoints/avh_sup/AVH_Sup_FAVC.ckpt
+Features: /data/projects/punim2637/nnliang/AVH-Align/data/avh_features
+Split   : val
+============================================================
+
+[OVERALL] N=2000 (real=519, fake=1481)
+  AUC : 0.6767
+  AP  : 0.8128
+
+============================================================
+Results saved to: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_avhsup_favc/results_av1m_val/eval_results.txt

@@ -57,11 +57,19 @@ from tqdm import tqdm
 
 sys.path.insert(0, os.path.dirname(__file__))
 from mlp_causal_ablation import AVH_Causal_Ablation
-from mlp_causal_mi import AVH_Causal_MI
 from mlp_fcd import AVH_FCD
 from mlp_fcd_a6 import AVH_FCD_A6
 from mlp_fcd_a7 import AVH_FCD_A7
-from mlp_sad_a8 import AVH_SAD_A8
+
+try:
+    from mlp_causal_mi import AVH_Causal_MI
+except ImportError:
+    AVH_Causal_MI = None
+
+try:
+    from mlp_sad_a8 import AVH_SAD_A8
+except ImportError:
+    AVH_SAD_A8 = None
 
 _FAVC_REAL_CATEGORY = "RealVideo-RealAudio"
 _FAVC_FAKE_CATEGORIES = {
@@ -78,6 +86,8 @@ def _load_model(ckpt_path):
     cfg  = ckpt["hyper_parameters"]["config"]
     hp   = cfg.get("model_hparams", {})
     if "sync_dim" in hp:
+        if AVH_SAD_A8 is None:
+            raise ImportError("mlp_sad_a8.py is required for sync_dim checkpoints")
         model = AVH_SAD_A8(config=cfg)
     elif "lambda_ladv" in hp:
         model = AVH_FCD_A7(config=cfg)
@@ -86,6 +96,8 @@ def _load_model(ckpt_path):
     elif "syn_dim" in hp:
         model = AVH_FCD(config=cfg)
     elif "lambda_mi_spu" in hp or "lambda_club" in hp:
+        if AVH_Causal_MI is None:
+            raise ImportError("mlp_causal_mi.py is required for MI causal checkpoints")
         model = AVH_Causal_MI(config=cfg)
     else:
         model = AVH_Causal_Ablation(config=cfg)
@@ -102,7 +114,7 @@ def _is_fcd(model):
 
 # ── Build ablation masks ────────────────────────────────────────────────────────
 
-def _build_ablation_masks(model, causal_dim):
+def _build_ablation_masks(model, causal_dim, hp=None):
     """
     Returns dict: mask_name -> list of (start, end) dim ranges to ZERO OUT in Z_c.
 
@@ -116,16 +128,52 @@ def _build_ablation_masks(model, causal_dim):
         masks["mask_vc"]  = [(0, half)]          # zero v_c → only a_c survives
         masks["mask_ac"]  = [(half, causal_dim)]  # zero a_c → only v_c survives
     else:
-        # FCD: [s_v|u_v|s_a|u_a] each 256
-        q = causal_dim // 4      # = 256
-        masks["mask_sv"]    = [(0,   q)]
-        masks["mask_uv"]    = [(q,   2*q)]
-        masks["mask_sa"]    = [(2*q, 3*q)]
-        masks["mask_ua"]    = [(3*q, 4*q)]
-        masks["mask_vis"]   = [(0,   2*q)]        # zero all visual (s_v + u_v)
-        masks["mask_aud"]   = [(2*q, 4*q)]        # zero all audio  (s_a + u_a)
-        masks["mask_syn"]   = [(0,   q), (2*q, 3*q)]   # zero s_v + s_a
-        masks["mask_uniq"]  = [(q,   2*q), (3*q, 4*q)] # zero u_v + u_a
+        hp = hp or {}
+        syn_dim = int(hp.get("syn_dim", 256))
+        spec_dim = int(hp.get("spec_dim", 256))
+        incon_dim = int(hp.get("incon_dim", getattr(model, "_incon_dim", 0)))
+        expose_residual = bool(
+            hp.get(
+                "expose_residual_to_task_head",
+                getattr(model, "expose_residual_to_task_head", False),
+            )
+        )
+
+        lo = 0
+        ranges = {}
+        for name, width in (
+            ("sv", syn_dim),
+            ("uv", spec_dim),
+            ("udelta", incon_dim),
+            ("sa", syn_dim),
+            ("ua", spec_dim),
+        ):
+            if width <= 0:
+                continue
+            ranges[name] = (lo, lo + width)
+            lo += width
+        if expose_residual:
+            ranges["rv"] = (lo, lo + spec_dim)
+            lo += spec_dim
+            ranges["ra"] = (lo, lo + spec_dim)
+            lo += spec_dim
+        if lo != causal_dim:
+            raise ValueError(f"Mask layout dim {lo} does not match head input dim {causal_dim}")
+
+        masks["mask_sv"] = [ranges["sv"]]
+        masks["mask_uv"] = [ranges["uv"]]
+        masks["mask_sa"] = [ranges["sa"]]
+        masks["mask_ua"] = [ranges["ua"]]
+        if "udelta" in ranges:
+            masks["mask_udelta"] = [ranges["udelta"]]
+        masks["mask_vis"] = [ranges["sv"], ranges["uv"]]
+        masks["mask_aud"] = [ranges["sa"], ranges["ua"]]
+        masks["mask_syn"] = [ranges["sv"], ranges["sa"]]
+        masks["mask_uniq"] = [ranges["uv"], ranges["ua"]]
+        if expose_residual:
+            masks["mask_res"] = [ranges["rv"], ranges["ra"]]
+            masks["mask_rv"] = [ranges["rv"]]
+            masks["mask_ra"] = [ranges["ra"]]
     return masks
 
 
@@ -219,8 +267,10 @@ def run_inference(model, dataloader, device, ablation_ranges=None):
         video = video.to(device)   # [1, T, D]
         audio = audio.to(device)
 
-        causal_repr, _, _ = model._encode(video, audio)
-        # causal_repr: [1, T, causal_dim]
+        causal_repr, spurious_repr, _ = model._encode(video, audio)
+        if hasattr(model, "_task_repr"):
+            causal_repr = model._task_repr(causal_repr, spurious_repr)
+        # causal_repr: [1, T, task_head_input_dim]
 
         if ablation_ranges is not None:
             causal_repr = _apply_mask(causal_repr, ablation_ranges)
@@ -276,13 +326,19 @@ def main():
         hp = config.get("model_hparams", {})
         syn_dim  = int(hp.get("syn_dim",  256))
         spec_dim = int(hp.get("spec_dim", 256))
-        causal_dim = (syn_dim + spec_dim) * 2   # 1024
+        incon_dim = int(hp.get("incon_dim", getattr(model, "_incon_dim", 0)))
+        causal_dim = (syn_dim + spec_dim) * 2 + incon_dim
+        if hp.get(
+            "expose_residual_to_task_head",
+            getattr(model, "expose_residual_to_task_head", False),
+        ):
+            causal_dim += spec_dim * 2
     else:
         hp = config.get("model_hparams", {})
         proj_dim   = int(hp.get("proj_dim", 512))
         causal_dim = proj_dim * 2               # 1024
 
-    ablation_masks = _build_ablation_masks(model, causal_dim)
+    ablation_masks = _build_ablation_masks(model, causal_dim, hp=hp)
     print(f"\nCausal dim : {causal_dim}")
     print(f"Ablations  : {list(ablation_masks.keys())}")
 

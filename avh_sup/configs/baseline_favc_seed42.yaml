@@ -1,0 +1,25 @@
+data_info:
+  name: "FAVC"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  apply_l2: true
+
+model_hparams:
+  model_type: "mlp"
+  input_type: "both"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_baseline_favc_seed42/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_baseline_favc_seed42/ckpts"
+    metric: "val_loss"
+    mode: "min"
+  early_stopping:
+    metric: "val_loss"
+    mode: "min"
+    patience: 20
+
+epochs: 50
+seed: 42

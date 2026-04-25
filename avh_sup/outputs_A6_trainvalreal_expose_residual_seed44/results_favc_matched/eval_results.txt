@@ -1,0 +1,26 @@
+FakeAVCeleb Cross-Dataset Evaluation
+Model   : fcd_a6
+Ckpt    : /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_trainvalreal_expose_residual_seed44/ckpts/model-epoch=08.ckpt
+Features: /data/projects/punim2637/nnliang/AVH-Align/data/favc_features
+Split   : test
+============================================================
+
+  ── FULL HEAD ──
+  overall                         AUC=0.8896  AP=0.9971  N=1114
+  RealVideo-FakeAudio             AUC=1.0000  AP=1.0000  N=52
+  FakeVideo-RealAudio             AUC=0.7580  AP=0.9819  N=522
+  FakeVideo-FakeAudio             AUC=0.9999  AP=1.0000  N=592
+
+  ── CAUSAL HEAD ──
+  overall                         AUC=0.8896  AP=0.9971  N=1114
+  RealVideo-FakeAudio             AUC=1.0000  AP=1.0000  N=52
+  FakeVideo-RealAudio             AUC=0.7580  AP=0.9819  N=522
+  FakeVideo-FakeAudio             AUC=0.9999  AP=1.0000  N=592
+
+  ── SPURIOUS HEAD ──
+  overall                         AUC=0.3217  AP=0.9626  N=1114
+  RealVideo-FakeAudio             AUC=0.5473  AP=0.5543  N=52
+  FakeVideo-RealAudio             AUC=0.4286  AP=0.9385  N=522
+  FakeVideo-FakeAudio             AUC=0.2176  AP=0.9065  N=592
+============================================================
+Results saved to: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_trainvalreal_expose_residual_seed44/results_favc_matched

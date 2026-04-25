@@ -257,12 +257,24 @@ def main():
         model.load_state_dict(filtered_state, strict=False)
     elif args.model == "fcd_a6":
         from mlp_fcd_a6 import AVH_FCD_A6
-        ckpt = torch.load(args.ckpt_path, map_location="cpu", weights_only=False)
-        model = AVH_FCD_A6(config=ckpt["hyper_parameters"]["config"])
-        model_state = model.state_dict()
-        filtered_state = {k: v for k, v in ckpt["state_dict"].items()
-                          if k in model_state and v.shape == model_state[k].shape}
-        model.load_state_dict(filtered_state, strict=False)
+        try:
+            model = AVH_FCD_A6.load_from_checkpoint(args.ckpt_path)
+        except RuntimeError as exc:
+            # Older A6 checkpoints were trained before the optional
+            # cross-modal inconsistency factor existed. Their task head expects
+            # a 1024-d causal representation rather than 1280-d, so recreate
+            # that legacy architecture by setting incon_dim=0.
+            ckpt = torch.load(args.ckpt_path, map_location="cpu", weights_only=False)
+            cfg = ckpt["hyper_parameters"]["config"]
+            head0 = ckpt["state_dict"].get("causal_head.0.weight")
+            if head0 is None or head0.shape[1] != 1024:
+                raise exc
+            cfg = dict(cfg)
+            hp = dict(cfg.get("model_hparams", {}))
+            hp["incon_dim"] = 0
+            cfg["model_hparams"] = hp
+            model = AVH_FCD_A6(config=cfg)
+            model.load_state_dict(ckpt["state_dict"], strict=True)
     elif args.model == "fcd_a7":
         from mlp_fcd_a7 import AVH_FCD_A7
         ckpt = torch.load(args.ckpt_path, map_location="cpu", weights_only=False)
