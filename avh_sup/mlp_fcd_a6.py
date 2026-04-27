@@ -38,6 +38,8 @@ Overall:
 
 import math
 
+import math
+
 import lightning as L
 import numpy as np
 import torch
@@ -299,7 +301,14 @@ class AVH_FCD_A6(L.LightningModule):
         # domain_label == -1 signals "no domain supervision" (e.g. fake FAVC clips
         # when using real-only domain labeling). Backward-compatible: existing
         # training runs set domain_label=0/1 for all clips, so mask = all-True.
-        Z_c_rev   = grad_reverse(Z_c_pool, self.grl_alpha)
+        # DANN warmup: alpha ramps from 0 → grl_alpha over training
+        # p = epoch / max_epochs, alpha = grl_alpha * (2/(1+exp(-10p)) - 1)
+        # This prevents the GRL from destabilising the encoder in early epochs.
+        current_epoch = self.current_epoch
+        max_epochs = self.trainer.max_epochs if self.trainer is not None else 100
+        p = current_epoch / max(max_epochs, 1)
+        _alpha = self.grl_alpha * (2.0 / (1.0 + math.exp(-10.0 * p)) - 1.0)
+        Z_c_rev   = grad_reverse(Z_c_pool, _alpha)
         domain_mask = (domain_labels >= 0)
         if domain_mask.any():
             d_score_c = self.domain_head_c(Z_c_rev[domain_mask]).squeeze(-1)

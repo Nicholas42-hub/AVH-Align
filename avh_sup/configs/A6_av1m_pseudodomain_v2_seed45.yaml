@@ -54,3 +54,10 @@ early_stopping:
   metric: "val_auc_causal"
   mode: "max"
   patience: 20
+
+favc_eval_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_7030_canonical"
+  split: "test"
+  apply_l2: true
+  check_every_n_epochs: 1

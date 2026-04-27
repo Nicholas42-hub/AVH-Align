@@ -1,0 +1,8 @@
+{
+  "n_total_csv": 6667,
+  "n_resolved": 6667,
+  "n_missing": 0,
+  "list_path": "/data/projects/punim2637/nnliang/AVH-Align/submission_prep/avad_matched_baseline/favc_7030_test_videos.txt",
+  "labels_path": "/data/projects/punim2637/nnliang/AVH-Align/submission_prep/avad_matched_baseline/favc_7030_test_labels.csv",
+  "missing_path": "/data/projects/punim2637/nnliang/AVH-Align/submission_prep/avad_matched_baseline/missing_favc_paths.txt"
+}

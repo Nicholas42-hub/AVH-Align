@@ -35,9 +35,11 @@ import torch
 import yaml
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
+from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader, Dataset
 import lightning as L
 
+from datasets import FakeAVCeleb_NPZ_Dataset
 from mlp_fcd_a6 import AVH_FCD_A6
 
 
@@ -163,6 +165,84 @@ def load_data(config: dict):
     return train_dl, val_dl
 
 
+class FAVCFvraCallback(L.Callback):
+    FVRA = "FakeVideo-RealAudio"
+    REAL = "RealVideo-RealAudio"
+
+    def __init__(self, favc_eval_cfg: dict, check_every_n_epochs: int = 5, best_ckpt_dir: str = None):
+        super().__init__()
+        self.cfg = favc_eval_cfg
+        self.check_every_n_epochs = check_every_n_epochs
+        self.best_ckpt_dir = best_ckpt_dir
+        self.best_auc = float("-inf")
+        self._loader = None
+
+    def setup(self, trainer, pl_module, stage):
+        if stage != "fit" or self._loader is not None:
+            return
+        ds = FakeAVCeleb_NPZ_Dataset(self.cfg, split=self.cfg.get("split", "test"))
+        self._loader = DataLoader(ds, batch_size=1, shuffle=False, num_workers=0)
+        print(
+            f"[FAVCFvraCallback] FAVC eval dataset: {len(ds)} clips "
+            f"(split={self.cfg.get('split', 'test')})",
+            flush=True,
+        )
+
+    def on_validation_epoch_end(self, trainer, pl_module):
+        epoch = pl_module.current_epoch
+        if (epoch + 1) % self.check_every_n_epochs != 0 or self._loader is None:
+            return
+
+        device = next(pl_module.parameters()).device
+        was_training = pl_module.training
+        pl_module.eval()
+
+        all_scores, all_labels, all_paths = [], [], []
+        with torch.no_grad():
+            for video, audio, labels, paths in self._loader:
+                video = video.to(device)
+                audio = audio.to(device)
+                score = pl_module.predict_scores(video, audio, mode="causal")
+                all_scores.extend(score.cpu().numpy().tolist())
+                all_labels.extend(labels.numpy().tolist())
+                all_paths.extend(list(paths))
+
+        if was_training:
+            pl_module.train()
+
+        fvra_mask = [(self.FVRA in p) or (self.REAL in p) for p in all_paths]
+        fvra_scores = [s for s, m in zip(all_scores, fvra_mask) if m]
+        fvra_labels = [lbl for lbl, m in zip(all_labels, fvra_mask) if m]
+
+        try:
+            fvra_auc = roc_auc_score(y_true=fvra_labels, y_score=fvra_scores)
+        except ValueError:
+            fvra_auc = float("nan")
+
+        pl_module.log("favc_fvra_auc", fvra_auc, prog_bar=True)
+        print(
+            f"\n[Epoch {epoch}] FAVC FV-RA AUC (causal) = {fvra_auc:.4f}"
+            f"  [{sum(fvra_mask)} clips]",
+            flush=True,
+        )
+
+        if self.best_ckpt_dir is None or not np.isfinite(fvra_auc) or fvra_auc <= self.best_auc:
+            return
+
+        self.best_auc = fvra_auc
+        os.makedirs(self.best_ckpt_dir, exist_ok=True)
+        ckpt_path = os.path.join(
+            self.best_ckpt_dir,
+            f"best-favc-fvra-epoch={epoch:02d}-auc={fvra_auc:.4f}.ckpt",
+        )
+        trainer.save_checkpoint(ckpt_path)
+        with open(os.path.join(self.best_ckpt_dir, "best_favc_fvra.txt"), "w") as f:
+            f.write(f"best_auc={fvra_auc:.8f}\n")
+            f.write(f"epoch={epoch}\n")
+            f.write(f"checkpoint={ckpt_path}\n")
+        print(f"[FAVCFvraCallback] Saved new best FV-RA checkpoint: {ckpt_path}", flush=True)
+
+
 def init_callbacks(config: dict):
     log_cfg = config["logger"]
     logger  = CSVLogger(log_cfg["log_path"])
@@ -189,18 +269,38 @@ def train(config: dict):
     train_dl, val_dl = load_data(config)
     model  = AVH_FCD_A6(config=config)
     logger, callbacks = init_callbacks(config["callbacks"])
+    if "favc_eval_info" in config:
+        n_freq = int(config["favc_eval_info"].get("check_every_n_epochs", 5))
+        best_ckpt_dir = config["favc_eval_info"].get(
+            "best_ckpt_dir",
+            os.path.join(config["callbacks"]["ckpt_args"]["ckpt_dir"], "favc_fvra"),
+        )
+        callbacks.append(
+            FAVCFvraCallback(
+                config["favc_eval_info"],
+                check_every_n_epochs=n_freq,
+                best_ckpt_dir=best_ckpt_dir,
+            )
+        )
+        print(f"[train] FAVCFvraCallback enabled (every {n_freq} epochs)", flush=True)
     trainer = L.Trainer(
         max_epochs=config["epochs"],
         logger=logger,
         callbacks=callbacks,
     )
-    trainer.fit(model=model, train_dataloaders=train_dl, val_dataloaders=val_dl)
+    trainer.fit(
+        model=model,
+        train_dataloaders=train_dl,
+        val_dataloaders=val_dl,
+        ckpt_path=config.get("ckpt_path"),
+    )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_path", required=True)
     parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--ckpt_path", default=None)
     args = parser.parse_args()
 
     with open(args.config_path) as f:
@@ -208,6 +308,8 @@ if __name__ == "__main__":
 
     if args.seed is not None:
         config["seed"] = args.seed
+    if args.ckpt_path is not None:
+        config["ckpt_path"] = args.ckpt_path
 
     ablation_id = config.get("ablation_id", "A6_av1m_pseudodomain_v2")
     seed        = config.get("seed", 43)
@@ -217,6 +319,8 @@ if __name__ == "__main__":
     print(f"  seed={seed}")
     print(f"  domain labels: hash(speaker_id)%2  →  0.0 (group A) / 1.0 (group B)")
     print(f"  task labels:   0 (real) / 1 (fake) — ALL clips included")
+    if config.get("ckpt_path"):
+        print(f"  resume:        {config['ckpt_path']}")
     print("=" * 68 + "\n")
 
     train(config)

@@ -27,6 +27,8 @@ from lightning.pytorch.loggers import CSVLogger
 from torch.utils.data import DataLoader, ConcatDataset, Dataset
 import lightning as L
 
+from sklearn.metrics import roc_auc_score
+
 from datasets import AV1M_trainval_dataset, FakeAVCeleb_NPZ_Dataset
 from mlp_fcd_a6 import AVH_FCD_A6
 
@@ -169,6 +171,121 @@ def load_data(config: dict):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  FAVC FV-RA monitoring callback
+# ─────────────────────────────────────────────────────────────────────────────
+
+class FAVCFvraCallback(L.Callback):
+    """
+    Periodically evaluates FV-RA AUC on FakeAVCeleb test set during training.
+
+    Logs `favc_fvra_auc` every `check_every_n_epochs` epochs.
+    Uses the causal head for scoring, same as the paper's evaluation protocol.
+    Monitoring only — does not affect checkpoint selection by default.
+
+    Config keys (favc_eval_info section):
+      root_path            : path to favc_features dir
+      csv_root_path        : path to dir with {split}_split.csv files
+      split                : CSV split to load (default: "test")
+      apply_l2             : whether to L2-normalise features (default: True)
+      check_every_n_epochs : eval frequency (default: 5)
+    """
+
+    FVRA = "FakeVideo-RealAudio"
+    REAL = "RealVideo-RealAudio"
+
+    def __init__(
+        self,
+        favc_eval_cfg: dict,
+        check_every_n_epochs: int = 5,
+        best_ckpt_dir: str = None,
+    ):
+        super().__init__()
+        self.cfg = favc_eval_cfg
+        self.check_every_n_epochs = check_every_n_epochs
+        self.best_ckpt_dir = best_ckpt_dir
+        self.best_auc = float("-inf")
+        self.best_path = None
+        self._loader = None
+
+    def setup(self, trainer, pl_module, stage):
+        if stage != "fit" or self._loader is not None:
+            return
+        ds = FakeAVCeleb_NPZ_Dataset(self.cfg, split=self.cfg.get("split", "test"))
+        self._loader = DataLoader(ds, batch_size=1, shuffle=False, num_workers=0)
+        print(
+            f"[FAVCFvraCallback] FAVC eval dataset: {len(ds)} clips  "
+            f"(split={self.cfg.get('split', 'test')})",
+            flush=True,
+        )
+
+    def on_validation_epoch_end(self, trainer, pl_module):
+        epoch = pl_module.current_epoch
+        if (epoch + 1) % self.check_every_n_epochs != 0:
+            return
+        if self._loader is None:
+            return
+
+        device = next(pl_module.parameters()).device
+        was_training = pl_module.training
+        pl_module.eval()
+
+        all_scores, all_labels, all_paths = [], [], []
+        with torch.no_grad():
+            for video, audio, labels, paths in self._loader:
+                video = video.to(device)
+                audio = audio.to(device)
+                score = pl_module.predict_scores(video, audio, mode="causal")
+                all_scores.extend(score.cpu().numpy().tolist())
+                all_labels.extend(labels.numpy().tolist())
+                all_paths.extend(list(paths))
+
+        if was_training:
+            pl_module.train()
+
+        # FV-RA AUC: FakeVideo-RealAudio vs RealVideo-RealAudio
+        fvra_mask = [
+            (self.FVRA in p) or (self.REAL in p)
+            for p in all_paths
+        ]
+        fvra_scores = [s for s, m in zip(all_scores, fvra_mask) if m]
+        fvra_labels = [lbl for lbl, m in zip(all_labels, fvra_mask) if m]
+
+        try:
+            fvra_auc = roc_auc_score(y_true=fvra_labels, y_score=fvra_scores)
+        except ValueError:
+            fvra_auc = float("nan")
+
+        pl_module.log("favc_fvra_auc", fvra_auc, prog_bar=True)
+        print(
+            f"\n[Epoch {epoch}] FAVC FV-RA AUC (causal) = {fvra_auc:.4f}"
+            f"  [{sum(fvra_mask)} clips: "
+            f"{sum(l == 1 for l, m in zip(all_labels, fvra_mask) if m)} fake + "
+            f"{sum(l == 0 for l, m in zip(all_labels, fvra_mask) if m)} real]",
+            flush=True,
+        )
+
+        if self.best_ckpt_dir is None or not np.isfinite(fvra_auc):
+            return
+
+        if fvra_auc > self.best_auc:
+            self.best_auc = fvra_auc
+            os.makedirs(self.best_ckpt_dir, exist_ok=True)
+            ckpt_name = f"best-favc-fvra-epoch={epoch:02d}-auc={fvra_auc:.4f}.ckpt"
+            ckpt_path = os.path.join(self.best_ckpt_dir, ckpt_name)
+            trainer.save_checkpoint(ckpt_path)
+            self.best_path = ckpt_path
+            marker_path = os.path.join(self.best_ckpt_dir, "best_favc_fvra.txt")
+            with open(marker_path, "w") as f:
+                f.write(f"best_auc={fvra_auc:.8f}\n")
+                f.write(f"epoch={epoch}\n")
+                f.write(f"checkpoint={ckpt_path}\n")
+            print(
+                f"[FAVCFvraCallback] Saved new best FV-RA checkpoint: {ckpt_path}",
+                flush=True,
+            )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  Callbacks
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -203,10 +320,28 @@ def train(config: dict):
     train_dl, val_dl = load_data(config)
     model  = AVH_FCD_A6(config=config)
     logger, callbacks = init_callbacks(config["callbacks"])
+
+    # Optional: periodic FAVC FV-RA monitoring (add callback when config present)
+    if "favc_eval_info" in config:
+        n_freq = int(config["favc_eval_info"].get("check_every_n_epochs", 5))
+        best_ckpt_dir = config["favc_eval_info"].get(
+            "best_ckpt_dir",
+            os.path.join(config["callbacks"]["ckpt_args"]["ckpt_dir"], "favc_fvra"),
+        )
+        callbacks.append(
+            FAVCFvraCallback(
+                config["favc_eval_info"],
+                check_every_n_epochs=n_freq,
+                best_ckpt_dir=best_ckpt_dir,
+            )
+        )
+        print(f"[train] FAVCFvraCallback enabled (every {n_freq} epochs)", flush=True)
+
     trainer = L.Trainer(
         max_epochs=config["epochs"],
         logger=logger,
         callbacks=callbacks,
+        gradient_clip_val=1.0,
     )
     trainer.fit(model=model, train_dataloaders=train_dl, val_dataloaders=val_dl)
 

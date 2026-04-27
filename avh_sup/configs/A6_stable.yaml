@@ -1,0 +1,72 @@
+# ============================================================
+#  A6 stable config — for retraining seeds 44/45
+#
+#  Changes vs A6_legacy.yaml:
+#    - lr: 1e-3 → 3e-4  (reduced to stabilise adversarial training)
+#    - GRL alpha warmup: applied in mlp_fcd_a6.py training_step
+#      (2/(1+exp(-10p))-1, p=epoch/max_epochs)
+#    - gradient_clip_val=1.0: applied in train_test_fcd_a6.py Trainer
+#
+#  All other hyperparameters identical to A6_legacy.yaml (incon_dim=0,
+#  lambda_dadv=1.0, lambda_ddis=1.0, epochs=100, patience=20).
+# ============================================================
+
+ablation_id: "A6"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+model_hparams:
+  feat_dim: 1024
+  syn_dim: 256
+  spec_dim: 256
+  incon_dim: 0
+  sda_dim: 128
+  mi_dim: 128
+
+  lambda_mi: 1.0
+  lambda_sda: 0.5
+  lambda_dis: 1.0
+  lambda_orth: 0.1
+  lambda_dadv: 1.0
+  lambda_ddis: 1.0
+  grl_alpha: 1.0      # max alpha; actual alpha is warmed up in training_step
+
+  sda_eps: 0.05
+  sda_n_iter: 5
+  lr: 3.0e-4          # reduced from 1e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 44
+
+early_stopping:
+  metric: "val_auc_causal"
+  mode: "max"
+  patience: 20
+
+# FAVC FV-RA monitoring during training (FAVCFvraCallback)
+favc_eval_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_7030_canonical"
+  split: "test"
+  apply_l2: true
+  check_every_n_epochs: 5   # eval at epoch 4, 9, 14, ... (every 5 epochs)

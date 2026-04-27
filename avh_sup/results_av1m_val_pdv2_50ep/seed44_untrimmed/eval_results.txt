@@ -1,0 +1,21 @@
+AV1M In-Domain Evaluation
+Model   : fcd_a6
+Ckpt    : /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_av1m_pseudodomain_v2_50ep_seed44/ckpts/favc_fvra/best-favc-fvra-epoch=38-auc=0.8272.ckpt
+Features: /data/projects/punim2637/nnliang/AVH-Align/data/avh_features
+Split   : val
+============================================================
+
+[FULL] N=2000 (real=519, fake=1481)
+  AUC : 0.9978
+  AP  : 0.9993
+
+[CAUSAL] N=2000 (real=519, fake=1481)
+  AUC : 0.9978
+  AP  : 0.9993
+
+[SPURIOUS] N=2000 (real=519, fake=1481)
+  AUC : 0.5053
+  AP  : 0.7482
+
+============================================================
+Results saved to: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/results_av1m_val_pdv2_50ep/seed44_untrimmed/eval_results.txt

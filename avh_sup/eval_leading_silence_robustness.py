@@ -121,7 +121,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--ckpt",           required=True)
     parser.add_argument("--model",          required=True,
-                        choices=["fcd", "fcd_a6", "fcd_a6_lite", "fcd_a6_sharedonly"])
+                        choices=["fcd", "fcd_a6", "fcd_a6_lite", "fcd_a6_sharedonly", "ablation"])
     parser.add_argument("--features_path",  required=True)
     parser.add_argument("--csv_root_path",  required=True)
     parser.add_argument("--split",          default="test")
@@ -137,7 +137,16 @@ def main():
 
     # ── Load model ────────────────────────────────────────────────────────────
     print(f"Loading {args.model} from: {args.ckpt}", flush=True)
-    if args.model == "fcd":
+    if args.model == "ablation":
+        import torch as _torch
+        from mlp_causal_ablation import AVH_Causal_Ablation
+        _ckpt = _torch.load(args.ckpt, map_location="cpu", weights_only=False)
+        model = AVH_Causal_Ablation(config=_ckpt["hyper_parameters"]["config"])
+        _model_state = model.state_dict()
+        _filtered = {k: v for k, v in _ckpt["state_dict"].items()
+                     if k in _model_state and v.shape == _model_state[k].shape}
+        model.load_state_dict(_filtered, strict=False)
+    elif args.model == "fcd":
         from mlp_fcd import AVH_FCD
         model = AVH_FCD.load_from_checkpoint(args.ckpt)
     elif args.model == "fcd_a6":

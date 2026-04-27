@@ -13,7 +13,7 @@
 
 BASE=/data/projects/punim2637/nnliang/AVH-Align
 FEATURES="$BASE/data/favc_features"
-CSV_ROOT="$BASE/avh_sup/csv_metadata/favc"
+CSV_ROOT="$BASE/avh_sup/csv_metadata/favc_7030_canonical"
 SEED=44
 METHOD=coral
 OUT="$BASE/avh_sup/outputs_CORAL_seed${SEED}"

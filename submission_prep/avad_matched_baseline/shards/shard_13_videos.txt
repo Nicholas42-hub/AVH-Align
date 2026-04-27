@@ -1,0 +1,416 @@
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Caucasian (American)/men/id00021/00010.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Caucasian (American)/women/id01217/00005.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Caucasian (European)/men/id00063/00021.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Asian (South)/men/id03599/00072.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/African/men/id01528/00017_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Caucasian (American)/men/id01192/00217_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Asian (East)/men/id03889/00052_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Caucasian (European)/men/id00946/00126_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Asian (South)/men/id07463/00028_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id00076/00109_6.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id03747/00273_id02824_glBy_mYcXZw_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id03525/00048_2.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00841/00078_0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id04701/00017_id06462_Nn79kE76MA4_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00071/00014_id03371_truKMXt8Dak_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id00078/00114_id00103_qpTVaP4y5DQ_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id06254/00043_0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id00076/00109_2_id01236_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id00076/00109_8_id01170_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01528/00017_id01452_4MqeoSxSy3w_faceswap_id02494_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id02721/00424_id03658_8Wtu9VXKqjY_faceswap_id00371_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id03747/00273_id02824_glBy_mYcXZw_faceswap_id04055_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00021/00010_id00088_6WIDWxr8vuU_faceswap_id01182_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00264/00257_1_id01163_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00943/00304_id00021_6uNNej-JZ-c_faceswap_id00018_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id03525/00048_1_id00696_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id03678/00078_id03668_mjurT3_7DpE_faceswap_id01172_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id03757/00149_3_id01172_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00398/00016_id00618__TwV2SmUIlY_faceswap_id02464_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00841/00078_1_id00418_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id01004/00028_id00428_Kr7n-68JWww_faceswap_id02464_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id03605/00048_1_id00180_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id03707/00055_id02466_VOgaA7O5yWY_faceswap_id00458_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id00582/00006_id03379_A32nCObAHiI_faceswap_id00935_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id05620/00005_id06061_TckvmWR97vo_faceswap_id05631_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00063/00021_id00358_vsVwGKy79kM_faceswap_id00186_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00709/00206_1_id00709_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id01051/00322_id01102_aGFUkdgmo3A_faceswap_id01102_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00634/00078_id03649_389qfFqUddI_faceswap_id00188_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id00032/00028_0_id06355_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id00078/00114_id00103_qpTVaP4y5DQ_faceswap_id03945_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id06354/00021_id07194_NDJaiff98Fo_faceswap_id07768_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id08314/00028_id00078_9CoVxzTOAhk_faceswap_id00459_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id02089/00092_id04529_S92uo-UShxE_faceswap_id07049_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id07051/00083_id06428_A9nvRKd1afA_faceswap_id03559_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01179/00160_id00476_UgdYVJ6xPYg.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01717/00005_id01076_9bqxgm5fT58.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id01661/00059_id04055_0qrzF4HLXHY.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id02721/00424_id03658_8Wtu9VXKqjY.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id03713/00249_id04736__D2k4fMhEfQ.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00021/00010_id01035_6EWG3Ywu3jg.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00264/00257_id00049_S_EHTUF-mQY.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00529/00409_id03668_mjurT3_7DpE.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id01192/00217_id01042_afqWPqWwJIY.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id03525/00048_id04221_5XfsCrxGvj4.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id03757/00149_id00971_edWrVVn-rC4.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00398/00016_id00100_sZ0Ex4WUEgM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00462/00143_id01231_XXpYdOHUF-g.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00752/00340_id00272_VLY1boTtbRM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00841/00078_id03707_pwNcRPQ5qdo.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id01217/00005_id01216_IRxEWpT_lZs.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id03605/00048_id00145_JveyoCdoCuI.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id03707/00055_id01227_eNr-P3gIrgo.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id03889/00052_id04774_k3yOcTA95dg.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id03211/00032_id00582_9gvF6IohoUI.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id05576/00368_id00363_XNRwEZtddRk.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id05631/00073_id01281_ojEe5zGWESc.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id09125/00098_id03211_HK4oe6Hi91E.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00063/00021_id00358_vsVwGKy79kM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00187/00360_id02567_4Ao5jgpSXdw.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00709/00206_id00999_SjnM4XFBz0M.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00946/00126_id00520_dOAxKi1t6GI.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id01051/00322_id01156_RT99eogJo4k.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00262/00028_id00495_E46aiMUC4A0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00379/00043_id00188_e-vm5FB3idA.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00634/00078_id00826_MYagwzy91Yk.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id03716/00040_id00395_wM5kGJfTtEM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id00078/00114_id00350_75IFJNFAMIM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id04928/00027_id00033_gduDuRWhnlQ.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id07161/00159_id03344_vyNnOo6lU0o.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id07463/00028_id00773_2j3lUETJ57I.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id00149/00284_id03559_pgetxl1qbzM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id02089/00092_id04564_xUz03LwKRtQ.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id06254/00043_id04582_Pm9dX-TxNx0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id07051/00083_id04530_W5-PTTL9HzU.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01179/00160_id00166_PQV2ZbJBLNk_id01544_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01717/00005_id00366_RSOgEoek8WM_id02268_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id01661/00059_id04055_0qrzF4HLXHY_id04055_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id02721/00424_id03658_8Wtu9VXKqjY_id02808_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id03747/00273_id00220_WlHLlTQKj8g_id05251_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00021/00010_id01175_Q_36xlWL6_o_id04073_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00264/00257_id00052_NK_leX996Yk_id01210_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00529/00409_id03678_dsfCxodI9i8_id00708_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id01192/00217_id01163_QSMeUEH3lJM_id04219_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id03678/00078_id00169__V1xAwwG29U_id00243_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id03757/00149_id04034_8ZeJXbjFa_o_id01042_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00398/00016_id01231_XXpYdOHUF-g_id01217_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00616/00305_id01225_WuzuZoM84Ws_id00616_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00841/00078_id00145_JveyoCdoCuI_id01216_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id01004/00028_id01248_2y-HnTO8WrQ_id00555_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id02466/00136_id00848_o1_9Cu3YMN0_id00291_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id03707/00055_id00272_VLY1boTtbRM_id01091_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id03889/00052_id02365_KTHM_LvjcgY_id03168_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id00582/00006_id09174_Qspzu6tyArc_id02587_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id05576/00368_id02807_eFC0STvhou4_id00763_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id06388/00005_id09181_ypUYBHscgD8_id06225_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00063/00021_id01157_yDgqfOWVKko_id00520_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00415/00017_id00292_qELK8N_DykA_id00055_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00919/00063_id00063_cVZBXC2rjPM_id00990_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00946/00126_id00990_G-qzOIgxEoE_id00266_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00071/00014_id00262_3p7sRWAAh1Q_id00270_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00262/00028_id03941_SsYtP8Ze88Q_id00325_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00379/00043_id00806_0sk9s9lFIAk_id00581_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id01002/00043_id00581_7AxvP19LGKg_id00271_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id00032/00028_id04560_RlpdjaEmxXQ_id00032_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id03599/00072_id04562_qio_Gs7wjvY_id04537_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id06354/00021_id07058_JXJTxhrICl0_id07165_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id07182/00040_id07463_AAYjDglMf2Q_id07768_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id00149/00284_id03559_pgetxl1qbzM_id06752_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id02089/00092_id04564_xUz03LwKRtQ_id00461_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id06254/00043_id04582_Pm9dX-TxNx0_id05920_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id07051/00083_id04583_M10zZFjuAb0_id00080_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01179/00160_id00366_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01528/00017_id01920_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id02268/00036_id01452_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id01907/00148_id00829_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id02721/00424_id02838_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id03713/00249_id01907_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id03747/00273_id04939_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id04820/00015_id03103_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00049/00118_id00169_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00264/00257_id01044_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00943/00304_id00529_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id01192/00217_id04034_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id03678/00078_id01124_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00145/00043_id00098_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00398/00016_id01004_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00616/00305_id00291_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00752/00340_id01245_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id01004/00028_id00680_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id02466/00136_id00180_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id03605/00048_id01231_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id01204/00092_id02332_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id03889/00052_id06591_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id00582/00006_id07739_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id04701/00017_id00137_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id05576/00368_id07739_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id05631/00073_id04414_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id06388/00005_id06443_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id09174/00015_id05631_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00187/00360_id00282_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00415/00017_id01154_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00919/00063_id00554_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id01051/00322_id00185_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00071/00014_id01018_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00373/00028_id00434_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00379/00043_id03371_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id01002/00043_id00379_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id00032/00028_id00732_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id00078/00114_id07179_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id04928/00027_id00350_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id06354/00021_id07200_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id07182/00040_id04599_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id08314/00028_id00033_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id00149/00284_id05920_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id02089/00092_id04582_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id03985/00005_id07686_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id06439/00118_id04529_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id00076/00109_id00391_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01179/00160_id01598_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01717/00005_id00518_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id02268/00036_id02268_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id01907/00148_id04736_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id02824/00130_id00832_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id03747/00273_id00577_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id04736/00083_id05252_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00021/00010_id01105_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00264/00257_id00052_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00529/00409_id01182_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id01192/00217_id00169_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id03678/00078_id00049_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id03757/00149_id01105_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00398/00016_id00431_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00462/00143_id03707_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00752/00340_id00848_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id01004/00028_id00680_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id02466/00136_id00680_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id03707/00055_id00145_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id03889/00052_id00740_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id04687/00066_id08299_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id04701/00017_id04144_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id05620/00005_id00579_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id06388/00005_id00579_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id09125/00098_id07799_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00063/00021_id00946_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00415/00017_id00520_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00709/00206_id01126_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00946/00126_id00520_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00071/00014_id00262_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00373/00028_id00188_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00379/00043_id03620_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id01002/00043_id00826_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id00032/00028_id04562_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id03599/00072_id00032_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id04928/00027_id06355_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id07161/00159_id04928_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id07463/00028_id00414_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id08314/00028_id08457_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id00747/00053_id05845_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id03985/00005_id04070_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id06254/00043_id06428_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id07051/00083_id04530_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/African/women/id04376/00181.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Caucasian (American)/women/id01091/00236.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Caucasian (European)/men/id00055/00120.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Caucasian (European)/women/id03620/00081.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-RealAudio/Asian (South)/women/id07689/00028.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Caucasian (American)/men/id00088/00005_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Caucasian (American)/women/id03781/00113_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Caucasian (European)/men/id00358/00217_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/RealVideo-FakeAudio/Asian (South)/men/id00860/00154_fake.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01392/00167_2.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00087/00002_id00775_yeCUxHgUHxc_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00261/00048_id03605_JGZt9DAhBRs_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id08299/00110_2.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id01052/00076_id00709_Rh23ELMGsIQ_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id03589/00002_id00495_E46aiMUC4A0_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id04582/00180_id06445_NWtdqOxEbDY_faceswap.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id00366/00118_id00076_Isiq7cA-DNE_faceswap_id02494_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01637/00002_1_id01610_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01835/00130_id00761_QtTNFhCCgzw_faceswap_id01170_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id04376/00181_id04437_2csrqaF55pk_faceswap_id00371_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00087/00002_id00775_yeCUxHgUHxc_faceswap_id00264_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00184/00241_id00087_0ZbOp9FgZf8_faceswap_id00264_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id01163/00195_id00018_sap-FjURHlc_faceswap_id04073_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00383/00171_id01217_7lVC4xEK_6E_faceswap_id00383_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id03556/00043_id02464_1hxJsZYV7mI_faceswap_id00462_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id08299/00110_0_id03168_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id08299/00110_3_id06591_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id06054/00010_id00579_yc8eTBM4N3c_faceswap_id06388_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00282/00268_id00305_LdcY3ILdQrE_faceswap_id01156_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00498/00014_4_id00187_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id01099/00206_id00919_XDUn0Pskyrk_faceswap_id00694_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00365/00078_id00330_zCFFgGSIZ_s_faceswap_id00042_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00569/00239_2_id00633_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id03589/00002_id00495_E46aiMUC4A0_faceswap_id01002_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id00745/00165_id00033_gduDuRWhnlQ_faceswap_id04562_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id07233/00010_id07200_quCElxMhW6g_faceswap_id07463_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id04582/00180_id06445_NWtdqOxEbDY_faceswap_id05478_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id06445/00150_id04582_Pm9dX-TxNx0_faceswap_id00417_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id07689/00028_3_id04564_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id00366/00118_id01717_JDW6p8yU13A.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01392/00167_id01597_52WEZxe4_GE.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01779/00010_id01856_6Q2f3b1QNRM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id02051/00015_id00701_lW6uzLIOwd0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id00359/00053_id02838_kaCQlSGlLe8.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id04376/00181_id04374_SWltOOZmlWM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00018/00181_id03757_L-M-XbdFLQM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00088/00005_id00060_gZ4RkcQ0SXE.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00184/00241_id00018_sap-FjURHlc.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00345/00243_id01210_sMdOO7NqsGY.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id01163/00195_id00062_bctnrIvZHTs.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id04216/00470_id01239_gJvquKo7kbA.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00098/00004_id00616_xT51pPmksJw.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00383/00171_id00100_sZ0Ex4WUEgM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00842/00043_id01075_MtJUiHspdT0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id01216/00025_id00272_VLY1boTtbRM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id01248/00005_id02466_VOgaA7O5yWY.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id03781/00113_id00848_o1_9Cu3YMN0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id00363/00014_id05576_g3SKd3BsV9I.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id06054/00010_id06462_Nn79kE76MA4.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00055/00120_id00063_cVZBXC2rjPM.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00282/00268_id01058_2DKbOjf3Wyo.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00306/00015_id01052_Kf4nlIEHfaU.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00498/00014_id00241_DlI4wqSFwbI.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id01052/00076_id01102_aGFUkdgmo3A.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00325/00015_id01002_eQTviHjyISo.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00332/00293_id00330_zCFFgGSIZ_s.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00569/00239_id00484_u7YTz8eFZv0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00589/00130_id03858_uKVqPfRf-ac.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id03589/00002_id00589_uOzKwYEVR6s.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id03649/00001_id00325_4vJtbNe0L98.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id00745/00165_id00857_yJ7bbvwL4kU.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id04561/00248_id00103_qpTVaP4y5DQ.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id07233/00010_id03945_8gN6kSKpLRg.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id00417/00069_id00739_CT-6UmfLiU0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id04582/00180_id00417_GhIZam3v09g.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id05920/00161_id05931_bFqu86NV3hk.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id06445/00150_id04582_Pm9dX-TxNx0.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id00366/00118_id00781_fvsSae9yc0A_id01597_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01392/00167_id00391_TjJgUZaenWI_id01598_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01779/00010_id01637_5VjcPZm8knM_id01972_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id02040/00476_id01691_IVtS5z8Jrrk_id01717_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id00359/00053_id04547_3Qy2g2M47Aw_id03747_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id04547/00052_id02586_dEYzYDsbAeo_id02586_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00087/00002_id00708_Dzmb0FH1xBc_id00943_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00088/00005_id01182_zca-PHR_U40_id00018_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00184/00241_id01048_keflA4viWt8_id00169_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id01096/00037_id00087_0ZbOp9FgZf8_id03757_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id01163/00195_id01192_kAht8HG7-1s_id04073_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00097/00162_id01217_7lVC4xEK_6E_id01005_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00261/00048_id00428_Kr7n-68JWww_id03605_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00842/00043_id00385_oqf8cNi7lOI_id00381_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id01091/00236_id01004_867Wlj7Gw68_id03696_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id01248/00005_id01075_MtJUiHspdT0_id01227_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id03781/00113_id00462_EMnGfAq9gg4_id00398_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id00566/00032_id02587_KzwJPH5_8j0_id07739_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id08819/00052_id06060___Bf93SjJP0_id05631_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00282/00268_id00368_KohcGDsg29U_id00963_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00306/00015_id00241_DlI4wqSFwbI_id01154_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00498/00014_id00055_XzCF6sJ8Axc_id00548_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id01052/00076_id00990_G-qzOIgxEoE_id00186_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00325/00015_id00897_0ayFw8JhoyI_id00484_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00332/00293_id00434_HPXkk-HGXVI_id00735_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00569/00239_id00897_0ayFw8JhoyI_id03649_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id01001/00086_id00332__zNddcZV1EU_id03649_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id03620/00081_id00325_4vJtbNe0L98_id00897_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id03649/00001_id03589_9NxOQlwpMys_id00434_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id00860/00154_id00414_d3N2NrpGSp0_id06334_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id07179/00206_id07165_oJ_iy16IBTM_id07058_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id00417/00069_id00235_F7aHtfdzytQ_id06752_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id04582/00180_id00235_F7aHtfdzytQ_id06439_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id05920/00161_id05931_bFqu86NV3hk_id07051_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id06445/00150_id05434_6p7kCmdOjDQ_id01026_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id00366/00118_id00475_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01170/00021_id00173_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01392/00167_id01598_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01779/00010_id00701_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id01835/00130_id02005_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/men/id02051/00015_id01392_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id00359/00053_id00460_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id04374/00032_id03658_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/African/women/id04547/00052_id02508_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00018/00181_id03525_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00088/00005_id01182_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00184/00241_id00018_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id00345/00243_id00945_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id01163/00195_id00708_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/men/id04216/00470_id01210_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00098/00004_id00618_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00383/00171_id00261_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id00842/00043_id00616_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id01216/00025_id00458_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id01248/00005_id01227_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (American)/women/id03781/00113_id00841_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id06878/00001_id00056_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id07338/00003_id05332_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id08652/00006_id04222_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/men/id09143/00056_id07102_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id00566/00032_id06388_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id06158/00015_id00137_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (East)/women/id08819/00052_id08402_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00282/00268_id00241_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00292/00072_id01156_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id00358/00217_id00520_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id01052/00076_id00186_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/men/id01099/00206_id00559_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00328/00092_id00271_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00332/00293_id01018_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id00569/00239_id00403_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id01001/00086_id00068_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id03589/00002_id00589_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Caucasian (European)/women/id03649/00001_id00330_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id00459/00382_id07195_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id00860/00154_id03945_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id07179/00206_id00032_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/men/id07233/00010_id04537_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id00417/00069_id03559_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id04070/00072_id05435_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id05478/00135_id06232_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id05931/00013_id00149_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-RealAudio/Asian (South)/women/id06445/00150_id05845_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id00366/00118_id01236_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01170/00021_id01779_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01637/00002_id01171_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id01835/00130_id00173_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/men/id02040/00476_id01717_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id00220/00027_id02838_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id04374/00032_id00832_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/African/women/id04547/00052_id00568_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00018/00181_id04216_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00088/00005_id00264_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00184/00241_id00021_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id00345/00243_id01201_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id01163/00195_id00775_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/men/id04216/00470_id03678_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00261/00048_id00231_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id00383/00171_id00848_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id01091/00236_id00752_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id01248/00005_id00231_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (American)/women/id03556/00043_id03781_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id06807/00015_id05268_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id07338/00003_id01204_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id08299/00110_id07102_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/men/id09143/00056_id07338_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id00566/00032_id06054_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (East)/women/id06158/00015_id06060_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00055/00120_id01123_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00292/00072_id00559_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00358/00217_id00183_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id00498/00014_id00498_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/men/id01099/00206_id00225_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00325/00015_id03844_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00332/00293_id00806_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id00569/00239_id00434_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id01001/00086_id00287_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id03620/00081_id00270_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Caucasian (European)/women/id03649/00001_id00813_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id00745/00165_id04537_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id04561/00248_id03945_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id07179/00206_id07210_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/men/id07768/00143_id04562_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id04070/00072_id03559_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id04582/00180_id07689_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id05920/00161_id07008_wavtolip.mp4
+/data/gpfs/projects/punim2637/nnliang/Datasets/FakeCeleb/FakeAVCeleb_v1.2/FakeVideo-FakeAudio/Asian (South)/women/id06445/00150_id03897_wavtolip.mp4
