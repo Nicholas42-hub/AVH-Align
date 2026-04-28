@@ -1,0 +1,65 @@
+{
+  "ckpt": "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_seed44/ckpts/model-epoch=13.ckpt",
+  "model": "ablation",
+  "seed": 44,
+  "perturb_types": {
+    "visual_masking": {
+      "0.0": {
+        "full_auc": 0.5067342729859805,
+        "causal_auc": 0.5067342729859805,
+        "spurious_auc": 0.4208808424444971,
+        "full_ap": 0.5795116624918308,
+        "n": 7602,
+        "n_real": 3396,
+        "n_fake": 4206
+      },
+      "0.5": {
+        "full_auc": 0.5183484864014446,
+        "causal_auc": 0.5183484864014446,
+        "spurious_auc": 0.4411613030238366,
+        "full_ap": 0.5926438879354397,
+        "n": 7602,
+        "n_real": 3396,
+        "n_fake": 4206
+      },
+      "1.0": {
+        "full_auc": 0.5208645580070425,
+        "causal_auc": 0.5208645580070425,
+        "spurious_auc": 0.46310783798118904,
+        "full_ap": 0.6065964926350158,
+        "n": 7602,
+        "n_real": 3396,
+        "n_fake": 4206
+      }
+    },
+    "audio_masking": {
+      "0.0": {
+        "full_auc": 0.5067342729859805,
+        "causal_auc": 0.5067342729859805,
+        "spurious_auc": 0.4208808424444971,
+        "full_ap": 0.5795116624918308,
+        "n": 7602,
+        "n_real": 3396,
+        "n_fake": 4206
+      },
+      "0.5": {
+        "full_auc": 0.4909102244423945,
+        "causal_auc": 0.4909102244423945,
+        "spurious_auc": 0.4309964815533589,
+        "full_ap": 0.5703958194690346,
+        "n": 7602,
+        "n_real": 3396,
+        "n_fake": 4206
+      },
+      "1.0": {
+        "full_auc": 0.47139032270350223,
+        "causal_auc": 0.47139032270350223,
+        "spurious_auc": 0.4414285330228228,
+        "full_ap": 0.5585590329041248,
+        "n": 7602,
+        "n_real": 3396,
+        "n_fake": 4206
+      }
+    }
+  }
+}

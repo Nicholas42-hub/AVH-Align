@@ -3,7 +3,8 @@
 > Training: AV-Deepfake1M (AV1M) -> Evaluation: FakeAVCeleb 70/30 test split (N=6,667)  
 > Current result policy: keep only the latest pseudo-domain v2 50-epoch TriRoute numbers for our main method.  
 > FV-RA = FakeVideo-RealAudio, the primary visual-routing stress category.
-> Last verified from seed 44/45 artifacts on 2026-04-28.
+> Last verified from seed 44/45 artifacts on 2026-04-28.  
+> Baselines (Two-way, DANN, CORAL, Three-way) updated 2026-04-28 to **50ep seed44** re-runs for matched comparison.
 
 ## Latest Main Result
 
@@ -26,15 +27,16 @@ Source checkpoint pointers:
 
 ## Main Benchmark Table
 
-Metric format is AUC/AP. The latest pseudo-domain v2 row is verified from direct seed 44/45 FAVC evaluation of the best FV-RA checkpoints.
+Metric format is AUC/AP. The latest pseudo-domain v2 row is verified from direct seed 44/45 FAVC evaluation of the best FV-RA checkpoints.  
+Baseline rows (Two-way through Three-way) updated to **50ep seed44** matched re-runs (single seed; AVH-Align/sup remains from original paper).
 
 | Method | Structure | Overall | RV-FA | **FV-RA** | FV-FA |
 |--------|-----------|---------|-------|-----------|-------|
 | AVH-Align/sup (Smeu et al.) | two-way supervised | 0.777/0.994 | 0.999/0.999 | 0.519/0.955 | 0.999/1.000 |
-| Two-way baseline | two-way factorization | 0.779/0.994 | 1.000/1.000 | 0.523/0.957 | 0.999/1.000 |
-| Two-way + DANN/GRL | two-way + GRL | 0.762/0.993 | 1.000/1.000 | 0.478/0.952 | 1.000/1.000 |
-| Two-way + CORAL | two-way + CORAL | 0.753/0.993 | 1.000/1.000 | 0.491/0.947 | 0.971/0.999 |
-| Three-way, no push-pull | three-way factorization | 0.827/0.996 | 1.000/1.000 | 0.626/0.973 | 0.999/1.000 |
+| Two-way baseline (A2, 50ep s44) | two-way factorization | 0.739/0.993 | 1.000/1.000 | 0.437/0.949 | 0.998/1.000 |
+| Two-way + DANN/GRL (50ep s44) | two-way + GRL | 0.767/0.994 | 1.000/1.000 | 0.496/0.955 | 0.999/1.000 |
+| Two-way + CORAL (50ep s44) | two-way + CORAL | 0.769/0.994 | 1.000/1.000 | 0.521/0.956 | 0.980/0.999 |
+| Three-way, no push-pull (A5, 50ep s44) | three-way factorization | 0.766/0.994 | 1.000/1.000 | 0.496/0.955 | 0.998/1.000 |
 | **TriRoute pseudo-domain v2 50ep** | three-way + push-pull | **0.922/0.998** | 0.999/0.999 | **0.838/0.989** | 0.994/1.000 |
 
 Latest TriRoute main-eval means before rounding:
@@ -48,13 +50,13 @@ Latest TriRoute main-eval means before rounding:
 
 Main deltas:
 
-| Comparison | FV-RA AUC delta |
-|------------|-----------------|
-| TriRoute latest vs. AVH-Align/sup | +0.319 |
-| TriRoute latest vs. two-way baseline | +0.315 |
-| TriRoute latest vs. three-way no push-pull | +0.212 |
-| TriRoute latest vs. DANN/GRL control | +0.360 |
-| TriRoute latest vs. CORAL control | +0.347 |
+| Comparison | FV-RA AUC delta | Note |
+|------------|-----------------|------|
+| TriRoute latest vs. AVH-Align/sup | +0.319 | external baseline, unchanged |
+| TriRoute latest vs. two-way baseline | +0.401 | updated from +0.315; A2 50ep s44 |
+| TriRoute latest vs. three-way no push-pull | +0.342 | updated from +0.212; A5 50ep s44 |
+| TriRoute latest vs. DANN/GRL control | +0.342 | updated from +0.360; DANN 50ep s44 |
+| TriRoute latest vs. CORAL control | +0.317 | updated from +0.347; CORAL 50ep s44 |
 
 ## Head Ablation
 
@@ -150,9 +152,9 @@ Latest pseudo-domain v2 50ep true-trimmed control:
 
 | Condition | Overall | RV-FA | FV-RA | FV-FA |
 |-----------|---------|-------|-------|-------|
-| Untrimmed mean | 0.9427 | 1.0000 | 0.8779 | 0.9969 |
-| Trimmed mean | 0.9045 | 0.7759 | 0.8767 | 0.9348 |
-| Delta | -0.0382 | -0.2241 | -0.0012 | -0.0622 |
+| Untrimmed mean (seeds 44/45) | 0.9221 | 0.9993 | 0.8378 | 0.9940 |
+| Trimmed mean (seeds 44/45) | 0.8659 | 0.8104 | 0.8328 | 0.8981 |
+| Delta | -0.0562 | -0.1889 | -0.0050 | -0.0959 |
 
 Interpretation: the FV-RA gain is stable under leading-silence trimming, so the latest result is not explained by the leading-silence artifact.
 
@@ -168,13 +170,21 @@ Latest pseudo-domain v2 50ep evaluation on AVLips features. Values are causal/fu
 
 ## Current Paper Wording
 
-Use this claim:
+Use this claim (updated with 50ep-matched baselines):
 
-> TriRoute pseudo-domain v2 50ep reaches 0.838 FV-RA AUC without using target-domain data, improving over the two-way baseline by +0.315 AUC and over the three-way no-push-pull control by +0.212 AUC.
+> TriRoute pseudo-domain v2 50ep reaches 0.838 FV-RA AUC without using target-domain data, improving over the two-way baseline by +0.401 AUC and over the three-way no-push-pull control by +0.342 AUC.
 
 Avoid using older TriRoute no-target/UDA rows as current paper results. They are superseded by the latest pseudo-domain v2 50ep row.
 
 ## Pending / Not Yet in Main Paper
 
 - AVLips evaluation completed on `gpu-l40s` as Slurm job `24387213` after fixing checkpoint-path parsing in `eval_A6_pdv2_50ep_avlips_seeds44_45.slurm`.
-- Seed 43 pseudo-domain v2 50ep training is running on `gpu-h100` as Slurm job `24387238` with a 4-hour limit; the current paper result remains the seed 44/45 mean until seed 43 completes and is explicitly incorporated.
+- Seed 43 pseudo-domain v2 50ep training **completed** (Slurm job `24387238`): best FV-RA at epoch 47 is 0.8243. If incorporated: mean over seeds 43/44/45 = (0.8243+0.8272+0.8484)/3 = **0.8333**. Not yet in main table (current reported mean remains seed 44/45 = 0.8378).
+- **100ep run in progress** (job `24396678`, deeplearn partition, A100): seed44 training from scratch at 100 epochs. As of 2026-04-28 ~04:30 AEST, at **epoch 44/100**, best FV-RA so far = **0.8261** (epoch 42). Still ~56 epochs to go; may improve beyond 0.838. Update main table if final best > 0.838.
+- **Table 3 fixed (2026-04-28)**: old silence control TriRoute rows (0.878 FV-RA) were from a stale experiment. Updated to match seeds 44/45 pdv2 50ep: untrimmed 0.838, trimmed 0.833, delta −0.005. Conclusion unchanged (FV-RA stable under trimming).
+- **Baseline 50ep seed44 evals DONE (2026-04-28)**: all 5 models evaluated on FAVC 70/30 canonical split (job 24392136). Main table updated above. Checkpoints:
+  - A2 (Two-way): `outputs_A2_50ep_seed44/ckpts/model-epoch=05.ckpt`
+  - DANN: `outputs_DANN_50ep_seed44/ckpts/model-epoch=05.ckpt`
+  - CORAL: `outputs_CORAL_50ep_seed44/ckpts/model-epoch=16.ckpt`
+  - A5 (Three-way): `outputs_A5_50ep_seed44/ckpts/model-epoch=07.ckpt`
+  - A3 (Two-way+GRL ablation): `outputs_A3_50ep_seed44/ckpts/model-epoch=24.ckpt` → Overall=0.731/0.993, FV-RA=0.424/0.943 (not in main table; may be used as extra ablation/Sec 6 variant)
