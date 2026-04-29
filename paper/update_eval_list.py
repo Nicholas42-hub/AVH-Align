@@ -376,9 +376,9 @@ methods = [
     "Three-way\nno push-pull",
     "TriRoute\n(ours)",
 ]
-fvra_aucs = [0.519, 0.437, 0.496, 0.521, 0.496, 0.838]
-# Seed-level std for TriRoute (seeds 44/45): (0.8272, 0.8484)
-stds = [0.0, 0.0, 0.0, 0.0, 0.0, np.std([0.8272, 0.8484])]
+fvra_aucs = [0.519, 0.437, 0.496, 0.521, 0.626, 0.838]
+# Seed-level std for TriRoute (seeds 43/44/45 full-eval): (0.8243, 0.8291, 0.8428)
+stds = [0.0, 0.0, 0.0, 0.0, np.std([0.5857, 0.5889, 0.6262]), np.std([0.8243, 0.8291, 0.8428])]
 
 bar_colors = [
     "#adb5bd",  # grey for external baseline
@@ -399,7 +399,7 @@ for bar, v in zip(bars, fvra_aucs):
 ax.set_ylabel("FV-RA AUC (cross-domain: AV1M → FAVC)", fontsize=11)
 ax.set_title("Cross-Domain FakeVideo-RealAudio Detection\n"
              "(FV-RA requires visual evidence; higher = more visual reliance)", fontsize=11)
-ax.set_ylim(0.40, 0.92)
+ax.set_ylim(0.40, 0.95)
 ax.yaxis.grid(True, linestyle="--", alpha=0.5)
 ax.set_axisbelow(True)
 ax.spines["top"].set_visible(False)
