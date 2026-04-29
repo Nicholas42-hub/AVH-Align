@@ -23,9 +23,9 @@ logs/
 avh_sup/results/
 avh_sup/results_summary/
 
-# ── Generated figures (reproducible from generate_figures.py) ────────────────
-paper/figures/*.pdf
-paper/figures/*.png
+# ── Generated figures ────────────────────────────────────────────────────────
+# Paper figures are committed (final artifacts referenced by main.tex).
+# submission_prep figures stay ignored (intermediate/staging).
 submission_prep/figures/*.pdf
 submission_prep/figures/*.png
 
