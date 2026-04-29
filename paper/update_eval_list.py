@@ -187,6 +187,47 @@ for table in doc.tables:
                 set_cell_text(cell, "0.789")
                 print(f"  Updated T6 AVLips: 0.801 → 0.789")
 
+# --- Response to Caren's "Failure / Bias Illustration" request ---
+# Appends a Response subsection after the existing request paragraphs,
+# describing the Qualitative Routing Examples added in main.tex Sec 5.5 +
+# Appendix (fig_qualitative_main.pdf, fig_qualitative_appendix.pdf).
+RESPONSE_HEADING = "Response: Qualitative Routing Examples (added in Section 5.5 + Appendix)"
+RESPONSE_BODY = [
+    "We mine FAVC FV-RA test clips on which the two-way baseline assigns "
+    "P(fake) < 0.5 (confidently misclassifies as real) while TriRoute assigns "
+    "P(fake) > 0.5, ranked by score gap. Of 3,007 FV-RA fake clips in the "
+    "canonical FAVC test split, 1,048 (~35%) satisfy this “two-way fails / "
+    "TriRoute corrects” filter at seed 44, with the largest gaps clustering "
+    "around 0.99.",
+    "Figure fig_qualitative_main shows one representative case: three "
+    "lip-region frames sampled across the clip (manipulated visual stream), "
+    "the audio waveform (genuine RealAudio), and per-model fake probabilities. "
+    "The two-way baseline assigns P(fake) ≈ 0.01 — fooled by the genuine "
+    "audio — while TriRoute assigns P(fake) ≈ 1.00.",
+    "Figure fig_qualitative_appendix (in Appendix) reports the next-five "
+    "highest-gap clips at seed 44, all from the same pool. The pattern is "
+    "consistent across cases: audio waveform appears as ordinary speech, "
+    "lip-region frames carry the manipulation, two-way assigns "
+    "P(fake) ≈ 0.01 in every case, TriRoute assigns P(fake) ≥ 0.99.",
+    "Total: 6 cases (1 in main + 5 in appendix), matching Caren’s "
+    "“4–6 examples” request.",
+]
+
+# Idempotency: only add if response not already present
+existing_text = "\n".join(p.text for p in doc.paragraphs)
+if RESPONSE_HEADING not in existing_text:
+    heading_p = doc.add_paragraph()
+    heading_p.style = doc.styles["Heading 3"]
+    heading_run = heading_p.add_run(RESPONSE_HEADING)
+    heading_run.bold = True
+    heading_run.font.size = Pt(13)
+    for body_text in RESPONSE_BODY:
+        body_p = doc.add_paragraph()
+        body_p.add_run(body_text)
+    print("  Added Response section addressing Caren's qualitative-analysis request")
+else:
+    print("  Response section already present — skipping")
+
 doc.save("NIc_NIPS_eval_list_updated.docx")
 print("Saved: NIc_NIPS_eval_list_updated.docx")
 
