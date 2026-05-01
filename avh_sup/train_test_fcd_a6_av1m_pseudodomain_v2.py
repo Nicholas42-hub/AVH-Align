@@ -149,7 +149,16 @@ class AV1M_ValDataset(Dataset):
             video = video / (np.linalg.norm(video, axis=-1, keepdims=True) + 1e-8)
             audio = audio / (np.linalg.norm(audio, axis=-1, keepdims=True) + 1e-8)
 
-        return torch.tensor(video), torch.tensor(audio), int(row["label"]), path
+        speaker_id   = path.split("/")[0]
+        domain_label = float(hash(speaker_id) % 2)  # mirror train
+
+        return (
+            torch.tensor(video),
+            torch.tensor(audio),
+            int(row["label"]),
+            torch.tensor(domain_label),
+            path,
+        )
 
 
 def load_data(config: dict):

@@ -12,7 +12,7 @@ from pathlib import Path
 
 BASE = Path("/data/projects/punim2637/nnliang/AVH-Align")
 MODELS = ["A2", "A5", "A6"]
-SEEDS = [42, 43, 44]
+SEEDS = [43, 44, 45]
 RESULT_SUBDIR = "results_favc_matched"
 
 LINE_RE = re.compile(

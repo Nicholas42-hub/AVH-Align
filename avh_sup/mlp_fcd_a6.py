@@ -427,20 +427,105 @@ class AVH_FCD_A6(L.LightningModule):
     def on_validation_epoch_start(self):
         self._val_scores = {"full": [], "causal": [], "spurious": []}
         self._val_labels = []
+        self._val_loss_terms = {
+            "task": [], "mi": [], "orth": [], "sda": [], "dis": [], "incon_sparse": [],
+        }
+        self._val_domain_scores_c = []
+        self._val_domain_scores_s = []
+        self._val_domain_labels = []
 
     def validation_step(self, batch, batch_idx):
-        # Val batches are AV1M only (4-tuple, no domain_label)
         if len(batch) == 5:
-            video_feats, audio_feats, labels, _, _ = batch
+            video_feats, audio_feats, labels, domain_labels, _ = batch
+            domain_labels = domain_labels.float()
         else:
             video_feats, audio_feats, labels, _ = batch
+            domain_labels = None
+        cls_labels = labels.long()
         with torch.no_grad():
             s_causal   = self.forward(video_feats, audio_feats, mode="causal")
             s_spurious = self.forward(video_feats, audio_feats, mode="spurious")
+
+            # Mirror training_step composite-loss components for ckpt selection.
+            # Excludes dadv/ddis: those are GRL-driven and increase as push-pull
+            # successfully expels domain info, so they would penalise good late
+            # ckpts if included in a "minimise" metric.
+            causal_repr, spurious_repr, comp = self._encode(video_feats, audio_feats)
+            task_repr = self._task_repr(causal_repr, spurious_repr)
+            s_v, u_v, r_v = comp["s_v"], comp["u_v"], comp["r_v"]
+            s_a, u_a, r_a = comp["s_a"], comp["u_a"], comp["r_a"]
+            u_delta = comp.get("u_delta")
+
+            score_task = self._cls_score(self.causal_head, task_repr)
+            loss_task = self._ce_loss(score_task, cls_labels)
+
+            score_uv = self._cls_score(self.unique_head_v, u_v)
+            score_ua = self._cls_score(self.unique_head_a, u_a)
+            if u_delta is not None:
+                score_udelta = self._cls_score(self.incon_head, u_delta)
+                loss_mi = (
+                    self._ce_loss(score_uv, cls_labels)
+                    + self._ce_loss(score_ua, cls_labels)
+                    + self._ce_loss(score_udelta, cls_labels)
+                )
+            else:
+                loss_mi = self._ce_loss(score_uv, cls_labels) + self._ce_loss(score_ua, cls_labels)
+
+            s_v_proj = self.sda(s_v.mean(1))
+            s_a_proj = self.sda(s_a.mean(1))
+            loss_sda = _sinkhorn_divergence(s_v_proj, s_a_proj,
+                                            eps=self.sda_eps, n_iter=self.sda_n_iter)
+
+            r_v_pool = r_v.mean(1)
+            r_a_pool = r_a.mean(1)
+            r_stack = torch.cat([r_v_pool, r_a_pool], dim=0)
+            mod_score = self.modality_head(r_stack).squeeze(-1)
+            mod_labels = torch.cat([
+                torch.zeros(r_v_pool.shape[0], device=r_v_pool.device),
+                torch.ones(r_a_pool.shape[0], device=r_a_pool.device),
+            ])
+            loss_dis = F.binary_cross_entropy_with_logits(mod_score, mod_labels)
+
+            if u_delta is not None:
+                loss_orth = (1 / 3) * (
+                    self._orth_loss(u_v, r_v)
+                    + self._orth_loss(u_a, r_a)
+                    + 0.5 * (self._orth_loss(u_delta, r_v) + self._orth_loss(u_delta, r_a))
+                )
+            else:
+                loss_orth = (1 / 2) * (self._orth_loss(u_v, r_v) + self._orth_loss(u_a, r_a))
+
+            real_mask = (cls_labels == 0)
+            if u_delta is not None and real_mask.any() and self.lambda_incon_sparse > 0.0:
+                loss_incon_sparse = (u_delta[real_mask] ** 2).mean()
+            else:
+                loss_incon_sparse = torch.tensor(0.0, device=video_feats.device)
+
+            # Domain prediction (no GRL — direct measure of push-pull success).
+            # domain_auc_c LOW (≈0.5) = push working (Z_c expels domain).
+            # domain_auc_s HIGH      = pull working (Z_s attracts domain).
+            Z_c_pool = causal_repr.mean(1)
+            Z_s_pool = spurious_repr.mean(1)
+            d_score_c = self.domain_head_c(Z_c_pool).squeeze(-1)
+            d_score_s = self.domain_head_s(Z_s_pool).squeeze(-1)
+
         self._val_scores["causal"].append(s_causal.cpu().numpy())
         self._val_scores["spurious"].append(s_spurious.cpu().numpy())
         self._val_scores["full"].append(s_causal.cpu().numpy())
         self._val_labels.append(labels.cpu().numpy())
+        self._val_loss_terms["task"].append(loss_task.item())
+        self._val_loss_terms["mi"].append(loss_mi.item())
+        self._val_loss_terms["orth"].append(loss_orth.item())
+        self._val_loss_terms["sda"].append(loss_sda.item())
+        self._val_loss_terms["dis"].append(loss_dis.item())
+        self._val_loss_terms["incon_sparse"].append(loss_incon_sparse.item())
+
+        if domain_labels is not None:
+            domain_mask = (domain_labels >= 0)
+            if domain_mask.any():
+                self._val_domain_scores_c.append(d_score_c[domain_mask].cpu().numpy())
+                self._val_domain_scores_s.append(d_score_s[domain_mask].cpu().numpy())
+                self._val_domain_labels.append(domain_labels[domain_mask].cpu().numpy())
 
     def on_validation_epoch_end(self):
         labels = np.concatenate(self._val_labels)
@@ -454,11 +539,58 @@ class AVH_FCD_A6(L.LightningModule):
             results[mode] = auc
             self.log(f"val_auc_{mode}", auc, prog_bar=(mode == "causal"))
 
+        loss_means = {k: float(np.mean(v)) if v else 0.0 for k, v in self._val_loss_terms.items()}
+
+        # Domain AUCs from accumulated val scores (push: Z_c → 0.5, pull: Z_s → 1.0)
+        if self._val_domain_labels:
+            d_labels_arr = np.concatenate(self._val_domain_labels)
+            d_scores_c_arr = np.concatenate(self._val_domain_scores_c)
+            d_scores_s_arr = np.concatenate(self._val_domain_scores_s)
+            try:
+                domain_auc_c = float(roc_auc_score(d_labels_arr, d_scores_c_arr))
+            except ValueError:
+                domain_auc_c = 0.5
+            try:
+                domain_auc_s = float(roc_auc_score(d_labels_arr, d_scores_s_arr))
+            except ValueError:
+                domain_auc_s = 0.5
+        else:
+            domain_auc_c = 0.5
+            domain_auc_s = 0.5
+
+        # Push penalty: |auc_c − 0.5| → 0 when push fully expels domain from Z_c.
+        # Pull penalty: 1 − auc_s     → 0 when Z_s perfectly predicts domain.
+        push_penalty = abs(domain_auc_c - 0.5)
+        pull_penalty = 1.0 - domain_auc_s
+
+        val_loss_partial = (
+            loss_means["task"]
+            + self.lambda_mi           * loss_means["mi"]
+            + self.lambda_sda          * loss_means["sda"]
+            + self.lambda_dis          * loss_means["dis"]
+            + self.lambda_orth         * loss_means["orth"]
+            + self.lambda_incon_sparse * loss_means["incon_sparse"]
+            + self.lambda_dadv         * push_penalty
+            + self.lambda_ddis         * pull_penalty
+        )
+        for k, v in loss_means.items():
+            self.log(f"val_loss_{k}", v)
+        self.log("val_domain_auc_c", domain_auc_c)
+        self.log("val_domain_auc_s", domain_auc_s)
+        self.log("val_loss_partial", val_loss_partial, prog_bar=True)
+
         print(
             f"\n[Epoch {self.current_epoch}]"
             f"  AUC  full={results['full']:.4f}"
             f"  causal={results['causal']:.4f}"
             f"  spurious={results['spurious']:.4f}"
+            f"  dom_c={domain_auc_c:.4f}"
+            f"  dom_s={domain_auc_s:.4f}"
+            f"  val_loss_partial={val_loss_partial:.4f}"
+            f"  (task={loss_means['task']:.3f} mi={loss_means['mi']:.3f}"
+            f"  orth={loss_means['orth']:.3f} sda={loss_means['sda']:.3f}"
+            f"  dis={loss_means['dis']:.3f} incon={loss_means['incon_sparse']:.3f}"
+            f"  push={push_penalty:.3f} pull={pull_penalty:.3f})"
         )
 
     def configure_optimizers(self):

@@ -1,0 +1,3 @@
+variant,overall_auc_mean,overall_auc_std,overall_auc_n,rv_fa_auc_mean,rv_fa_auc_std,rv_fa_auc_n,fv_ra_auc_mean,fv_ra_auc_std,fv_ra_auc_n,fv_fa_auc_mean,fv_fa_auc_std,fv_fa_auc_n
+A6_lite_trainreal,0.8814500000000001,0.03165000000000001,2,1.0,0.0,2,0.74115,0.06974999999999998,2,0.9989,0.00029999999999996696,2
+A6_sharedonly_trainreal,0.8492500000000001,0.019949999999999968,2,1.0,0.0,2,0.66945,0.043749999999999956,2,0.99985,4.999999999999449e-05,2

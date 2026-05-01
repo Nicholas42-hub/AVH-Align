@@ -1,0 +1,73 @@
+# ============================================================
+#  A6 — Real target domain (AV1M=0 vs FAVC val-real=1) 100ep, seed 44
+#
+#  Ablation row for paper Table 1: same TriRoute architecture as
+#  pseudodomain_v2_100ep, but with REAL target-domain labels for
+#  the push-pull domain head (uses FAVC val-real clips, real_only).
+#
+#  Warm-start from the existing 50ep FAVC-FV-RA-best ckpt
+#  (outputs_A6_seed44/ckpts/favc_fvra/best-favc-fvra-epoch=49-auc=0.8276.ckpt).
+#  Trains 50 more epochs; ckpt selection by FAVC FV-RA AUC every epoch
+#  (matching the protocol of pseudodomain_v2_100ep for fair comparison).
+# ============================================================
+
+ablation_id: "A6_real_domain_100ep"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+# FAVC val-real clips used for domain adversarial training (domain=1)
+favc_domain_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc"
+  split: "val"
+  real_only: true
+  apply_l2: true
+
+model_hparams:
+  feat_dim: 1024
+  syn_dim:  256
+  spec_dim: 256
+  sda_dim:  128
+  mi_dim:   128
+
+  lambda_mi:   1.0
+  lambda_sda:  0.5
+  lambda_dis:  1.0
+  lambda_orth: 0.1
+  lambda_dadv: 1.0
+  lambda_ddis: 1.0
+  grl_alpha:   1.0
+
+  sda_eps:    0.05
+  sda_n_iter: 5
+  lr:         1.0e-3
+
+ckpt_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_seed44/ckpts/favc_fvra/best-favc-fvra-epoch=49-auc=0.8276.ckpt"
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_real_domain_100ep_seed44/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_real_domain_100ep_seed44/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 100
+seed: 44
+
+early_stopping:
+  metric: "val_auc_causal"
+  mode: "max"
+  patience: 50
+
+favc_eval_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_7030_canonical"
+  split: "test"
+  apply_l2: true
+  check_every_n_epochs: 1

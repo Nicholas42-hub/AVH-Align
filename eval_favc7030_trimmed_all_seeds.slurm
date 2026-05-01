@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=16G
 #SBATCH --time=02:00:00
-#SBATCH --array=0-10
+#SBATCH --array=0-8
 #SBATCH --dependency=afterok:24113664
 #SBATCH --output=logs/eval_7030_trim_%A_%a.out
 #SBATCH --error=logs/eval_7030_trim_%A_%a.err
@@ -20,18 +20,18 @@ set -euo pipefail
 #  (job 24113631).
 #
 #  Array indices:
-#   0- 3: A2  seeds 42,43,44,45   model=ablation
-#   4- 7: A5  seeds 42,43,44,45   model=fcd
-#   8-10: A6_av1m_pseudodomain_v2 seeds 43,44,45  model=fcd_a6
+#   0-2: A2  seeds 43,44,45   model=ablation
+#   3-5: A5  seeds 43,44,45   model=fcd
+#   6-8: A6_av1m_pseudodomain_v2 seeds 43,44,45  model=fcd_a6
 # ============================================================
 
 VARIANTS=( \
-  A2  A2  A2  A2 \
-  A5  A5  A5  A5 \
+  A2  A2  A2 \
+  A5  A5  A5 \
   A6_av1m_pseudodomain_v2  A6_av1m_pseudodomain_v2  A6_av1m_pseudodomain_v2 \
 )
-SEEDS=(42 43 44 45  42 43 44 45  43 44 45)
-MODELS=(ablation ablation ablation ablation  fcd fcd fcd fcd  fcd_a6 fcd_a6 fcd_a6)
+SEEDS=(43 44 45  43 44 45  43 44 45)
+MODELS=(ablation ablation ablation  fcd fcd fcd  fcd_a6 fcd_a6 fcd_a6)
 
 VARIANT=${VARIANTS[$SLURM_ARRAY_TASK_ID]}
 SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}

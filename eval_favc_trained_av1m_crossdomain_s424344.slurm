@@ -16,7 +16,7 @@ FEATURES="$BASE/data/avh_features"
 CSV_ROOT="$BASE/avh_sup/csv_metadata/av1m"
 
 echo "============================================================"
-echo "  Cross-domain eval: FAVC-trained → AV1M val (seeds 42-44)"
+echo "  Cross-domain eval: FAVC-trained → AV1M val (seeds 43-45)"
 echo "  Job ID : $SLURM_JOB_ID  Node: $SLURM_NODELIST"
 echo "  Start  : $(date)"
 echo "============================================================"
@@ -32,7 +32,7 @@ export CUDA_VISIBLE_DEVICES=0
 mkdir -p logs
 cd avh_sup
 
-for SEED in 42 43 44; do
+for SEED in 43 44 45; do
     echo ""; echo "=== A2 seed${SEED} ===" ; echo "$(date)"
     OUTPUT_DIR="$BASE/avh_sup/outputs_A2_favc_seed${SEED}"
     RESULTS_DIR="${OUTPUT_DIR}/results_av1m_val_crossdomain"
@@ -49,7 +49,7 @@ for SEED in 42 43 44; do
     echo "A2 seed${SEED} done: $(date)"
 done
 
-for SEED in 42 43 44; do
+for SEED in 43 44 45; do
     echo ""; echo "=== A5 seed${SEED} ===" ; echo "$(date)"
     OUTPUT_DIR="$BASE/avh_sup/outputs_A5_favc_seed${SEED}"
     RESULTS_DIR="${OUTPUT_DIR}/results_av1m_val_crossdomain"
@@ -66,7 +66,7 @@ for SEED in 42 43 44; do
     echo "A5 seed${SEED} done: $(date)"
 done
 
-for SEED in 42 43 44; do
+for SEED in 43 44 45; do
     echo ""; echo "=== A6 seed${SEED} ===" ; echo "$(date)"
     OUTPUT_DIR="$BASE/avh_sup/outputs_A6_favc_seed${SEED}"
     RESULTS_DIR="${OUTPUT_DIR}/results_av1m_val_crossdomain"

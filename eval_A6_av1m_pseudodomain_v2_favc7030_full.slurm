@@ -51,7 +51,13 @@ PYTHON=/data/projects/punim2637/nnliang/avh_env/bin/python
 
 mkdir -p "$RESULTS_DIR" logs
 
-CKPT=$(ls "$OUTPUT_DIR"/ckpts/*.ckpt 2>/dev/null | sort | tail -1)
+# Use last-epoch checkpoint (protocol: fixed 50-epoch pseudo-domain training,
+# no validation-based ckpt selection to avoid val_loss_partial picking epoch ~4)
+if [[ -f "$OUTPUT_DIR/ckpts/last.ckpt" ]]; then
+  CKPT="$OUTPUT_DIR/ckpts/last.ckpt"
+else
+  CKPT=$(ls "$OUTPUT_DIR"/ckpts/*.ckpt 2>/dev/null | sort | tail -1)
+fi
 if [[ -z "$CKPT" ]]; then
   echo "ERROR: No checkpoint found under $OUTPUT_DIR/ckpts" >&2
   exit 1

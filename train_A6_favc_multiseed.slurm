@@ -13,7 +13,7 @@
 BASE=/data/projects/punim2637/nnliang/AVH-Align
 
 echo "============================================================"
-echo "  A6 FAVC-trained (speaker pseudo-domain) — seeds 42, 43, 44"
+echo "  A6 FAVC-trained (speaker pseudo-domain) — seeds 43, 44, 45"
 echo "  Job ID : $SLURM_JOB_ID  Node: $SLURM_NODELIST"
 echo "  Start  : $(date)"
 echo "============================================================"
@@ -28,7 +28,7 @@ export CUDA_VISIBLE_DEVICES=0
 PYTHON=/data/projects/punim2637/nnliang/avh_env/bin/python
 
 cd avh_sup
-for SEED in 42 43 44 45; do
+for SEED in 43 44 45; do
     echo ""; echo "--- Seed ${SEED} ---"; echo "$(date)"
     mkdir -p outputs_A6_favc_seed${SEED}/{logs,ckpts,results}
     $PYTHON train_test_fcd_a6_favc_pseudodomain.py \

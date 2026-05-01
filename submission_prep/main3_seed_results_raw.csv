@@ -1,10 +1,10 @@
 model,seed,eval_results_path,status,overall_auc,overall_ap,rv_fa_auc,rv_fa_ap,fv_ra_auc,fv_ra_ap,fv_fa_auc,fv_fa_ap
-A2,42,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_seed42/results_favc_matched/eval_results.txt,ok,0.779,0.9938,1.0,1.0,0.5156,0.9544,0.9997,1.0
 A2,43,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_seed43/results_favc_matched/eval_results.txt,ok,0.7427,0.9927,1.0,1.0,0.4363,0.9456,0.9994,1.0
 A2,44,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_seed44/results_favc_matched/eval_results.txt,ok,0.7943,0.9943,1.0,1.0,0.5492,0.9614,0.9997,1.0
-A5,42,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5_seed42/results_favc_matched/eval_results.txt,ok,0.8151,0.995,1.0,1.0,0.5944,0.9697,1.0,1.0
+A2,45,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A2_seed45/results_favc_matched/eval_results.txt,missing,,,,,,,,
 A5,43,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5_seed43/results_favc_matched/eval_results.txt,ok,0.8186,0.9948,0.9956,0.9956,0.6156,0.9608,0.9883,0.9994
 A5,44,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5_seed44/results_favc_matched/eval_results.txt,ok,0.8309,0.9954,1.0,1.0,0.6291,0.9708,0.9999,1.0
-A6,42,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_seed42/results_favc_matched/eval_results.txt,ok,0.8014,0.9945,1.0,1.0,0.5644,0.9604,1.0,1.0
+A5,45,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A5_seed45/results_favc_matched/eval_results.txt,missing,,,,,,,,
 A6,43,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_seed43/results_favc_matched/eval_results.txt,ok,0.8885,0.9971,1.0,1.0,0.7568,0.9841,0.9987,0.9999
 A6,44,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_seed44/results_favc_matched/eval_results.txt,ok,0.8418,0.9957,1.0,1.0,0.6544,0.9717,0.9987,0.9999
+A6,45,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_seed45/results_favc_matched/eval_results.txt,missing,,,,,,,,

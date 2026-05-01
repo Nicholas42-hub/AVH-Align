@@ -38,9 +38,9 @@ Prepared Slurm files:
 These cover:
 
 - base `A2 / A5 / A6` re-eval under the explicit matched protocol
-- `A2 × {42,43,44}`
-- `A5 × {42,43,44}`
-- `A6 × {42,43,44}`
+- `A2 × {43,44,45}`
+- `A5 × {43,44,45}`
+- `A6 × {43,44,45}`
 
 The A6 training entry-point now supports `--seed` and `--output_dir`, matching A2/A5.
 

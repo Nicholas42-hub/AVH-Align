@@ -1,0 +1,7 @@
+variant,seed,eval_results_path,status,overall_auc,rv_fa_auc,fv_ra_auc,fv_fa_auc
+A6_lite_trainreal,43,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_lite_trainreal_seed43/results_favc_matched/eval_results.txt,ok,0.9131,1.0,0.8109,0.9986
+A6_lite_trainreal,44,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_lite_trainreal_seed44/results_favc_matched/eval_results.txt,ok,0.8498,1.0,0.6714,0.9992
+A6_lite_trainreal,45,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_lite_trainreal_seed45/results_favc_matched/eval_results.txt,missing,,,,
+A6_sharedonly_trainreal,43,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_sharedonly_trainreal_seed43/results_favc_matched/eval_results.txt,ok,0.8692,1.0,0.7132,0.9998
+A6_sharedonly_trainreal,44,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_sharedonly_trainreal_seed44/results_favc_matched/eval_results.txt,ok,0.8293,1.0,0.6257,0.9999
+A6_sharedonly_trainreal,45,/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_sharedonly_trainreal_seed45/results_favc_matched/eval_results.txt,missing,,,,

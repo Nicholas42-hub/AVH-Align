@@ -13,7 +13,7 @@
 BASE=/data/projects/punim2637/nnliang/AVH-Align
 
 echo "============================================================"
-echo "  A2 FAVC-trained — seeds 42, 43, 44 (sequential)"
+echo "  A2 FAVC-trained — seeds 43, 44, 45 (sequential)"
 echo "  Job ID : $SLURM_JOB_ID  Node: $SLURM_NODELIST"
 echo "  Start  : $(date)"
 echo "============================================================"
@@ -28,7 +28,7 @@ export CUDA_VISIBLE_DEVICES=0
 PYTHON=/data/projects/punim2637/nnliang/avh_env/bin/python
 
 cd avh_sup
-for SEED in 42 43 44 45; do
+for SEED in 43 44 45; do
     echo ""; echo "--- Seed ${SEED} ---"; echo "$(date)"
     mkdir -p outputs_A2_favc_seed${SEED}/{logs,ckpts,results}
     $PYTHON train_test_causal_ablation.py \

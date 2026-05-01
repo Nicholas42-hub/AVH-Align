@@ -36,7 +36,7 @@ PYTHON=/data/projects/punim2637/nnliang/avh_env/bin/python
 
 cd avh_sup
 
-for SEED in 42 43 44 45; do
+for SEED in 43 44 45; do
     echo ""; echo "=== A2 seed${SEED} ===" ; echo "$(date)"
     OUTPUT_DIR="$BASE/avh_sup/outputs_A2_favc_seed${SEED}"
     RESULTS_DIR="${OUTPUT_DIR}/results_favc_test"
@@ -52,7 +52,7 @@ for SEED in 42 43 44 45; do
         --output_dir   "$RESULTS_DIR"
 done
 
-for SEED in 42 43 44 45; do
+for SEED in 43 44 45; do
     echo ""; echo "=== A5 seed${SEED} ===" ; echo "$(date)"
     OUTPUT_DIR="$BASE/avh_sup/outputs_A5_favc_seed${SEED}"
     RESULTS_DIR="${OUTPUT_DIR}/results_favc_test"
@@ -68,7 +68,7 @@ for SEED in 42 43 44 45; do
         --output_dir   "$RESULTS_DIR"
 done
 
-for SEED in 42 43 44 45; do
+for SEED in 43 44 45; do
     echo ""; echo "=== A6 seed${SEED} ===" ; echo "$(date)"
     OUTPUT_DIR="$BASE/avh_sup/outputs_A6_favc_seed${SEED}"
     RESULTS_DIR="${OUTPUT_DIR}/results_favc_test"

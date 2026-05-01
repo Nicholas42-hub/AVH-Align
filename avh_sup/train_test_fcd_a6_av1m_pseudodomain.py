@@ -176,6 +176,7 @@ def init_callbacks(config: dict):
             filename="model-{epoch:02d}",
             mode=config["ckpt_args"]["mode"],
             save_top_k=1,
+            save_last=True,
         ))
     if "early_stopping" in config and config["early_stopping"] is not None:
         callbacks.append(EarlyStopping(
