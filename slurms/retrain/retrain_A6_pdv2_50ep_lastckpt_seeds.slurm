@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=pdv2_lastck
-#SBATCH --partition=gpu-a100
+#SBATCH --partition=gpu-a100-preempt
 #SBATCH --account=punim2637
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
 #SBATCH --mem=32G
-#SBATCH --time=08:00:00
+#SBATCH --time=04:00:00
 #SBATCH --array=0-2
 #SBATCH --output=logs/retrain_A6_pdv2_50ep_lastckpt_%A_%a.out
 #SBATCH --error=logs/retrain_A6_pdv2_50ep_lastckpt_%A_%a.err
@@ -50,8 +50,6 @@ PYTHON=/data/projects/punim2637/nnliang/avh_env/bin/python
 
 OUT="avh_sup/outputs_A6_av1m_pseudodomain_v2_50ep_seed${SEED}"
 mkdir -p "${OUT}"/{logs,ckpts,results} logs
-rm -f "${OUT}"/ckpts/*.ckpt
-rm -rf "${OUT}"/logs/lightning_logs
 
 cd avh_sup
 

@@ -11,7 +11,7 @@ in every way except the source of domain labels:
 
 Binary speaker-group assignment:
     speaker_id = path.split("/")[0]   (e.g. "id02148")
-    domain = hash(speaker_id) % 2     →  0 or 1
+    domain = stable_hash(speaker_id) % 2     →  0 or 1
 
 v2 fix: includes ALL AV1M clips (real + fake) so the task head trains on
 both classes, matching the training regime of every other A6 variant.
@@ -26,6 +26,7 @@ All model architecture and losses are identical to A6 (mlp_fcd_a6.py).
 """
 
 import argparse
+import hashlib
 import os
 import random
 
@@ -41,6 +42,31 @@ import lightning as L
 
 from datasets import FakeAVCeleb_NPZ_Dataset
 from mlp_fcd_a6 import AVH_FCD_A6
+
+
+def stable_speaker_group(speaker_id: str) -> int:
+    """Deterministic 0/1 speaker partition, independent of PYTHONHASHSEED."""
+    digest = hashlib.md5(speaker_id.encode("utf-8")).hexdigest()
+    return int(digest, 16) % 2
+
+
+def pseudo_domain_label(path: str, mode: str, seed: int) -> float:
+    """Return a deterministic binary pseudo-domain label for ablations."""
+    speaker_id = path.split("/")[0]
+    if mode == "speaker_hash":
+        value = stable_speaker_group(speaker_id)
+    elif mode == "random_speaker":
+        digest = hashlib.md5(f"random_speaker:{seed}:{speaker_id}".encode("utf-8")).hexdigest()
+        value = int(digest, 16) % 2
+    elif mode == "random_clip":
+        digest = hashlib.md5(f"random_clip:{seed}:{path}".encode("utf-8")).hexdigest()
+        value = int(digest, 16) % 2
+    else:
+        raise ValueError(
+            f"Unknown domain_label_mode={mode!r}. "
+            "Expected one of: speaker_hash, random_speaker, random_clip."
+        )
+    return float(value)
 
 
 def set_seed(seed: int):
@@ -62,8 +88,8 @@ class AV1M_SpeakerGroupDomainDataset(Dataset):
     the A6 design (domain = 0 or 1 assigned per clip).
 
     Domain assignment:
-        hash(speaker_id) % 2 == 0  →  domain 0.0  (speaker group A)
-        hash(speaker_id) % 2 == 1  →  domain 1.0  (speaker group B)
+        stable_hash(speaker_id) % 2 == 0  →  domain 0.0  (speaker group A)
+        stable_hash(speaker_id) % 2 == 1  →  domain 1.0  (speaker group B)
 
     where speaker_id = path.split("/")[0]  (e.g. "id02148").
 
@@ -73,6 +99,8 @@ class AV1M_SpeakerGroupDomainDataset(Dataset):
     def __init__(self, config: dict, split: str = "train"):
         self.root_path = config["root_path"]
         self.apply_l2  = config.get("apply_l2", False)
+        self.domain_label_mode = config.get("domain_label_mode", "speaker_hash")
+        self.domain_label_seed = int(config.get("domain_label_seed", 0))
         csv_root       = config["csv_root_path"]
 
         df = pd.read_csv(os.path.join(csv_root, f"{split}_labels.csv"))
@@ -82,13 +110,13 @@ class AV1M_SpeakerGroupDomainDataset(Dataset):
 
         n_real   = (df["label"] == 0).sum()
         n_fake   = (df["label"] == 1).sum()
-        n_groupA = sum(hash(p.split("/")[0]) % 2 == 0 for p in df["path"])
+        n_groupA = sum(pseudo_domain_label(p, self.domain_label_mode, self.domain_label_seed) == 0.0 for p in df["path"])
         n_groupB = len(df) - n_groupA
         print(
             f"AV1M {split} speaker-group domain dataset (all clips): "
             f"{n_real} real, {n_fake} fake | "
             f"{n_groupA} group-A (d=0), {n_groupB} group-B (d=1), "
-            f"total {len(df)}",
+            f"total {len(df)} | mode={self.domain_label_mode}, seed={self.domain_label_seed}",
             flush=True,
         )
 
@@ -108,8 +136,7 @@ class AV1M_SpeakerGroupDomainDataset(Dataset):
             video = video / (np.linalg.norm(video, axis=-1, keepdims=True) + 1e-8)
             audio = audio / (np.linalg.norm(audio, axis=-1, keepdims=True) + 1e-8)
 
-        speaker_id   = path.split("/")[0]
-        domain_label = float(hash(speaker_id) % 2)  # 0.0 or 1.0
+        domain_label = pseudo_domain_label(path, self.domain_label_mode, self.domain_label_seed)
 
         return (
             torch.tensor(video),
@@ -128,6 +155,8 @@ class AV1M_ValDataset(Dataset):
     def __init__(self, config: dict):
         self.root_path = config["root_path"]
         self.apply_l2  = config.get("apply_l2", False)
+        self.domain_label_mode = config.get("domain_label_mode", "speaker_hash")
+        self.domain_label_seed = int(config.get("domain_label_seed", 0))
         csv_root       = config["csv_root_path"]
 
         self.df = pd.read_csv(os.path.join(csv_root, "val_labels.csv"))
@@ -149,8 +178,7 @@ class AV1M_ValDataset(Dataset):
             video = video / (np.linalg.norm(video, axis=-1, keepdims=True) + 1e-8)
             audio = audio / (np.linalg.norm(audio, axis=-1, keepdims=True) + 1e-8)
 
-        speaker_id   = path.split("/")[0]
-        domain_label = float(hash(speaker_id) % 2)  # mirror train
+        domain_label = pseudo_domain_label(path, self.domain_label_mode, self.domain_label_seed)
 
         return (
             torch.tensor(video),
@@ -263,6 +291,7 @@ def init_callbacks(config: dict):
             filename="model-{epoch:02d}",
             mode=config["ckpt_args"]["mode"],
             save_top_k=1,
+            save_last=True,
         ))
     if "early_stopping" in config and config["early_stopping"] is not None:
         callbacks.append(EarlyStopping(
@@ -326,7 +355,9 @@ if __name__ == "__main__":
     print("\n" + "=" * 68)
     print(f"  {ablation_id} — FCD + Domain Push-Pull (AV1M all-clips speaker-group) v2")
     print(f"  seed={seed}")
-    print(f"  domain labels: hash(speaker_id)%2  →  0.0 (group A) / 1.0 (group B)")
+    data_cfg = config.get("data_info", {})
+    print(f"  domain_label_mode={data_cfg.get('domain_label_mode', 'speaker_hash')}")
+    print(f"  domain_label_seed={data_cfg.get('domain_label_seed', 0)}")
     print(f"  task labels:   0 (real) / 1 (fake) — ALL clips included")
     if config.get("ckpt_path"):
         print(f"  resume:        {config['ckpt_path']}")

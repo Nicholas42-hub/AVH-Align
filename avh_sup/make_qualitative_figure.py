@@ -108,7 +108,7 @@ def render_clip(ax_frames, ax_wave, ax_score, row, label_idx):
         model_specs.append(("Two-way", row["prob_fake_a2"], "#86b3d4"))
     if "prob_fake_a5" in row and pd.notna(row.get("prob_fake_a5")):
         model_specs.append(("Three-way", row["prob_fake_a5"], "#e9b562"))
-    model_specs.append(("TriRoute", row["prob_fake_a6"], "#2a9d8f"))
+    model_specs.append(("TriRoute (ours)", row["prob_fake_a6"], "#2a9d8f"))
 
     names = [m[0] for m in model_specs]
     probs = [m[1] for m in model_specs]
@@ -118,6 +118,9 @@ def render_clip(ax_frames, ax_wave, ax_score, row, label_idx):
     ax_score.barh(y_pos, probs, color=colors)
     ax_score.set_yticks(y_pos)
     ax_score.set_yticklabels(names, fontsize=8)
+    for tick in ax_score.get_yticklabels():
+        if "ours" in tick.get_text():
+            tick.set_fontweight("bold")
     ax_score.invert_yaxis()  # TriRoute on top — it's the headline model.
     ax_score.axvline(0.5, color="grey", linestyle="--", linewidth=0.7)
     ax_score.set_xlim(0, 1)
@@ -140,14 +143,14 @@ def make_figure(rows, out_pdf, title="", row_height=1.9):
     if n == 0:
         return
     fig = plt.figure(figsize=(11, row_height * n + 0.6))
-    gs = fig.add_gridspec(n, 3, width_ratios=[3.2, 2.0, 1.5],
-                          hspace=0.65, wspace=0.30)
+    gs = fig.add_gridspec(n, 3, width_ratios=[3.2, 2.0, 4.0],
+                          hspace=0.65, wspace=0.50)
     for i, (_, row) in enumerate(rows.iterrows()):
         ax_f = fig.add_subplot(gs[i, 0])
         ax_w = fig.add_subplot(gs[i, 1])
         ax_s = fig.add_subplot(gs[i, 2])
         render_clip(ax_f, ax_w, ax_s, row, i + 1)
-    if title:
+    if False and title:
         fig.suptitle(title, fontsize=11, y=0.995)
     fig.savefig(out_pdf, bbox_inches="tight")
     fig.savefig(out_pdf.replace(".pdf", ".png"), bbox_inches="tight", dpi=180)
@@ -217,6 +220,9 @@ def main():
     ap.add_argument("--title_appendix", default="Additional FV-RA cases (TriRoute correct, baselines wrong)")
     ap.add_argument("--label_prefix", default="qualitative_success",
                     help="LaTeX label prefix for tables")
+    ap.add_argument("--out_suffix", default=None,
+                    help="suffix for output filenames, e.g. 'success_appendix' → "
+                         "fig_qualitative_success_appendix.pdf")
     args = ap.parse_args()
 
     df = pd.read_csv(args.csv)
@@ -230,15 +236,22 @@ def main():
         sys.exit(1)
 
     os.makedirs(args.out_dir, exist_ok=True)
+    suffix = args.out_suffix  # e.g. "success_appendix" or None
+    def _fname(base):
+        if suffix:
+            return os.path.join(args.out_dir, f"fig_qualitative_{suffix}.pdf")
+        return os.path.join(args.out_dir, base)
+
     main_rows = df.head(args.n_main)
     rest = df.iloc[args.n_main:args.n_total]
 
-    make_figure(main_rows,
-                os.path.join(args.out_dir, "fig_qualitative_main.pdf"),
-                title=args.title_main)
+    if args.n_main > 0:
+        make_figure(main_rows,
+                    os.path.join(args.out_dir, "fig_qualitative_main.pdf"),
+                    title=args.title_main)
     if len(rest) > 0:
         make_figure(rest,
-                    os.path.join(args.out_dir, "fig_qualitative_appendix.pdf"),
+                    _fname("fig_qualitative_appendix.pdf"),
                     title=args.title_appendix)
 
     write_latex_table(

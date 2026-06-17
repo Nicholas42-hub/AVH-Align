@@ -21,7 +21,7 @@ SEEDS=(43 44 45)
 SEED=${SEEDS[$SLURM_ARRAY_TASK_ID]}
 
 BASE=/data/projects/punim2637/nnliang/AVH-Align
-OUTPUT_DIR="$BASE/avh_sup/outputs_A6_av1m_pseudodomain_v2_seed${SEED}"
+OUTPUT_DIR="$BASE/avh_sup/outputs_A6_av1m_pseudodomain_v2_50ep_seed${SEED}"
 RESULTS_DIR="$OUTPUT_DIR/results_favc_7030_full"
 CSV_ROOT="$BASE/avh_sup/csv_metadata/favc_7030_canonical"
 FEATURES="$BASE/data/favc_features"

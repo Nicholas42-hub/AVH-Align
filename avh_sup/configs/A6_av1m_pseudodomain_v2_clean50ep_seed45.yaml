@@ -1,0 +1,54 @@
+# ============================================================
+#  A6-AV1M-PseudoDomain-v2 POLICY-CLEAN 50ep — seed 45
+#
+#  Output: outputs_A6_pdv2_clean50ep_seed45/
+#  Saves:
+#    1. last.ckpt
+#    2. model-epoch=XX.ckpt (best source val_auc_causal)
+#    3. ckpts/dense/ep-XX.ckpt (every epoch, weights only) — for SWA
+#  No FAVCFvraCallback (no target signal during training).
+# ============================================================
+
+ablation_id: "A6_av1m_pseudodomain_v2_clean"
+
+data_info:
+  name: "AV1M"
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/avh_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m"
+  apply_l2: true
+
+model_hparams:
+  feat_dim: 1024
+  syn_dim: 256
+  spec_dim: 256
+  sda_dim: 128
+  mi_dim: 128
+
+  lambda_mi: 1.0
+  lambda_sda: 0.5
+  lambda_dis: 1.0
+  lambda_orth: 0.1
+  lambda_dadv: 1.0
+  lambda_ddis: 1.0
+  grl_alpha: 1.0
+
+  sda_eps: 0.05
+  sda_n_iter: 5
+  lr: 1.0e-3
+
+callbacks:
+  logger:
+    log_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_pdv2_clean50ep_seed45/logs"
+    name: "csv"
+  ckpt_args:
+    ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_pdv2_clean50ep_seed45/ckpts"
+    metric: "val_auc_causal"
+    mode: "max"
+
+epochs: 50
+seed: 45
+
+early_stopping:
+  metric: "val_auc_causal"
+  mode: "max"
+  patience: 50

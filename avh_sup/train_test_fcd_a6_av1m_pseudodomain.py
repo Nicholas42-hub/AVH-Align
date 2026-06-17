@@ -9,12 +9,13 @@ in every way except the source of domain labels:
     This ablation   : domain = speaker-group-A (0)  vs  speaker-group-B (1)
                       derived entirely from AV1M real-only clips
 
+Training data (two streams, mixed via ConcatDataset):
+    Task stream   : AV1M full train (real + fake), cls_label=0/1, domain_label=-1
+    Domain stream : AV1M real-only, cls_label=-1, domain_label=hash(speaker_id)%2
+
 Binary speaker-group assignment:
     speaker_id = path.split("/")[0]   (e.g. "id02148")
     domain = hash(speaker_id) % 2     →  0 or 1
-
-Using real-only clips avoids conflating domain labels with task labels
-(the same reason A6 uses real-only FAVC clips for domain supervision).
 
 Expected result: ≤ A5, because speaker-group nuisance is intra-source and
 does not capture the AV1M→FAVC codec/acquisition shift.  If this falls
@@ -50,25 +51,60 @@ def set_seed(seed: int):
     print(f"Seed: {seed}", flush=True)
 
 
+class AV1M_TaskDataset(Dataset):
+    """
+    AV1M full train set (real + fake) for task supervision.
+    cls_label = 0/1, domain_label = -1 (skips domain loss).
+    """
+
+    def __init__(self, config: dict, split: str = "train"):
+        self.root_path = config["root_path"]
+        self.apply_l2  = config.get("apply_l2", False)
+        csv_root       = config["csv_root_path"]
+
+        self.df = pd.read_csv(os.path.join(csv_root, f"{split}_labels.csv"))
+        self.feats_dir = os.path.join(self.root_path, split)
+
+        n_real = (self.df["label"] == 0).sum()
+        n_fake = (self.df["label"] == 1).sum()
+        print(
+            f"AV1M {split} task dataset: {n_real} real, {n_fake} fake, total {len(self.df)}",
+            flush=True,
+        )
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        row  = self.df.iloc[idx]
+        path = row["path"]
+        npz_path = os.path.join(self.feats_dir, path[:-4] + ".npz")
+        feats = np.load(npz_path, allow_pickle=True)
+
+        video = feats["visual"].astype(np.float32)
+        audio = feats["audio"].astype(np.float32)
+
+        if self.apply_l2:
+            video = video / (np.linalg.norm(video, axis=-1, keepdims=True) + 1e-8)
+            audio = audio / (np.linalg.norm(audio, axis=-1, keepdims=True) + 1e-8)
+
+        return (
+            torch.tensor(video),
+            torch.tensor(audio),
+            int(row["label"]),           # 0 or 1
+            torch.tensor(-1.0),          # no domain supervision
+            path,
+        )
+
+
 class AV1M_SpeakerGroupDomainDataset(Dataset):
     """
     AV1M real-only clips with binary pseudo-domain labels derived from speaker ID.
-
-    Only real clips (label == 0) are used for domain supervision.  This mirrors
-    the A6 design where only real FAVC clips are used — fake clips carry
-    manipulation signal that would corrupt the domain gradient if back-propagated
-    through the GRL to the task branch.
+    cls_label = -1 (skips task loss), domain_label = 0/1 (speaker group).
 
     Domain assignment:
         hash(speaker_id) % 2 == 0  →  domain 0.0  (speaker group A)
         hash(speaker_id) % 2 == 1  →  domain 1.0  (speaker group B)
-
-    where speaker_id = path.split("/")[0]  (e.g. "id02148").
-
-    The dataset class label (cls_label) is still 0 for all rows by construction
-    (only real clips), so there is no overlap between domain_label and cls_label.
-
-    Reads from train_labels.csv (columns: path, label).
     """
 
     def __init__(self, config: dict, split: str = "train"):
@@ -77,7 +113,6 @@ class AV1M_SpeakerGroupDomainDataset(Dataset):
         csv_root       = config["csv_root_path"]
 
         df = pd.read_csv(os.path.join(csv_root, f"{split}_labels.csv"))
-        # keep only real clips
         df = df[df["label"] == 0].reset_index(drop=True)
         self.df = df
 
@@ -114,7 +149,7 @@ class AV1M_SpeakerGroupDomainDataset(Dataset):
         return (
             torch.tensor(video),
             torch.tensor(audio),
-            int(row["label"]),          # always 0 (real)
+            -1,                          # skip task loss
             torch.tensor(domain_label),
             path,
         )
@@ -155,13 +190,20 @@ class AV1M_ValDataset(Dataset):
 def load_data(config: dict):
     data_cfg = config["data_info"]
 
-    train_ds = AV1M_SpeakerGroupDomainDataset(data_cfg, split="train")
-    val_ds   = AV1M_ValDataset(data_cfg)
+    task_ds   = AV1M_TaskDataset(data_cfg, split="train")
+    domain_ds = AV1M_SpeakerGroupDomainDataset(data_cfg, split="train")
+    from torch.utils.data import ConcatDataset
+    train_ds  = ConcatDataset([task_ds, domain_ds])
+    val_ds    = AV1M_ValDataset(data_cfg)
 
     train_dl = DataLoader(train_ds, shuffle=True,  batch_size=1)
     val_dl   = DataLoader(val_ds,   shuffle=False, batch_size=1)
 
-    print(f"Train (domain, real-only): {len(train_ds)} clips   Val: {len(val_ds)} AV1M clips", flush=True)
+    print(
+        f"Train: {len(task_ds)} task clips + {len(domain_ds)} domain clips = {len(train_ds)} total   "
+        f"Val: {len(val_ds)} AV1M clips",
+        flush=True,
+    )
     return train_dl, val_dl
 
 
@@ -197,7 +239,24 @@ def train(config: dict):
         logger=logger,
         callbacks=callbacks,
     )
-    trainer.fit(model=model, train_dataloaders=train_dl, val_dataloaders=val_dl)
+    ckpt_args = config.get("callbacks", {}).get("ckpt_args")
+    resume_path = None
+    if ckpt_args:
+        candidate = os.path.join(ckpt_args["ckpt_dir"], "last.ckpt")
+        if os.path.isfile(candidate):
+            resume_path = candidate
+            print(f"Resuming from {resume_path}", flush=True)
+    trainer.fit(model=model, train_dataloaders=train_dl, val_dataloaders=val_dl,
+                ckpt_path=resume_path)
+    ckpt_args = config.get("callbacks", {}).get("ckpt_args")
+    if ckpt_args:
+        last_path = os.path.join(ckpt_args["ckpt_dir"], "last.ckpt")
+        trainer.save_checkpoint(last_path)
+        print(
+            f"Saved final checkpoint to {last_path} "
+            f"(epoch={trainer.current_epoch - 1}, global_step={trainer.global_step})",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

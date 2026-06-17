@@ -1,0 +1,42 @@
+# ============================================================
+#  TRIROUTE — Paper Configuration
+#
+#  Unsupervised audio-visual sync training on AV1M real clips.
+#  All three seeds (43, 44, 45) used in paper experiments share
+#  these hyperparameters; only --seed differs.
+#
+#  Training data : AV1M real-only (unlabelled sync objective)
+#  Eval data     : FakeAVCeleb 70/30 split (held-out, cross-domain)
+#                  AV1M val split (in-domain)
+# ============================================================
+
+model_hparams:
+  feat_dim: 1024        # AV-HuBERT output dimension
+  syn_dim: 256          # synergistic subspace dimension (s_v, s_a)
+  spec_dim: 256         # modality-specific subspace dimension (u_v, u_a, r_v, r_a)
+  sda_dim: 128          # SDA projection dimension
+  incon_dim: 256        # cross-modal inconsistency (u_delta) dimension
+
+  lambda_sda: 0.5       # Synergistic Distribution Alignment weight
+  lambda_dis: 1.0       # modality discrimination weight (residual)
+  lambda_orth: 0.1      # orthogonality penalty (u ⊥ r)
+  lambda_delta_sparse: 0.01   # cross-modal inconsistency sparsity
+
+  sda_eps: 0.05         # Sinkhorn entropy regularisation
+  sda_n_iter: 5         # Sinkhorn iterations
+
+training:
+  epochs: 100
+  batch_size: 64
+  num_workers: 4
+  lr: 1.0e-4
+  lr_schedule: constant   # "constant" or "cosine"
+  tau: 15                 # temporal context window (±τ audio frames per video frame)
+  frames_per_clip: 4      # virtual samples per clip per epoch
+  seed: 43                # paper seeds: 43, 44, 45
+
+data:
+  av1m_features:    /path/to/av1m_features     # root with train/ val/ subdirs of .npz files
+  av1m_csv_root:    /path/to/av1m_csv          # dir with train_labels.csv, val_labels.csv
+  favc_features:    /path/to/favc_features     # FakeAVCeleb features root
+  favc_csv_root:    /path/to/favc_csv          # dir with test_labels.csv

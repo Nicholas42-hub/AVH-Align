@@ -1,0 +1,45 @@
+ablation_id: A6_pdv2_s45_lambda_dadv3p0
+data_info:
+  name: AV1M
+  root_path: /data/projects/punim2637/nnliang/AVH-Align/data/avh_features
+  csv_root_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/av1m
+  apply_l2: true
+  domain_label_mode: speaker_hash
+  domain_label_seed: 45
+model_hparams:
+  feat_dim: 1024
+  syn_dim: 256
+  spec_dim: 256
+  sda_dim: 128
+  mi_dim: 128
+  lambda_mi: 1.0
+  lambda_sda: 0.5
+  lambda_dis: 1.0
+  lambda_orth: 0.1
+  lambda_dadv: 3.0
+  lambda_ddis: 1.0
+  grl_alpha: 1.0
+  sda_eps: 0.05
+  sda_n_iter: 5
+  lr: 0.001
+callbacks:
+  logger:
+    log_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_pdv2_s45_lambda_dadv3p0/logs
+    name: csv
+  ckpt_args:
+    ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_pdv2_s45_lambda_dadv3p0/ckpts
+    metric: val_auc_causal
+    mode: max
+epochs: 50
+seed: 45
+early_stopping:
+  metric: val_auc_causal
+  mode: max
+  patience: 50
+favc_eval_info:
+  root_path: /data/projects/punim2637/nnliang/AVH-Align/data/favc_features
+  csv_root_path: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_7030_canonical
+  split: test
+  apply_l2: true
+  check_every_n_epochs: 5
+  best_ckpt_dir: /data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_pdv2_s45_lambda_dadv3p0/ckpts/favc_fvra

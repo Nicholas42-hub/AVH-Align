@@ -1,0 +1,3 @@
+best_auc=0.74533594
+epoch=4
+checkpoint=/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_pdv2_s45_lambda_orth0p03/ckpts/favc_fvra/best-favc-fvra-epoch=04-auc=0.7453.ckpt

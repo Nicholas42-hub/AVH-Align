@@ -334,7 +334,7 @@ def make_tsne():
                     c=dom_colors[d], marker=markers[d],
                     label=dom_names[d], linewidths=0, zorder=3)
     ax1.set_title(r"Residual factor $Z_{\rm res}$" + "\n(colored by dataset)",
-                  fontsize=9, fontweight="bold")
+                  fontsize=9)
     ax1.legend(fontsize=6.5, markerscale=1.1, framealpha=0.9,
                loc="upper right", handletextpad=0.3)
     for d in range(n_dom):
@@ -360,7 +360,7 @@ def make_tsne():
     ax2.legend(handles=rfh, fontsize=7, framealpha=0.9,
                loc="upper right", handlelength=1.0)
     ax2.set_title(r"Task factor $Z_{\rm task}$" + "\n(colored by real/fake)",
-                  fontsize=9, fontweight="bold")
+                  fontsize=9)
 
     for ax in (ax1, ax2):
         ax.set_xlabel("t-SNE dim 1", fontsize=8)

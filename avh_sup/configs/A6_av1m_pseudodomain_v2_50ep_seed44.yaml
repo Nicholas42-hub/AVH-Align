@@ -1,9 +1,11 @@
 # ============================================================
 #  A6-AV1M-PseudoDomain-v2 50-epoch retrain — seed 44
 #
-#  Source-val ckpt selection ONLY. No FAVC monitoring during
-#  training (favc_eval_info intentionally absent). Compliant with
-#  paper-stated protocol: ckpt by AV1M val_auc_causal max.
+#  Saves 3 checkpoints:
+#    1. last.ckpt          — final epoch (Lightning default)
+#    2. model-epoch=XX.ckpt — best val_auc_causal (source val)
+#    3. best-favc-fvra-*   — best FV-RA AUC on FAVC test set
+#                            (checked every 5 epochs via FAVCFvraCallback)
 # ============================================================
 
 ablation_id: "A6_av1m_pseudodomain_v2"
@@ -39,13 +41,20 @@ callbacks:
     name: "csv"
   ckpt_args:
     ckpt_dir: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/outputs_A6_av1m_pseudodomain_v2_50ep_seed44/ckpts"
-    metric: "val_loss_partial"
-    mode: "min"
+    metric: "val_auc_causal"
+    mode: "max"
 
 epochs: 50
 seed: 44
 
 early_stopping:
-  metric: "val_loss_partial"
-  mode: "min"
+  metric: "val_auc_causal"
+  mode: "max"
   patience: 50
+
+favc_eval_info:
+  root_path: "/data/projects/punim2637/nnliang/AVH-Align/data/favc_features"
+  csv_root_path: "/data/projects/punim2637/nnliang/AVH-Align/avh_sup/csv_metadata/favc_7030_canonical"
+  split: "test"
+  apply_l2: true
+  check_every_n_epochs: 5

@@ -1,0 +1,14 @@
+# Core deep learning
+torch>=2.0.0
+numpy>=1.24.0
+pandas>=1.5.0
+scikit-learn>=1.2.0
+tqdm>=4.65.0
+
+# AV-HuBERT / fairseq (for feature extraction only — not needed for training
+# if you use pre-extracted .npz features)
+# fairseq @ https://github.com/facebookresearch/fairseq
+# av_hubert @ https://github.com/facebookresearch/av_hubert
+
+# Optional: Lightning (used in supervised baselines, not in TRIROUTE unsup)
+# lightning>=2.0.0

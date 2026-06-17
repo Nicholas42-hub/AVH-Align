@@ -111,6 +111,10 @@ def process_av1m(args, model, transform):
             file_paths.add(row["path"])
 
     for _, file_path in enumerate(tqdm(file_paths)):
+        save_path = os.path.join(args.save_path, file_path.replace(".mp4", ".npz"))
+        if os.path.exists(save_path):
+            continue
+
         mouth_roi_path = os.path.join(args.data_path, file_path[:-4] + "_roi.mp4")
         audio_path = os.path.join(args.data_path, file_path[:-4] + ".wav")
 
@@ -125,7 +129,6 @@ def process_av1m(args, model, transform):
             "audio": feature_audio,
             "multimodal": feature_multimodal,
         }
-        save_path = os.path.join(args.save_path, file_path.replace(".mp4", ".npz"))
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         
         np.savez(save_path, **save_dict)
